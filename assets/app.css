@@ -409,3 +409,23 @@ input,select{min-height:42px;padding:8px 9px;border-radius:9px}
 /* v0.5.2 dashboard analytical trend */
 .trend-periods{display:flex;gap:4px;padding:3px;background:#f2f4f8;border-radius:11px}.trend-periods button{border:0;background:transparent;color:var(--muted);padding:6px 10px;min-height:0;border-radius:8px;font:700 11px var(--font-global,Vazirmatn,Tahoma,sans-serif);cursor:pointer}.trend-periods button.active{background:#fff;color:var(--p);box-shadow:0 2px 8px #1111}.trend-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}.trend-kpis span{border:1px solid var(--line);border-radius:10px;padding:7px;text-align:center;font-weight:800;font-size:11px}.trend-company-line{fill:none;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}.trend-company-dot{stroke:#fff;stroke-width:2}.trend-legend{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:3px;font-size:10px;color:var(--muted)}.trend-legend span{display:inline-flex;align-items:center;gap:4px}.trend-legend i{width:9px;height:9px;border-radius:50%;display:inline-block}.dashboard-chart-head{align-items:center}
 @media(max-width:700px){.dashboard-chart-head{align-items:flex-start;gap:7px}.trend-periods{direction:rtl}.trend-periods button{padding:5px 7px;font-size:10px}.trend-kpis span{font-size:10px;padding:6px 3px}#dashboardTrendChart{height:175px}.trend-company-line{stroke-width:3.8}.trend-legend{gap:7px;font-size:9px}}
+
+
+/* v0.5.3 login parity: exact V28 artwork/crop/hitboxes */
+.golpooch-login{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;overflow:hidden!important;background:#0d1720!important;z-index:99999!important}
+.golpooch-scene{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;border-radius:0!important;box-shadow:none!important;background:#16232c!important;overflow:hidden!important}
+.golpooch-picture{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;z-index:1!important;background:#dcecf5!important;overflow:hidden!important}
+.golpooch-photo{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;object-fit:cover!important;object-position:center center!important;display:block!important;user-select:none!important;-webkit-user-drag:none!important;background:#dcecf5!important;transform:none!important}
+.golpooch-scene:before{display:none!important}
+.golpooch-hand{position:absolute!important;display:block!important;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;cursor:pointer!important;border-radius:45%!important;z-index:4!important;opacity:.001!important;transform:none!important}
+.golpooch-hand.left{left:46%!important;top:40.5%!important;width:8.5%!important;height:12.5%!important}
+.golpooch-hand.right{left:57%!important;top:40.5%!important;width:8.5%!important;height:12.5%!important}
+.golpooch-hand:hover,.golpooch-hand:focus,.golpooch-hand:active{outline:0!important;background:transparent!important}
+@media(max-width:700px){
+ .golpooch-login,.golpooch-scene{height:100svh!important;min-height:100svh!important}
+ .golpooch-picture{background:#8dcdf4!important}
+ .golpooch-photo{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center center!important;transform:translateY(-8%) scale(1.20)!important;transform-origin:center center!important}
+ .golpooch-hand.left{left:27%!important;top:40.5%!important;width:20%!important;height:15%!important}
+ .golpooch-hand.right{left:53%!important;top:40.5%!important;width:20%!important;height:15%!important}
+ .golpooch-panel{width:calc(100vw - 20px)!important;max-height:calc(100svh - 18px)!important}
+}

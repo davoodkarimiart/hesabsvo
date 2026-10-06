@@ -1,11 +1,8 @@
-# Production configuration and secrets
 /config/config.php
 /.env
 /.env.*
 !.env.example
 /.user.ini
-
-# Runtime state, logs, generated reports, and backups
 /storage/*
 !/storage/.gitkeep
 /storage/logs/*
@@ -18,8 +15,6 @@ error_log
 *.xlsx
 *.sql
 *.zip
-
-# Local/editor and OS files
 .DS_Store
 Thumbs.db
 .idea/

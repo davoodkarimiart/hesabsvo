@@ -1,3 +1,11 @@
+# v0.5.3
+
+- Login scene now uses the exact desktop and portrait artwork extracted from the approved V28 HTML.
+- Desktop and mobile crop/hitboxes now match the effective V23/V25 V28 rules exactly.
+- Real PHP authentication remains unchanged behind the Golpooch reveal.
+- PWA cache bumped to v053.
+- No database migration.
+
 # v0.5.2
 
 - Dashboard: period-aware 7/30/90-day win/loss trend by company with win/loss ratio and net KPIs.
