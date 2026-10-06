@@ -1,3 +1,3 @@
-; Optional PHP settings for cPanel. Configure host-specific error_log paths in cPanel.
+; Optional cPanel PHP overrides. Do not commit host-specific absolute paths in .user.ini.
 log_errors = On
-; error_log = /home/ACCOUNT/logs/php.error.log
+; error_log = /absolute/path/outside/public_html/php.error.log

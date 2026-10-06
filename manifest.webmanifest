@@ -1,0 +1,37 @@
+{
+  "name": "سلطان حساب",
+  "short_name": "سلطان حساب",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "./index.php?page=dashboard",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f1ff",
+  "theme_color": "#4b19cf",
+  "icons": [
+    {
+      "src": "assets/brand/pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/brand/pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/brand/pwa-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/brand/pwa-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

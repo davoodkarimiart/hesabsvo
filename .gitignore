@@ -1,36 +1,25 @@
-# Secrets and host-local configuration
-.env
-.env.*
-!.env.example
+# Production configuration and secrets
 /config/config.php
-/config/*.local.php
+/.env
+/.env.*
+!.env.example
 /.user.ini
 
-# Runtime state and private customer data
-/storage/installed.lock
+# Runtime state, logs, generated reports, and backups
+/storage/*
+!/storage/.gitkeep
 /storage/logs/*
-!/storage/logs/.gitkeep
 /storage/backups/*
-!/storage/backups/.gitkeep
 /storage/tmp/*
-!/storage/tmp/.gitkeep
 /storage/report_sources/*
-!/storage/report_sources/.gitkeep
-
-# Local exports and upload sources
+/storage/installed.lock
 *.log
 error_log
 *.xlsx
-*.xls
-*.csv
-*.pdf
+*.sql
 *.zip
-!tests/fixtures/**/*.xlsx
-!tests/fixtures/**/*.csv
 
-# Dependencies, editors and OS files
-/vendor/
-/node_modules/
+# Local/editor and OS files
 .DS_Store
 Thumbs.db
 .idea/

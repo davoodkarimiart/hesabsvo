@@ -7,7 +7,7 @@ $idx=file_get_contents(__DIR__.'/index.php');$rs=file_get_contents(__DIR__.'/app
 'report view icon'=>str_contains($idx,'report-view-icon'),
 'no report file column'=>!str_contains($idx,'no-image no-output\">فایل'),
 'app confirm'=>str_contains(file_get_contents(base_path('assets/app.js')),'window.appConfirm'),
-'v0.4.12 cache'=>str_contains($idx,'app.css?v=0412'),
+'v0.4.16 cache'=>str_contains($idx,'app.css?v=0416'),
 'source storage column'=>vc($pdo,'daily_reports','source_storage_path'),
 'autogroup exclusions'=>vt($pdo,'customer_autogroup_exclusions'),
 'decimal numeric normalization'=>str_contains($rs,'Normalize DB DECIMAL strings'),

@@ -1,5 +1,3 @@
-# Upgrade to v0.4.12
+# Upgrade to v0.5.2
 
-No database migration is required. Overlay the release on the existing installation. Preserve `config/config.php` and `storage/installed.lock`.
-
-After deployment run `php verify_release.php`, then hard-refresh browser assets.
+No database migration is required for this release. Back up the current installation, upload the application files, then run PHP syntax checks, `verify_release.php`, and `tests/phase3_formula_smoke.php`. Restart or refresh the installed PWA so its v052 cache is activated.

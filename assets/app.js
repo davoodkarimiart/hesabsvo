@@ -52,3 +52,14 @@
     if(ok){form.dataset.confirmed='1';form.requestSubmit();}
   },true);
 })();
+
+
+/* v0.5.0 mobile keyboard flow */
+(()=>{
+ const visible=el=>!!(el.offsetWidth||el.offsetHeight||el.getClientRects().length)&&!el.disabled&&el.type!=='hidden';
+ document.querySelectorAll('form.keyboard-flow').forEach(form=>{
+   const fields=[...form.querySelectorAll('input:not([type=file]):not([type=hidden]),select,textarea,button[type=submit]')].filter(visible);
+   fields.forEach((el,i)=>{if(el.tagName==='INPUT'&&el.type!=='search'&&el.type!=='password'&&i<fields.length-1)el.setAttribute('enterkeyhint','next');});
+   form.addEventListener('keydown',e=>{if(e.key!=='Enter'||e.shiftKey||e.ctrlKey||e.metaKey)return;const el=e.target;if(el.tagName==='TEXTAREA'||el.type==='search'||el.type==='submit'||el.tagName==='BUTTON')return;const now=fields.indexOf(el);if(now>=0&&now<fields.length-1){e.preventDefault();fields[now+1].focus();} });
+ });
+})();
