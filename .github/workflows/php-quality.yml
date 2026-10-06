@@ -1,0 +1,22 @@
+name: PHP quality
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  php:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: pdo_mysql, zip, simplexml
+          coverage: none
+      - name: Lint PHP files
+        run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
+      - name: Run accounting formula smoke test
+        run: php tests/phase3_formula_smoke.php
+      - name: Verify private files are ignored
+        run: git check-ignore config/config.php .user.ini storage/installed.lock storage/logs/app.log storage/report_sources/customer.xlsx

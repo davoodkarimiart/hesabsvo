@@ -1,0 +1,23 @@
+# Phase 3 host test checklist
+
+- [ ] `php upgrade/v0.3.0.php` applies `003_phase3`.
+- [ ] `php verify_release.php` returns only `[OK]`.
+- [ ] Entry page accepts the real Report_WL XLS/XLSX.
+- [ ] Current Jalali date is prefilled.
+- [ ] Company is required.
+- [ ] Known Username resolves to correct Panel/Account.
+- [ ] General vs special rate is applied from Account rate type.
+- [ ] Customer-loss formula matches expected fixture values.
+- [ ] Customer-win formula matches expected fixture values.
+- [ ] Unknown Username is shown as warning.
+- [ ] Unknown Username can stay temporary.
+- [ ] Unknown Username can be registered manually only with explicit Panel selection.
+- [ ] Wrong-company report is blocked.
+- [ ] Duplicate report is blocked unless test override is checked.
+- [ ] Preview allows add/edit/delete.
+- [ ] Back to Entry preserves draft.
+- [ ] Finalize stores report and rows.
+- [ ] Stored report reopens.
+- [ ] Edit saved report writes a revision.
+- [ ] Site net label is correct: win/loss/settled.
+- [ ] Mobile input focus does not zoom unexpectedly.

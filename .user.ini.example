@@ -1,0 +1,3 @@
+; Optional PHP settings for cPanel. Configure host-specific error_log paths in cPanel.
+log_errors = On
+; error_log = /home/ACCOUNT/logs/php.error.log

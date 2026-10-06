@@ -1,0 +1,8 @@
+Options -Indexes
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule ^(?:app|config|database|storage|docs)(?:/|$) - [F,L]
+</IfModule>
+<FilesMatch "^(\.env|.*\.log|.*\.sql)$">
+  Require all denied
+</FilesMatch>
