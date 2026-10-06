@@ -59,7 +59,18 @@
  const visible=el=>!!(el.offsetWidth||el.offsetHeight||el.getClientRects().length)&&!el.disabled&&el.type!=='hidden';
  document.querySelectorAll('form.keyboard-flow').forEach(form=>{
    const fields=[...form.querySelectorAll('input:not([type=file]):not([type=hidden]),select,textarea,button[type=submit]')].filter(visible);
-   fields.forEach((el,i)=>{if(el.tagName==='INPUT'&&el.type!=='search'&&el.type!=='password'&&i<fields.length-1)el.setAttribute('enterkeyhint','next');});
-   form.addEventListener('keydown',e=>{if(e.key!=='Enter'||e.shiftKey||e.ctrlKey||e.metaKey)return;const el=e.target;if(el.tagName==='TEXTAREA'||el.type==='search'||el.type==='submit'||el.tagName==='BUTTON')return;const now=fields.indexOf(el);if(now>=0&&now<fields.length-1){e.preventDefault();fields[now+1].focus();} });
+   fields.forEach((el,i)=>{if(el.tagName==='INPUT'&&el.type!=='password')el.setAttribute('enterkeyhint',i<fields.length-1?'next':'go');});
+   form.addEventListener('keydown',e=>{if(e.key!=='Enter'||e.shiftKey||e.ctrlKey||e.metaKey)return;const el=e.target;if(el.tagName==='TEXTAREA'||el.type==='submit'||el.tagName==='BUTTON')return;const now=fields.indexOf(el);if(now>=0&&now<fields.length-1){e.preventDefault();fields[now+1].focus();} });
  });
+})();
+
+
+/* v0.5.4 customer live-search + password-manager hardening */
+(()=>{
+ const q=document.getElementById('customerLiveSearch'),dir=document.getElementById('customerDirectory');
+ if(!q||!dir)return;
+ const norm=v=>String(v??'').trim().toLocaleLowerCase('fa-IR').replace(/ي/g,'ی').replace(/ك/g,'ک');
+ const rows=[...dir.querySelectorAll('.customer-row')];
+ const apply=()=>{const needle=norm(q.value);for(const row of rows){const hay=norm(row.dataset.customerSearch||row.dataset.customerName||row.textContent);row.hidden=!!needle&&!hay.includes(needle)}};
+ q.addEventListener('input',apply);q.addEventListener('search',apply);apply();
 })();

@@ -1,4 +1,11 @@
-# v0.5.3
+# v0.5.4
+- Fixed Settings numeric validation for grouped/Persian/Arabic numeric input.
+- Customer search is live and no longer requires Apply Filter for name matching.
+- Hardened customer text/search fields against mobile password-manager/autofill prompts.
+- Expanded keyboard Next flow to Settings/customer profile and search fields.
+- PWA cache bumped to v054.
+
+# v0.5.4
 
 - Login scene now uses the exact desktop and portrait artwork extracted from the approved V28 HTML.
 - Desktop and mobile crop/hitboxes now match the effective V23/V25 V28 rules exactly.

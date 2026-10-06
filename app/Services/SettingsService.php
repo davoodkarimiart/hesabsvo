@@ -25,9 +25,20 @@ final class SettingsService {
         $allowed=array_keys(self::defaults());$pdo=Database::connection();$pdo->beginTransaction();
         try{
             $st=$pdo->prepare('INSERT INTO settings(setting_key,setting_value) VALUES(?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)');
-            foreach($allowed as $k){if(!array_key_exists($k,$input))continue;$v=trim((string)$input[$k]);self::validate($k,$v);$st->execute([$k,$v]);}
+            foreach($allowed as $k){
+                if(!array_key_exists($k,$input))continue;
+                $v=trim((string)$input[$k]);
+                if(in_array($k,['default_rate','special_rate','default_loss_percent','theme_opacity'],true))$v=self::normalizeNumericInput($v);
+                self::validate($k,$v);
+                $st->execute([$k,$v]);
+            }
             $pdo->commit();Logger::audit('settings.updated',['user_id'=>$userId,'keys'=>array_values(array_intersect(array_keys($input),$allowed))]);
         }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
+    }
+
+    private static function normalizeNumericInput(string $v): string {
+        $v=strtr(trim($v),['۰'=>'0','۱'=>'1','۲'=>'2','۳'=>'3','۴'=>'4','۵'=>'5','۶'=>'6','۷'=>'7','۸'=>'8','۹'=>'9','٠'=>'0','١'=>'1','٢'=>'2','٣'=>'3','٤'=>'4','٥'=>'5','٦'=>'6','٧'=>'7','٨'=>'8','٩'=>'9','٬'=>'',','=>'','٫'=>'.']);
+        return preg_replace('/\s+/u','',$v)??$v;
     }
 
     private static function validate(string $k,string $v): void {
