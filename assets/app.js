@@ -18,7 +18,7 @@
   function renderCal(){ensureCalendar();const d=document.getElementById('jalaliCalendarDialog'),grid=d.querySelector('[data-cal-grid]'),title=d.querySelector('[data-cal-title]');title.textContent=`${monthNames[viewM-1]} ${viewY}`;const names=['ش','ی','د','س','چ','پ','ج'];let html=names.map(x=>`<span>${x}</span>`).join('');const g=d2g(j2d(viewY,viewM,1));const jsDay=new Date(g.gy,g.gm-1,g.gd).getDay();const offset=(jsDay+1)%7;for(let i=0;i<offset;i++)html+='<span></span>';const sel=parseJ(calTarget?.value||''),today=todayJ();for(let day=1;day<=daysInMonth(viewY,viewM);day++){const cls=(today.jy===viewY&&today.jm===viewM&&today.jd===day?' today':'')+(sel&&sel.jy===viewY&&sel.jm===viewM&&sel.jd===day?' selected':'');html+=`<button type="button" class="${cls.trim()}" data-cal-day="${day}">${day}</button>`}grid.innerHTML=html;grid.querySelectorAll('[data-cal-day]').forEach(b=>b.onclick=()=>selectCal(viewY,viewM,+b.dataset.calDay));}
   function selectCal(y,m,d){if(calTarget){calTarget.value=fmtJ(y,m,d);calTarget.dispatchEvent(new Event('input',{bubbles:true}));calTarget.dispatchEvent(new Event('change',{bubbles:true}))}document.getElementById('jalaliCalendarDialog')?.close();}
   function initCalendars(){document.querySelectorAll('input.jalali-date').forEach(inp=>{if(inp.dataset.calBound)return;inp.dataset.calBound='1';const wrap=document.createElement('div');wrap.className='date-with-picker';inp.parentNode.insertBefore(wrap,inp);wrap.appendChild(inp);const b=document.createElement('button');b.type='button';b.className='ghost calendar-btn';b.textContent='📅';b.setAttribute('aria-label','انتخاب تاریخ شمسی');b.onclick=()=>{calTarget=inp;const p=parseJ(inp.value)||todayJ();viewY=p.jy;viewM=p.jm;renderCal();document.getElementById('jalaliCalendarDialog').showModal()};wrap.appendChild(b);});}
-  function initCustomerCombos(){document.querySelectorAll('[data-customer-combo]').forEach(inp=>{if(inp.dataset.comboBound)return;inp.dataset.comboBound='1';const hidden=document.getElementById(inp.dataset.customerCombo);const list=document.getElementById(inp.getAttribute('list'));if(!hidden||!list)return;const opts=[...list.options];const sync=()=>{const hit=opts.find(o=>o.value===inp.value);hidden.value=hit?hit.dataset.id:'0';};inp.addEventListener('input',sync);inp.addEventListener('change',sync);sync();});}
+  function initCustomerCombos(){document.querySelectorAll('[data-customer-combo]').forEach(inp=>{if(inp.dataset.comboBound)return;inp.dataset.comboBound='1';const hidden=document.getElementById(inp.dataset.customerCombo);const list=document.getElementById(inp.getAttribute('list'));if(!hidden||!list)return;const opts=[...list.options],base=o=>String(o.value||'').split('• #')[0].trim();const sync=()=>{const needle=norm(inp.value);let hit=opts.find(o=>norm(o.value)===needle)||opts.find(o=>norm(base(o))===needle);if(!hit&&needle){const matches=opts.filter(o=>norm(base(o)).includes(needle)||norm(o.value).includes(needle));if(matches.length===1)hit=matches[0];}hidden.value=hit?hit.dataset.id:'0';inp.dataset.customerResolved=hit?'1':'0';};inp.addEventListener('input',sync);inp.addEventListener('change',sync);sync();});}
   document.addEventListener('DOMContentLoaded',()=>{window.initPickerSearch();initCalendars();initCustomerCombos();});
 })();
 
@@ -65,12 +65,4 @@
 })();
 
 
-/* v0.5.4 customer live-search + password-manager hardening */
-(()=>{
- const q=document.getElementById('customerLiveSearch'),dir=document.getElementById('customerDirectory');
- if(!q||!dir)return;
- const norm=v=>String(v??'').trim().toLocaleLowerCase('fa-IR').replace(/ي/g,'ی').replace(/ك/g,'ک');
- const rows=[...dir.querySelectorAll('.customer-row')];
- const apply=()=>{const needle=norm(q.value);for(const row of rows){const hay=norm(row.dataset.customerSearch||row.dataset.customerName||row.textContent);row.hidden=!!needle&&!hay.includes(needle)}};
- q.addEventListener('input',apply);q.addEventListener('search',apply);apply();
-})();
+/* v0.5.5 customer live-search is bound inline with default alphabetical sorting. */

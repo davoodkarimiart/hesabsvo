@@ -1,20 +1,19 @@
-# Soltan Hesab
+# Soltan Hesab v0.5.6
 
-Source repository for Soltan Hesab, currently at **v0.5.2** (host archive dated 2026-10-06).
+آخرین نسخهٔ سورس برنامهٔ سلطان حساب. این نسخه شامل پچ‌های `0.5.5` و `0.5.6` است.
 
-## Version 0.5.2
+## تغییرات این دو نسخه
 
-- Adds a dashboard win/loss trend for 7, 30, or 90 days, split by company, with win/loss ratio and net KPIs.
-- Shares report images without captions; unsupported browsers download the image only.
-- Bumps the PWA shell cache to v052.
+- نمودار داشبورد با محورهای روشن و روند تجمعی نتیجهٔ سایت بازطراحی شده؛ نتیجهٔ کلی و وضعیت نهایی هر شرکت در راهنما دیده می‌شود و tooltip داخل نمودار می‌ماند.
+- فهرست مشتری‌ها به‌صورت پیش‌فرض الفبایی فارسی مرتب است و جست‌وجوی زندهٔ آن مقاوم‌تر شده است.
+- «ریز پرداخت» با فیلتر شرکت/پنل/تاریخ حفظ شده و «ریز پرداخت مشتری» جداگانه، با جست‌وجوی مشتری در همهٔ شرکت‌ها و پنل‌ها ارائه می‌شود.
+- کش PWA به v056 ارتقا یافته است.
+- مهاجرت پایگاه داده لازم نیست.
 
-## Setup
+## نصب
 
-1. Copy `config/config.example.php` to `config/config.php`.
-2. Set the database credentials and a unique application secret in `config/config.php`.
-3. Create the database and apply `database/migrations/` in numeric order.
-4. Configure the web root to this directory and follow `DEPLOY_CPANEL.md` for production deployment.
+1. `config/config.example.php` را به `config/config.php` کپی کنید و اطلاعات پایگاه داده و secret برنامه را وارد کنید.
+2. برای ارتقا، ابتدا پشتیبان بگیرید و سپس مراحل `UPGRADE.md` را اجرا کنید.
+3. برای بررسی محلی، `php verify_release.php` و `php tests/phase3_formula_smoke.php` را اجرا کنید.
 
-Never commit `config/config.php`, `.user.ini`, runtime logs, backups, uploaded report sources, installation state, or production exports. The runtime directories are represented by empty `.gitkeep` files.
-
-See `CHANGELOG.md`, `UPGRADE.md`, and `docs/` for release notes, upgrade steps, and test checklists. Run `php tests/phase3_formula_smoke.php` for the accounting formula smoke test.
+تنظیمات واقعی، `.user.ini` هاست، لاگ‌ها، نسخه‌های پشتیبان، فایل‌های گزارش آپلودشده و وضعیت نصب را وارد Git نکنید.

@@ -10,8 +10,8 @@ final class ReportingService {
     }
 
     public static function normalizeFilters(array $f): array {
-        $f['type']=in_array(($f['type']??'daily'),['daily','monthly','multi','detail'],true)?$f['type']:'daily';
-        $f['company_id']=(int)($f['company_id']??0);$f['panel_id']=(int)($f['panel_id']??0);$f['customer_id']=(int)($f['customer_id']??0);
+        $f['type']=in_array(($f['type']??'daily'),['daily','monthly','multi','detail','customer_detail'],true)?$f['type']:'daily';
+        $f['company_id']=(int)($f['company_id']??0);$f['panel_id']=(int)($f['panel_id']??0);$f['customer_id']=(int)($f['customer_id']??0);if($f['type']!=='customer_detail')$f['customer_id']=0;if($f['type']==='customer_detail'&&$f['customer_id']>0){$f['company_id']=0;$f['panel_id']=0;}
         $f['from']=trim((string)($f['from']??''));$f['to']=trim((string)($f['to']??''));
         if($f['company_id']>0 && $f['panel_id']>0){
             $st=Database::connection()->prepare('SELECT COUNT(*) FROM panels WHERE id=? AND company_id=? AND active=1');$st->execute([$f['panel_id'],$f['company_id']]);
@@ -21,7 +21,7 @@ final class ReportingService {
     }
 
     public static function report(array $input): array {
-        $f=self::normalizeFilters($input);$type=$f['type'];$pdo=Database::connection();$where=["r.status='final'"];$p=[];
+        $f=self::normalizeFilters($input);$type=$f['type'];if($type==='customer_detail'&&$f['customer_id']<=0)throw new RuntimeException('برای ریز پرداخت مشتری، یک مشتری را انتخاب کن.');$pdo=Database::connection();$where=["r.status='final'"];$p=[];
         if($f['company_id']>0){$where[]='r.company_id=?';$p[]=$f['company_id'];}
         if($f['panel_id']>0){
             // report.panel_id is historical convenience only; row ownership is authoritative.
@@ -34,9 +34,9 @@ final class ReportingService {
 
         if($type==='monthly'||$type==='multi'){
             $sql="SELECT r.id,r.report_date,CAST(r.total_received AS DECIMAL(24,6)) received,CAST(r.total_paid AS DECIMAL(24,6)) paid,CAST(r.total_commission AS DECIMAL(24,6)) commission,(CAST(r.total_received AS DECIMAL(24,6))-CAST(r.total_paid AS DECIMAL(24,6))) net FROM daily_reports r WHERE $w ORDER BY r.report_date DESC,r.id DESC LIMIT 5000";
-        } elseif($type==='detail'){
+        } elseif(in_array($type,['detail','customer_detail'],true)){
             $whereDetail=$w;$pd=$p;
-            if($f['customer_id']>0){$whereDetail.=' AND EXISTS(SELECT 1 FROM customer_accounts ca2 WHERE ca2.account_id=rr.account_id AND ca2.customer_id=?)';$pd[]=$f['customer_id'];}
+            if($type==='customer_detail'&&$f['customer_id']>0){$whereDetail.=' AND EXISTS(SELECT 1 FROM customer_accounts ca2 WHERE ca2.account_id=rr.account_id AND ca2.customer_id=?)';$pd[]=$f['customer_id'];}
             if($f['from']===''&&$f['to']==='')$whereDetail.=" AND r.id IN (SELECT z.id FROM (SELECT id FROM daily_reports WHERE status='final' ORDER BY report_date DESC,id DESC LIMIT 10) z)";
             $sql="SELECT r.id,r.report_date,c.name company_name,COALESCE(pn.name,(SELECT p2.name FROM daily_report_rows xr JOIN panels p2 ON p2.id=xr.panel_id WHERE xr.daily_report_id=r.id AND xr.panel_id IS NOT NULL GROUP BY xr.panel_id,p2.name ORDER BY xr.panel_id LIMIT 1)) panel_name,rr.source_username,COALESCE(NULLIF(rr.display_name_snapshot,''),NULLIF(rr.original_name_snapshot,''),rr.source_username) name,rr.member_win,rr.commission,rr.received,rr.paid FROM daily_reports r JOIN daily_report_rows rr ON rr.daily_report_id=r.id JOIN companies c ON c.id=r.company_id LEFT JOIN panels pn ON pn.id=rr.panel_id WHERE $whereDetail ORDER BY r.report_date DESC,r.id DESC,rr.id LIMIT 3000";$p=$pd;
         } else {
