@@ -1,2 +1,33 @@
-/user.ini
+# Production configuration and secrets
+/config/config.php
+/.env
+/.env.*
+!/.env.example
 /.user.ini
+/user.ini
+
+# Runtime state; only empty directory markers are tracked
+/storage/*
+!/storage/.gitkeep
+/storage/logs/*
+/storage/backups/*
+/storage/tmp/*
+/storage/report_sources/*
+/storage/installed.lock
+*.log
+error_log
+*.xlsx
+*.csv
+*.sql
+*.sql.gz
+*.zip
+*.tar
+*.tar.gz
+*.bak
+*.backup
+
+# Local/editor and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
