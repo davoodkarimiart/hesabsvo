@@ -1,8 +1,11 @@
-# Upgrade to v0.5.6
+# ارتقا به نسخهٔ 0.6.5
 
-No database migration is required.
+این بازسازی روی GitHub از commit مبنای `15f80058ac4a22b3c61824b7186783ce28b4f6d1` (نسخهٔ 0.5.6) انجام شده است. پیش از استقرار، تفاوت سورس هاست با این نسخه را بررسی کنید؛ این PR به‌تنهایی مجوز استقرار روی production نیست.
 
-1. Back up the current installation.
-2. Extract this package over the application root.
-3. Run `php verify_release.php` and `php tests/phase3_formula_smoke.php`.
-4. Fully close/reopen the mobile PWA/tab so cache v056 activates.
+1. از فایل‌ها و پایگاه داده پشتیبان بگیرید.
+2. `config/config.php` و محتوای `storage/` را از نسخهٔ نصب‌شده حفظ کنید.
+3. پس از تأیید این PR و ساخت بستهٔ انتشار پاک از شاخهٔ `main`، فایل‌های برنامه را جایگزین کنید. پچ‌های افزایشی handoff را مستقیماً روی production اجرا نکنید.
+4. روی نسخهٔ آزمایشی، `php -l` فایل‌های PHP، `php verify_release.php` و `php tests/phase3_formula_smoke.php` را اجرا کنید؛ رفتار گزارش‌ها و UI را با نمونه‌داده بررسی کنید.
+5. PWA را کامل ببندید و دوباره باز کنید تا cache جدید فعال شود.
+
+مهاجرت schema لازم نیست. هیچ دادهٔ مشتری یا فایل گزارش نباید از production به Git منتقل شود.

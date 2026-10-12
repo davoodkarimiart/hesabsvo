@@ -1,0 +1,117 @@
+/* Soltan Hesab v0.6.4 | One coherent layer for report/preview UI.
+   Replaces the old v059-v061 override stack. Financial theme colors remain in app.css. */
+:root{--svo-text:#17243c;--svo-muted:#617087;--svo-line:#dce4ee;--svo-accent:#4126aa;--svo-tint:#f8f9fc}
+#reportFilterForm{display:flex!important;flex-direction:column!important;gap:14px!important;padding:18px!important;border:1px solid var(--svo-line)!important;border-radius:16px!important;background:#fff!important;box-shadow:0 6px 22px rgba(22,34,60,.035)!important;text-align:right!important;min-height:0!important;height:auto!important}
+#reportFilterForm .form-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px 14px!important;direction:rtl!important;width:100%!important;align-items:end!important;justify-content:stretch!important}
+#reportFilterForm .form-grid>label{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:6px!important;min-width:0!important;margin:0!important;text-align:right!important;color:var(--svo-muted)!important;font-size:13px!important;font-weight:650!important}
+#reportFilterForm .form-grid>label.hidden{display:none!important}
+#reportFilterForm input:not([type=radio]),#reportFilterForm select{width:100%!important;max-width:none!important;min-width:0!important;height:44px!important;min-height:44px!important;padding:9px 12px!important;border:1px solid #cfd9e8!important;border-radius:10px!important;background:#fff!important;color:var(--svo-text)!important;font-size:14px!important;box-shadow:none!important}
+#reportFilterForm .date-mode-field{grid-column:1 / span 2!important;grid-row:auto!important;display:flex!important;flex-direction:column!important;justify-content:end!important;gap:6px!important;margin:0!important;padding:0!important;border:0!important;min-height:0!important;text-align:right!important}
+#reportFilterForm .date-mode-field>span{font-size:13px!important;font-weight:700!important;color:var(--svo-muted)!important}
+#reportFilterForm .svo-date-switch{display:flex!important;gap:7px!important;flex-wrap:wrap!important;align-items:center!important;padding:0!important;margin:0!important}
+#reportFilterForm .svo-date-switch label{display:inline-flex!important;flex-direction:row-reverse!important;align-items:center!important;justify-content:center!important;gap:7px!important;min-height:44px!important;margin:0!important;padding:8px 13px!important;border:1px solid #dce2ee!important;border-radius:10px!important;background:#f9fafc!important;color:var(--svo-text)!important;font-size:13px!important;line-height:1.4!important;cursor:pointer!important;white-space:nowrap!important}
+#reportFilterForm .svo-date-switch label:has(input:checked){background:#f3efff!important;color:#4220a7!important;border-color:#ad9fea!important}
+#reportFilterForm .svo-date-switch input[type=radio]{appearance:radio!important;-webkit-appearance:radio!important;display:inline-block!important;flex:0 0 16px!important;width:16px!important;min-width:16px!important;max-width:16px!important;height:16px!important;min-height:16px!important;margin:0!important;padding:0!important;border:0!important;outline-offset:3px!important;accent-color:var(--svo-accent)!important;transform:none!important;box-shadow:none!important}
+#reportFilterForm .svo-single-date{grid-column:3!important}
+#reportFilterForm .svo-range-date{grid-column:auto!important}
+#reportFilterForm .svo-single-date.hidden,#reportFilterForm .svo-range-date.hidden{display:none!important}
+/* v0.6.4: Only the selected date mode occupies layout space, independent of inline legacy display toggles. */
+#reportFilterForm .date-mode-field{grid-column:1!important}
+#reportFilterForm .svo-single-date{grid-column:2 / span 2!important}
+@media(min-width:701px){
+ #reportFilterForm .svo-range-date:has(input[name="from"]){grid-column:2!important}
+ #reportFilterForm .svo-range-date:has(input[name="to"]){grid-column:3!important}
+ #reportFilterForm .form-grid:has(.report-panel-filter.hidden){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ #reportFilterForm .form-grid:has(.report-panel-filter.hidden)>label:has(#reportTypeSelect){grid-column:1!important}
+ #reportFilterForm .form-grid:has(.report-panel-filter.hidden)>.report-company-filter{grid-column:2 / span 2!important}
+ #reportFilterForm .form-grid:has(.report-panel-filter.hidden) .svo-single-date{grid-column:2 / span 2!important}
+ #reportFilterForm .form-grid:has(.report-panel-filter.hidden) .date-mode-field{grid-column:1!important}
+ #reportFilterForm .form-grid:has(.report-panel-filter.hidden) .svo-range-date:has(input[name="from"]){grid-column:2!important}
+ #reportFilterForm .form-grid:has(.report-panel-filter.hidden) .svo-range-date:has(input[name="to"]){grid-column:3!important}
+}
+#reportFilterForm .svo-single-date[hidden],#reportFilterForm .svo-range-date[hidden],
+#reportFilterForm .svo-single-date.hidden,#reportFilterForm .svo-range-date.hidden{display:none!important}
+#reportFilterForm:has(input[name="date_mode"][value="range"]:checked) .svo-single-date{display:none!important}
+#reportFilterForm:has(input[name="date_mode"][value="single"]:checked) .svo-range-date{display:none!important}
+#reportFilterForm .date-with-picker{display:flex!important;direction:rtl!important;flex-direction:row!important;align-items:stretch!important;gap:7px!important;width:100%!important;max-width:none!important}
+#reportFilterForm .date-with-picker>input{flex:1!important;width:0!important;min-width:0!important}
+#reportFilterForm .date-with-picker>.calendar-btn{flex:0 0 44px!important;width:44px!important;min-width:44px!important;min-height:44px!important;height:44px!important;padding:0!important;border-radius:10px!important;border:1px solid var(--svo-line)!important}
+#reportFilterForm>button.primary{align-self:flex-start!important;min-height:44px!important;min-width:155px!important;padding:10px 20px!important;margin:0!important;border-radius:10px!important;font-size:13px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}
+#reportFilterForm :is(input,select,button):focus-visible,.report-export-actions :is(button,a):focus-visible,.report-type-cumulative input:focus-visible{outline:3px solid rgba(79,54,178,.25)!important;outline-offset:2px!important}
+.report-export-actions{display:flex!important;direction:rtl!important;align-items:center!important;justify-content:flex-start!important;flex-wrap:wrap!important;gap:8px!important;margin:10px 0!important}
+.report-export-actions>*{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:40px!important;min-width:94px!important;padding:9px 15px!important;border-radius:10px!important;white-space:nowrap!important;font-size:13px!important}
+#cumulativeSelectForm+.final-actions{display:flex!important;direction:rtl!important;align-items:center!important;justify-content:flex-start!important;flex-wrap:wrap!important;gap:8px!important;margin:12px 0!important;text-align:right!important}
+#cumulativeSelectForm+.final-actions :is(button,a){min-height:42px!important;padding:9px 14px!important;white-space:normal!important;font-size:13px!important;line-height:1.4!important;border-radius:10px!important}
+#cumulativeSelectForm+.final-actions .tiny{flex-basis:100%!important;margin:0!important;text-align:right!important;color:var(--svo-muted)!important;font-size:12px!important}
+.svo-selection-count{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:6px 12px;border-radius:9px;background:#f1edff;color:#4327a3;font-size:12px;white-space:nowrap}
+.report-type-cumulative{overflow-x:auto!important;border:1px solid var(--svo-line)!important;border-radius:12px!important;background:white!important;scrollbar-gutter:stable}
+.report-type-cumulative .accounting-table{width:100%!important;min-width:570px!important;border-collapse:collapse!important;table-layout:fixed!important}
+.report-type-cumulative th,.report-type-cumulative td{padding:10px 7px!important;vertical-align:middle!important;text-align:center!important;line-height:1.5!important;font-variant-numeric:tabular-nums!important;overflow-wrap:anywhere}
+.report-type-cumulative thead th{font-size:12px!important;font-weight:750!important}
+.report-type-cumulative th:first-child,.report-type-cumulative td:first-child{width:48px!important;min-width:48px!important;max-width:48px!important}
+.report-type-cumulative input[type=checkbox]{appearance:checkbox!important;-webkit-appearance:checkbox!important;display:inline-block!important;box-sizing:border-box!important;vertical-align:middle!important;width:18px!important;min-width:18px!important;max-width:18px!important;height:18px!important;min-height:18px!important;margin:0!important;padding:0!important;transform:none!important;border:0!important;border-radius:4px!important;accent-color:var(--svo-accent)!important;cursor:pointer!important;box-shadow:none!important}
+/* Selected rows use a restrained wash, not a purple rectangle. Keep financial cell colors intact. */
+.report-type-cumulative tbody tr:has(input:checked){outline:none!important;box-shadow:none!important}
+.report-type-cumulative tbody tr:has(input:checked)>td:not(.recv-cell):not(.pay-cell):not(.site-win):not(.site-loss){background:#eff7f9!important}
+.report-type-cumulative input[type=checkbox]{accent-color:#238093!important}
+.report-type-cumulative input[type=checkbox]:focus-visible{outline:2px solid rgba(35,128,147,.45)!important;outline-offset:3px!important}
+/* USD audit: no competing text parsers. State is set directly by checkUsd(). */
+.preview-card #checkUsdBalanceBtn{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:44px!important;min-width:178px!important;padding:10px 16px!important;border-radius:10px!important;font-size:13px!important;font-weight:800!important;white-space:normal!important;line-height:1.55!important;box-shadow:none!important;transition:background-color .15s,border-color .15s!important}
+#checkUsdBalanceBtn.svo-usd-ok,#checkUsdBalanceBtn[data-audit-state="ok"]{background:#d8f5e5!important;color:#11633e!important;border:1px solid #69bc91!important}
+#checkUsdBalanceBtn.svo-usd-error,#checkUsdBalanceBtn[data-audit-state="error"]{background:#ffe2e2!important;color:#ab222e!important;border:1px solid #e69199!important}
+#checkUsdBalanceBtn.svo-usd-unknown,#checkUsdBalanceBtn[data-audit-state="unknown"]{background:#fff3d9!important;color:#885b0c!important;border:1px solid #e6c276!important}
+#usdBalanceResult.svo-usd-feedback{margin:8px 0 0!important;padding:0!important;background:transparent!important;border:0!important;color:#876014!important;font-size:12px!important;line-height:1.7!important;box-shadow:none!important;white-space:normal!important}
+#usdBalanceResult.svo-usd-feedback.svo-usd-feedback-error{color:#ad2630!important}
+#usdBalanceResult[hidden]{display:none!important}
+.preview-card .final-actions{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;flex-wrap:wrap!important}
+.preview-card .final-actions button{min-height:44px!important;border-radius:10px!important;padding:9px 15px!important;font-size:13px!important}
+.preview-card .card:has(#checkUsdBalanceBtn){padding:12px!important;margin:10px 0!important;box-shadow:none!important;border-radius:12px!important;min-height:0!important}
+/* Cumulative summary uses the existing native dialog visual contract. */
+.svo-native-summary{width:min(940px,calc(100vw - 24px))!important;max-height:94dvh!important;margin:auto!important;padding:0!important;overflow:auto!important;border:0!important;border-radius:16px!important;overscroll-behavior:contain!important;box-shadow:0 22px 70px rgba(12,21,40,.24)!important}
+.svo-native-summary::backdrop{background:rgba(10,17,35,.6);backdrop-filter:blur(3px)}
+.svo-native-summary .report-summary-card{width:100%!important;max-width:none!important;padding:16px!important;border:0!important;background:#fff!important;box-shadow:none!important}
+.svo-native-summary .dialog-head{position:sticky;top:0;z-index:3;background:#fff;padding:4px 0 12px;margin:0 0 10px}
+.svo-native-summary .summary-columns{gap:14px!important}
+.svo-native-summary .summary-amount{font-variant-numeric:tabular-nums}
+.svo-native-summary .report-summary-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;margin-top:14px!important}
+.svo-native-summary .report-summary-actions>*{min-height:44px!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}
+@media(min-width:701px){
+ /* Three *explicit* columns: date-mode, From, To. Never let To fall into a tiny implicit track. */
+ #reportFilterForm .form-grid:has(.report-panel-filter.hidden){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ #reportFilterForm .form-grid:has(.report-panel-filter.hidden) .date-mode-field{grid-column:1!important}
+ #reportFilterForm .form-grid:has(.report-panel-filter.hidden) .svo-single-date{grid-column:2 / span 2!important}
+}
+@media(max-width:700px){
+ #reportFilterForm{padding:12px!important;gap:12px!important;border-radius:14px!important}
+ #reportFilterForm .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important}
+ #reportFilterForm .date-mode-field{grid-column:1/-1!important;grid-row:auto!important}
+ #reportFilterForm .svo-date-switch{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ #reportFilterForm .svo-date-switch label{width:100%!important;min-height:44px!important;padding:8px 7px!important;font-size:12px!important}
+ #reportFilterForm .svo-single-date,#reportFilterForm .svo-range-date{grid-column:1/-1!important}
+ #reportFilterForm>button.primary{width:100%!important;min-width:0!important;align-self:stretch!important}
+ .report-export-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important}
+ .report-export-actions>*{width:100%!important;min-width:0!important;white-space:normal!important;padding:8px 5px!important;font-size:12px!important;min-height:44px!important}
+ #cumulativeSelectForm+.final-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ #cumulativeSelectForm+.final-actions :is(button,a){width:100%!important;min-width:0!important;font-size:12px!important;min-height:44px!important;padding:8px 6px!important}
+ #cumulativeSelectForm+.final-actions :is(.tiny,.svo-selection-count){grid-column:1/-1!important;justify-self:stretch!important;text-align:center!important}
+ .report-type-cumulative .accounting-table{min-width:570px!important}
+ .report-type-cumulative th,.report-type-cumulative td{font-size:11px!important;padding:9px 5px!important}
+ .report-type-cumulative th:first-child,.report-type-cumulative td:first-child{width:42px!important;min-width:42px!important}
+ .preview-card #checkUsdBalanceBtn{width:100%!important;min-width:0!important}
+ .preview-card .final-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ .preview-card .final-actions>*{min-width:0!important;max-width:none!important;width:100%!important;margin:0!important}
+ .preview-card .final-actions button{width:100%!important;white-space:normal!important;padding:9px 7px!important;font-size:12px!important}
+ .svo-native-summary{width:calc(100vw - 12px)!important;max-height:93dvh!important;border-radius:14px!important}
+ .svo-native-summary .report-summary-card{padding:10px!important}
+ .svo-native-summary .summary-columns{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:7px!important}
+ .svo-native-summary .summary-panel th,.svo-native-summary .summary-panel td{padding:5px 2px!important;font-size:clamp(9px,2.55vw,13px)!important;overflow-wrap:anywhere!important}
+ .svo-native-summary .summary-amount{font-size:clamp(9px,2.8vw,14px)!important}
+ .svo-native-summary .summary-panel h3{font-size:14px!important}
+ .svo-native-summary .summary-totals{gap:5px!important}
+ .svo-native-summary .summary-totals>div{padding:7px 2px!important}
+ .svo-native-summary .summary-totals span{font-size:10px!important}
+ .svo-native-summary .summary-totals b{font-size:clamp(10px,2.8vw,15px)!important}
+ .svo-native-summary .report-summary-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+ .svo-native-summary .report-summary-actions>*{font-size:12px!important}
+}
+@media(prefers-reduced-motion:reduce){.svo-native-summary *,#checkUsdBalanceBtn{transition:none!important}}

@@ -1,14 +1,31 @@
-# Changelog
+# تغییرات نسخه‌ها
 
-## v0.5.6
-- Restored the original `ریز پرداخت` report as its own mode with Company/Panel/date filters.
-- Added a separate `ریز پرداخت مشتری` mode with customer selection; customer selection intentionally overrides Company/Panel and returns that customer's detail across all companies/panels.
-- Dashboard chart now uses cumulative site result so direction toward Site Win / Site Loss is visually meaningful.
-- Added explicit overall trend status and per-company final status in the legend.
-- Dashboard point tooltip is clamped inside the chart card on desktop/mobile.
-- Customer directory still defaults to Persian alphabetical A→Y; live search binding hardened across input/keyup/search/change.
-- PWA cache bumped to v056.
-- No database migration.
+## v0.6.5
+- اصلاح عرض فیلدهای بازهٔ تاریخ در گزارش تجمعی روی دسکتاپ.
 
-## v0.5.5
-- Dashboard analytics + customer/report semantics correction.
+## v0.6.4
+- انتخاب بین تاریخ تکی و بازه؛ فقط ورودی‌های حالت فعال ارسال می‌شوند.
+- نتیجهٔ کنترل دلار مبلغ را نشان می‌دهد: سبز برای تطبیق، قرمز برای اختلاف و کهربایی وقتی Grand Total منبع موجود نیست.
+- نمایش انتخاب ردیف‌های گزارش تجمعی ساده‌تر شد.
+
+## v0.6.3
+- لایه‌های متناقض UI تجمیع شدند؛ کنترل دلار، فیلترها، ورودی‌های انتخاب و مسیر خلاصهٔ تجمعی یکپارچه شدند.
+- نسخهٔ cache منابع UI به‌روزرسانی شد.
+
+## v0.6.1
+- اصلاح تأیید حذف پیش‌نمایش، چیدمان موبایل و وضعیت کنترل دلار.
+
+## v0.6.0
+- انتخاب گزارش‌ها و UI خلاصهٔ تجمعی گسترش یافت.
+
+## v0.5.9
+- پنجرهٔ خلاصهٔ تجمعی به‌صورت native و بدون iframe اضافه شد.
+
+## v0.5.8
+- گزارش تجمعی بدون تهاتر متقاطع؛ فیلتر تاریخ اختیاری؛ بازسازی Grand Total از آرشیو منبع و اصلاح خروجی workbook.
+
+## v0.5.7
+- گزارش تجمعی، انتخاب تاریخ/شرکت، پیش‌نمایش تاریخ و تأیید بازنویسی پیش‌نویس.
+- خروجی Excel ترکیبی از گزارش‌های منبع، مشروط به وجود فایل اصلی در `storage/report_sources`.
+
+این نسخه‌ها schema پایگاه داده را تغییر نمی‌دهند. پچ v0.6.2 که rollback شده بود عمداً وارد نشده است.

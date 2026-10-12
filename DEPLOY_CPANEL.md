@@ -1,16 +1,11 @@
-# cPanel deployment — v0.5.6
+# استقرار cPanel — v0.6.5
 
-Application root: `~/public_html/soltan.toseno.ir`
+این راهنما پس از ادغام PR و ساخت یک release bundle پاک قابل استفاده است. فایل handoff یا ZIPهای patch را روی هاست extract نکنید.
 
-```bash
-cd ~/public_html/soltan.toseno.ir || exit 1
-BACKUP="$HOME/soltanhesab-pre-v0.5.6-$(date +%Y%m%d-%H%M%S).tar.gz"
-tar --exclude='./storage/backups/*' --exclude='./storage/report_sources/*' --exclude='./soltanhesab-release-v0.5.6.zip' -czf "$BACKUP" .
-unzip -oq soltanhesab-release-v0.5.6.zip -d .
-php -l index.php
-php -l app/Services/ReportingService.php
-php verify_release.php
-php tests/phase3_formula_smoke.php
-rm -f soltanhesab-release-v0.5.6.zip
-echo "v0.5.6 deployed. Backup: $BACKUP"
-```
+1. در cPanel از پوشهٔ برنامه و پایگاه داده پشتیبان بگیرید.
+2. بستهٔ release ساخته‌شده از `main` تأییدشده را بارگذاری کنید؛ `config/config.php` و `storage/` را حفظ کنید.
+3. روی نسخهٔ آزمایشی ابتدا `php -l`، سپس `php verify_release.php` و `php tests/phase3_formula_smoke.php` را اجرا کنید.
+4. مسیرهای گزارش تجمعی، انتخاب تاریخ و خروجی‌ها را با دادهٔ تستی بررسی کنید.
+5. پس از تأیید، cache برنامهٔ PWA را با بستن کامل و بازکردن مجدد تازه کنید.
+
+این نسخه به migration پایگاه داده نیاز ندارد.

@@ -10,7 +10,13 @@ function x(mixed $v): string {return htmlspecialchars((string)$v,ENT_XML1|ENT_QU
 function cell(mixed $v,string $style='Cell',int $mergeAcross=0): string {$num=is_numeric($v)&&$v!=='';$merge=$mergeAcross>0?' ss:MergeAcross="'.$mergeAcross.'"':'';return '<Cell ss:StyleID="'.$style.'"'.$merge.'><Data ss:Type="'.($num?'Number':'String').'">'.x($v).'</Data></Cell>';}
 $settings=SettingsService::all();
 $title='گزارش';$headers=[];$rows=[];$tot=null;
-if($type==='daily_report'){
+if($type==='cumulative_selected'){
+    $aggregate=require __DIR__.'/cumulative_data.php';
+    $title='گزارش تجمعی '.$aggregate['company_name'];
+    $headers=['نام مشتری','دریافتی','پرداختی','مانده سایت'];
+    foreach($aggregate['rows'] as $z)$rows[]=[$z['display_name_snapshot'],$z['received'],$z['paid'],(float)$z['received']-(float)$z['paid']];
+    $tot=['received'=>(float)$aggregate['total_received'],'paid'=>(float)$aggregate['total_paid'],'commission'=>0.0,'net'=>(float)$aggregate['total_received']-(float)$aggregate['total_paid']];
+}elseif($type==='daily_report'){
     $id=(int)($_GET['id']??0);$r=AccountingService::reportWithRows($id);if(!$r)exit('Report not found');$title='گزارش '.$r['company_name'].' '.AccountingService::displayBusinessDate((string)$r['report_date']);$headers=['نام','Username','کمیسیون','دلار دریافتی','دریافتی','دلار پرداختی','پرداختی'];foreach($r['rows'] as $z)$rows[]=[ $z['display_name_snapshot']?:($z['original_name_snapshot']?:$z['source_username']),$z['source_username'],$z['commission'],((float)$z['member_win']<0?abs((float)$z['member_win']):''),$z['received'],((float)$z['member_win']>0?(float)$z['member_win']:''),$z['paid']];$tot=['received'=>(float)$r['total_received'],'paid'=>(float)$r['total_paid'],'commission'=>(float)$r['total_commission'],'net'=>(float)$r['site_net']];
 }elseif($type==='customer'){
     $id=(int)($_GET['id']??0);$c=CustomerService::get($id);if(!$c)exit('Customer not found');$title='حساب '.$c['display_name'];$headers=['تاریخ','شرکت','پنل','نام','Username','Member Win','کمیسیون','دریافتی','پرداختی'];

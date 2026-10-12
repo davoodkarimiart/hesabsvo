@@ -16,7 +16,20 @@ jobs:
           coverage: none
       - name: Lint PHP files
         run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/app.js
+          node --check assets/svo-patch059.js
       - name: Run accounting formula smoke test
         run: php tests/phase3_formula_smoke.php
-      - name: Verify private files are ignored
-        run: git check-ignore config/config.php .user.ini storage/installed.lock storage/logs/app.log storage/report_sources/customer.xlsx
+      - name: Verify every private fixture is ignored
+        run: |
+          set -eu
+          for path in config/config.php .env .env.production .user.ini user.ini storage/installed.lock storage/logs/app.log storage/backups/private.sql.gz storage/report_sources/customer.xlsx customer.csv private.zip; do
+            git check-ignore --no-index -q "$path" || { echo "Expected ignored path: $path" >&2; exit 1; }
+          done
+      - name: Verify release version and asset cache refs
+        run: |
+          test "$(tr -d '\r\n' < VERSION)" = '0.6.5'
+          grep -Fq 'assets/svo-patch059.css?v=065' index.php
+          grep -Fq "soltanhesab-shell-v065" sw.js
