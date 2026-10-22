@@ -1,0 +1,137 @@
+/* v0.6.8 consolidated details and image controls; keep financial theme unchanged */
+#reportDataTable th.svo-row-no,#reportDataTable td.svo-row-no{width:40px!important;min-width:35px!important;max-width:42px!important;padding:5px 3px!important;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
+.report-type-customer_detail .accounting-table{width:100%;table-layout:auto!important;border-collapse:collapse}
+.report-type-customer_detail #reportDataTable{width:100%}
+.report-type-customer_detail #reportDataTable th,.report-type-customer_detail #reportDataTable td{padding:7px 4px!important;line-height:1.5;white-space:nowrap}
+.report-type-customer_detail #reportDataTable td.svo-name{white-space:normal;min-width:115px;font-weight:750}
+.report-type-customer_detail #reportDataTable td[dir="ltr"]{min-width:115px;font-variant-numeric:tabular-nums}
+#reportDataTable .svo-mw-positive{color:#1557ac!important;font-weight:800}
+#reportDataTable .svo-mw-negative{color:#b91c1c!important;font-weight:800}
+.svo-image-dialog{width:min(550px,calc(100vw - 24px));max-width:550px;border:0;padding:0;border-radius:17px;max-height:calc(100dvh - 34px);background:#fff;box-shadow:0 18px 65px #1a294533}
+.svo-image-dialog::backdrop{background:rgba(10,18,30,.58)}
+.svo-image-dialog-card{padding:15px;direction:rtl}
+.svo-image-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:2px 3px 12px;border-bottom:1px solid #dbe2ec;font-size:16px}
+.svo-image-dialog-head button{min-height:40px}
+.svo-image-dialog #reportShareBox{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0 0!important;padding:0!important;position:static!important;max-height:none!important;overflow:visible!important}
+.svo-image-dialog #reportShareBox.hidden{display:none!important}
+.svo-image-dialog #reportShareBox>*{width:100%;min-width:0;min-height:44px;margin:0;display:flex;align-items:center;justify-content:center;text-align:center}
+@media(max-width:700px){.report-type-customer_detail .table-wrap{overflow-x:auto;overscroll-behavior-x:contain}.report-type-customer_detail #reportDataTable th,.report-type-customer_detail #reportDataTable td{font-size:11px!important;padding:5px 3px!important}.report-type-customer_detail #reportDataTable th.svo-row-no,.report-type-customer_detail #reportDataTable td.svo-row-no{min-width:33px!important;width:34px!important}.svo-image-dialog{width:calc(100vw - 18px);max-width:none}.svo-image-dialog-card{padding:12px}}
+
+
+/* v0.6.10: Same report table everywhere. Mobile scales the *table*, not the information architecture.
+   Retain all columns, table headers, financial colors, row order, and selection controls. */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+button,a,input,select,textarea,label{touch-action:manipulation}
+.table-wrap.report-fit{
+  box-sizing:border-box;width:100%!important;max-width:100%!important;min-width:0!important;
+  overflow-x:hidden!important;overflow-y:visible!important;margin-inline:0!important;
+}
+.table-wrap.report-fit #reportDataTable{
+  display:table!important;box-sizing:border-box;border-collapse:collapse;
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  table-layout:fixed!important;margin:0!important;
+}
+.table-wrap.report-fit #reportDataTable thead{display:table-header-group!important}
+.table-wrap.report-fit #reportDataTable tbody{display:table-row-group!important}
+.table-wrap.report-fit #reportDataTable tr{display:table-row!important}
+.table-wrap.report-fit #reportDataTable th,.table-wrap.report-fit #reportDataTable td{
+  box-sizing:border-box;display:table-cell!important;min-width:0!important;max-width:none!important;
+  white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;
+  width:auto!important;padding:5px 2px!important;text-align:center!important;
+  vertical-align:middle!important;line-height:1.4!important;
+  font-size:clamp(10px,1vw,13px)!important;font-variant-numeric:tabular-nums;
+}
+.table-wrap.report-fit #reportDataTable .svo-name,
+.table-wrap.report-fit #reportDataTable .name-cell,
+.table-wrap.report-fit #reportDataTable td[dir="ltr"],
+.table-wrap.report-fit #reportDataTable .username-cell{
+  min-width:0!important;max-width:none!important;white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+.table-wrap.report-fit #reportDataTable td[dir="ltr"]{direction:ltr!important}
+.table-wrap.report-fit #reportDataTable th.svo-row-no,
+.table-wrap.report-fit #reportDataTable td.svo-row-no{
+  width:4%!important;min-width:0!important;max-width:none!important;padding-inline:1px!important;
+}
+/* Detail and customer-detail keep their exact original ten columns. */
+:is(.report-type-detail,.report-type-customer_detail) #reportDataTable th:nth-child(1){width:4%!important}
+:is(.report-type-detail,.report-type-customer_detail) #reportDataTable th:nth-child(2){width:12%!important}
+:is(.report-type-detail,.report-type-customer_detail) #reportDataTable th:nth-child(3){width:8%!important}
+:is(.report-type-detail,.report-type-customer_detail) #reportDataTable th:nth-child(4){width:7%!important}
+:is(.report-type-detail,.report-type-customer_detail) #reportDataTable th:nth-child(5){width:16%!important}
+:is(.report-type-detail,.report-type-customer_detail) #reportDataTable th:nth-child(6){width:16%!important}
+:is(.report-type-detail,.report-type-customer_detail) #reportDataTable th:nth-child(7){width:10%!important}
+:is(.report-type-detail,.report-type-customer_detail) #reportDataTable th:nth-child(8){width:9%!important}
+:is(.report-type-detail,.report-type-customer_detail) #reportDataTable th:nth-child(9){width:9%!important}
+:is(.report-type-detail,.report-type-customer_detail) #reportDataTable th:nth-child(10){width:9%!important}
+/* v0.6.11 cumulative: first column is selection, last column is numeric site result. */
+/* Detailed sizing rules follow the responsive table definitions below. */
+.report-type-cumulative #reportDataTable input[type="checkbox"]{
+  box-sizing:border-box;width:clamp(12px,1.5vw,17px)!important;
+  height:clamp(12px,1.5vw,17px)!important;min-width:0!important;
+  max-width:100%!important;padding:0!important;margin:0!important;vertical-align:middle;
+}
+/* On a narrow screen scale cell typography and gaps, NOT row structure or column count. */
+@media(max-width:760px){
+  .table-wrap.report-fit #reportDataTable th,
+  .table-wrap.report-fit #reportDataTable td{
+    padding:3px 1px!important;line-height:1.25!important;
+    font-size:clamp(6.6px,1.9vw,8.5px)!important;
+    letter-spacing:-.08px!important;
+  }
+  .table-wrap.report-fit #reportDataTable td[dir="ltr"],
+  .table-wrap.report-fit #reportDataTable .username-cell{
+    font-size:clamp(6.6px,1.85vw,8.4px)!important;
+  }
+  .report-type-cumulative #reportDataTable th,.report-type-cumulative #reportDataTable td,
+  .report-type-daily #reportDataTable th,.report-type-daily #reportDataTable td,
+  .report-type-monthly #reportDataTable th,.report-type-monthly #reportDataTable td{
+    font-size:clamp(8px,2.3vw,10.5px)!important;
+  }
+  .table-wrap.report-fit #reportDataTable th.svo-row-no,
+  .table-wrap.report-fit #reportDataTable td.svo-row-no{padding-inline:0!important}
+  /* iOS: avoid focus-zoom in filters, while preserving pinch-to-zoom accessibility. */
+  @supports(-webkit-touch-callout:none){
+    .report-filter input,.report-filter select,.report-filter textarea{font-size:16px!important}
+  }
+}
+
+/* v0.6.11: Readable signed site net, tiny selection column, same table on mobile. */
+.table-wrap.report-fit.report-type-cumulative #reportDataTable th:first-child,
+.table-wrap.report-fit.report-type-cumulative #reportDataTable td:first-child{
+  box-sizing:border-box!important;width:36px!important;min-width:36px!important;max-width:36px!important;
+  padding-inline:1px!important;text-align:center!important;
+}
+.table-wrap.report-fit.report-type-cumulative #reportDataTable th:last-child,
+.table-wrap.report-fit.report-type-cumulative #reportDataTable td:last-child{
+  box-sizing:border-box!important;width:20%!important;min-width:0!important;max-width:none!important;
+  padding-inline:3px!important;text-align:center!important;
+}
+/* Numeric values are short, signed and never need to break inside a digit group. */
+.table-wrap.report-fit.report-type-cumulative #reportDataTable tbody td:last-child{
+  white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important;
+  font-variant-numeric:tabular-nums!important;direction:ltr!important;unicode-bidi:isolate!important;
+  font-weight:800!important;
+}
+.table-wrap.report-fit.report-type-cumulative #reportDataTable td.site-win:last-child{color:#1557ac!important}
+.table-wrap.report-fit.report-type-cumulative #reportDataTable td.site-loss:last-child{color:#b91c1c!important}
+.table-wrap.report-fit.report-type-cumulative #reportDataTable input[type=checkbox]{
+  width:16px!important;height:16px!important;min-width:16px!important;max-width:16px!important;
+  padding:0!important;margin:0 auto!important;
+}
+@media(max-width:760px){
+  .table-wrap.report-fit.report-type-cumulative #reportDataTable th:first-child,
+  .table-wrap.report-fit.report-type-cumulative #reportDataTable td:first-child{
+    width:25px!important;min-width:25px!important;max-width:25px!important;padding-inline:0!important;
+  }
+  .table-wrap.report-fit.report-type-cumulative #reportDataTable th:last-child,
+  .table-wrap.report-fit.report-type-cumulative #reportDataTable td:last-child{
+    width:23%!important;padding-inline:1px!important;
+  }
+  .table-wrap.report-fit.report-type-cumulative #reportDataTable tbody td:last-child{
+    font-size:clamp(7px,2.3vw,9px)!important;letter-spacing:-.12px!important;
+  }
+  .table-wrap.report-fit.report-type-cumulative #reportDataTable input[type=checkbox]{
+    width:14px!important;height:14px!important;min-width:14px!important;max-width:14px!important;
+  }
+}

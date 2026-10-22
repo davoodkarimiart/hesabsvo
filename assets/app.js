@@ -48,7 +48,7 @@
     const form=e.target.closest?.('form[data-confirm]');
     if(!form || form.dataset.confirmed==='1') return;
     e.preventDefault();
-    const ok=await appConfirm(form.dataset.confirm,{danger:form.querySelector('.danger')!==null,confirmText:form.querySelector('.danger')?'حذف':'تأیید'});
+    const ok=await appConfirm(form.dataset.confirm,{danger:form.querySelector('.danger')!==null,confirmText:form.querySelector('input[name="action"]')?.value==='clear_report_draft'?'حذف پیش‌نمایش':(form.querySelector('.danger')?'حذف':'تأیید')});
     if(ok){form.dataset.confirmed='1';form.requestSubmit();}
   },true);
 })();

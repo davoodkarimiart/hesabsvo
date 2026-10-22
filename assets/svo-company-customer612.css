@@ -1,0 +1,44 @@
+/* v0.6.16 - company editor polish + single-image export UI */
+.customer-live-status{min-height:21px;margin:6px 2px;color:var(--muted);font-size:11px;text-align:right}
+.company-box{position:relative}
+.company-head{align-items:flex-start!important}
+.svo-company-edit-actions{display:flex;justify-content:flex-start;margin:8px 0 10px}
+.company-box .svo-company-edit-button{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:36px!important;padding:0 12px!important;font-size:12px!important;font-weight:900!important;background:#eef2ff!important;border:1px solid #cfd8ef!important;border-radius:10px!important;color:#233d87!important;box-shadow:none!important;line-height:1.2}
+.company-box .svo-company-edit-button:hover{background:#e1eaff!important;border-color:#9db0eb!important}
+.company-box .svo-company-edit-button::before{content:'✎';margin-inline-start:0;margin-inline-end:6px;font-size:12px}
+.svo-company-edit-dialog.app-dialog{width:min(540px,calc(100vw - 18px))!important;max-height:90dvh;overflow:visible}
+.svo-company-edit-dialog .dialog-card,.company-dialog-card{width:min(540px,calc(100vw - 18px));max-height:88dvh;overflow-y:auto;padding:14px 14px 16px}
+.svo-company-edit-dialog .company-form,.company-dialog-card .company-form{margin-top:8px;align-items:end}
+.svo-company-kind-inline{grid-column:1/-1;display:grid;gap:6px;min-width:0}
+.svo-inline-label{display:block;font-size:12px;font-weight:800;color:#475467}
+.svo-inline-note{display:block;font-size:10px;color:var(--muted);line-height:1.5}
+.svo-kind-segment{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:4px;border:1px solid #dce3ef;border-radius:12px;background:#f7f9fd}
+.svo-kind-chip{position:relative;display:block;cursor:pointer}
+.svo-kind-chip input[type=radio]{position:absolute;inset:0;opacity:0;margin:0;width:100%;height:100%;cursor:pointer}
+.svo-kind-chip span{display:flex;align-items:center;justify-content:center;min-height:38px;padding:8px 10px;border-radius:9px;border:1px solid transparent;background:transparent;font-size:12px;font-weight:800;color:#344054;transition:.16s ease}
+.svo-kind-chip input[type=radio]:checked+span{background:#fff;border-color:#754ddc;color:#4b19cf;box-shadow:0 2px 10px rgba(117,77,220,.12)}
+.svo-kind-chip input[type=radio]:focus-visible+span{outline:2px solid #977af2;outline-offset:2px}
+.company-transfer-field small,.company-box .company-form small{display:block;font-size:10px;color:var(--muted);font-weight:400;margin-top:5px}
+.svo-company-editor .company-save-btn,.company-dialog-card .company-save-btn{grid-column:1/-1;min-height:44px!important;font-size:13px!important}
+.company-role-chip,.company-percent-chip{white-space:normal}
+.mother-export-card{max-width:min(760px,calc(100vw - 18px))!important;max-height:92dvh;overflow-y:auto}
+.mother-export-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mother-export-actions button{width:100%;font-size:12px!important}
+.mother-export-actions button:disabled{opacity:.5;cursor:wait}
+.mother-export-note{margin:10px 0;line-height:1.8}
+.svo-mother-pages{display:grid;grid-template-columns:1fr;gap:12px}
+.svo-mother-page{min-width:0;display:grid;align-content:start;gap:8px;padding:10px;background:#f8faff;border:1px solid #e3e8f3;border-radius:13px}
+.svo-mother-page img{display:block;width:100%;height:auto;max-height:66dvh;object-fit:contain;object-position:top;border-radius:8px;background:#fff}
+.svo-mother-page .btn{min-height:37px;padding:7px;font-size:12px!important}
+.svo-report-image-preview{display:block;width:100%;height:auto;max-height:58dvh;object-fit:contain;object-position:top;margin-top:9px;background:white;border:1px solid #d9e2ef;border-radius:10px}
+.svo-report-image-preview[hidden]{display:none!important}
+#reportImageStatus{line-height:1.7;margin:7px 0}
+@media(max-width:700px){
+  .company-box .svo-company-edit-button{width:auto;justify-content:center}
+  .svo-company-edit-actions{margin-top:6px}
+  .svo-company-edit-dialog.app-dialog{width:100%!important;max-height:95dvh}
+  .svo-company-edit-dialog .dialog-card,.company-dialog-card{width:calc(100vw - 10px)!important;max-height:94dvh;padding:12px 10px calc(14px + env(safe-area-inset-bottom))}
+  .mother-export-actions{grid-template-columns:1fr}
+  .svo-mother-page{padding:6px}
+  .svo-mother-page img{max-height:56dvh}
+}

@@ -41,6 +41,7 @@ require_once __DIR__ . '/Services/AccountingService.php';
 require_once __DIR__ . '/Services/SettingsService.php';
 require_once __DIR__ . '/Services/CustomerService.php';
 require_once __DIR__ . '/Services/ReportingService.php';
+require_once __DIR__ . '/Services/TransferService.php';
 
 set_exception_handler(function(Throwable $e): void {
     if (class_exists('Logger')) Logger::error($e->getMessage(), ['type'=>get_class($e),'file'=>basename($e->getFile()),'line'=>$e->getLine()]);

@@ -1,14 +1,9 @@
 # Changelog
 
-## v0.5.6
-- Restored the original `ریز پرداخت` report as its own mode with Company/Panel/date filters.
-- Added a separate `ریز پرداخت مشتری` mode with customer selection; customer selection intentionally overrides Company/Panel and returns that customer's detail across all companies/panels.
-- Dashboard chart now uses cumulative site result so direction toward Site Win / Site Loss is visually meaningful.
-- Added explicit overall trend status and per-company final status in the legend.
-- Dashboard point tooltip is clamped inside the chart card on desktop/mobile.
-- Customer directory still defaults to Persian alphabetical A→Y; live search binding hardened across input/keyup/search/change.
-- PWA cache bumped to v056.
-- No database migration.
-
-## v0.5.5
-- Dashboard analytics + customer/report semantics correction.
+## 0.6.25 (2026-10-22) — Clean-source GitHub handoff
+- Full reconstructed working tree from local v0.6.25 source with latest transfer UI, report exports and accounting code.
+- Sanitized server-only files: config, installation lock, logs, backups, prior patch installers and temporary snapshots.
+- Fixed clean-install metadata to record VERSION instead of 0.2.0.
+- Added conditional migration 014 for company_role and transfer_percent, which originally existed only in a historical CLI patch.
+- Added private-directory access safeguards, GitHub ignore rules and clean-deploy/GitHub guides.
+- No import of production accounting data. No changes to accounting formulas.

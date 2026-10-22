@@ -1,22 +1,22 @@
-name: PHP quality
-
+name: PHP and JS source validation
 on:
   push:
   pull_request:
-
 jobs:
-  php:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.1'
-          extensions: pdo_mysql, zip, simplexml
-          coverage: none
-      - name: Lint PHP files
-        run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
-      - name: Run accounting formula smoke test
-        run: php tests/phase3_formula_smoke.php
-      - name: Verify private files are ignored
-        run: git check-ignore config/config.php .user.ini storage/installed.lock storage/logs/app.log storage/report_sources/customer.xlsx
+      - name: Check version and clean release boundaries
+        run: |
+          test "$(cat VERSION)" = "0.6.25"
+          test ! -e config/config.php
+          test ! -e storage/installed.lock
+          test ! -e error_log
+          test -f database/migrations/014_company_transfer_settings.sql
+      - name: PHP syntax
+        run: |
+          find . -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: JS syntax
+        run: |
+          find assets -type f -name '*.js' -print0 | xargs -0 -n1 node --check

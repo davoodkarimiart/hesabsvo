@@ -46,13 +46,30 @@ final class AccountingService {
         $tmp=(string)($file['tmp_name']??'');
         $rows=$parsedRows ?: XlsxReader::rows($tmp,(string)($file['name']??''));
         $objects=XlsxReader::objects($rows,['Username','Member Win']);
+        // Source summary is stored separately, never treated as a customer row.
+        $sourceMemberWinTotal=null;
+        foreach($objects as $sourceRow){
+            $label=trim(self::field($sourceRow,['Username','User Name','UserName']));
+            if(preg_match('/^(grand\s*total|total)$/iu',$label)){
+                $sourceMemberWinTotal=self::decimal(self::field($sourceRow,['Member Win','MemberWin','Member win']),'Grand Total Member Win',false);
+                break;
+            }
+        }
+        // Preserve both Excel's underlying precision and the 2-decimal accounting rows.
+        // Comparing a raw Excel Grand Total against independently rounded rows
+        // would otherwise flag a valid file as 0.01-0.02 USD out of balance.
+        $sourceMemberWinRawRowsTotal=0.0;
+        $sourceMemberWinRoundedRowsTotal=0.0;
         $raw=[];$seen=[];
         foreach($objects as $o){
             $username=trim(self::field($o,['Username','User Name','UserName','Login','Member Username']));
             if($username==='' || preg_match('/^(grand\s*total|total)$/iu',$username)) continue;
             if(isset($seen[$username])) throw new RuntimeException('Username تکراری در Report_WL: '.$username);
             $seen[$username]=true;
-            $mw=self::decimal(self::field($o,['Member Win','MemberWin','Member win']),'Member Win برای '.$username,false);
+            $sourceMw=self::decimal(self::field($o,['Member Win','MemberWin','Member win']),'Member Win برای '.$username,false);
+            $mw=$sourceMw; // Full source precision (up to the 6 decimal places supported by the database).
+            $sourceMemberWinRawRowsTotal+=$sourceMw;
+            $sourceMemberWinRoundedRowsTotal+=round($sourceMw,2); // Diagnostics only; never used as an accounting input.
             $raw[]=['username'=>$username,'member_win'=>$mw,'source_payload'=>$o];
         }
         if(!$raw) throw new RuntimeException('Report_WL هیچ ردیف کاربری قابل استفاده‌ای ندارد.');
@@ -104,7 +121,11 @@ final class AccountingService {
             'company_id'=>$companyId,'company_name'=>$company['name'],'report_date'=>$reportDate,'report_date_input'=>$dateInput,
             'source_filename'=>self::safeName((string)($file['name']??'Report_WL')),'source_storage_path'=>$sourceStoragePath,'source_hash'=>$sourceHash,'duplicate_fingerprint'=>$fingerprint,
             'general_rate'=>$general,'special_rate'=>$special,'general_rate_input'=>$generalInput,'special_rate_input'=>$specialInput,'loss_percent'=>$pct,'allow_duplicate'=>false,
-            'panel_id'=>$inferredPanelId,'panel_name'=>$panelName,'unknown_usernames'=>$unknown,'rows'=>$draftRows,'totals'=>$totals,'editing_report_id'=>null,'created_at'=>time(),
+            'panel_id'=>$inferredPanelId,'panel_name'=>$panelName,'unknown_usernames'=>$unknown,'rows'=>$draftRows,'totals'=>$totals,
+            'source_member_win_total'=>$sourceMemberWinTotal,
+            'source_member_win_raw_rows_total'=>self::roundMoney($sourceMemberWinRawRowsTotal),
+            'source_member_win_rounded_rows_total'=>self::roundMoney($sourceMemberWinRoundedRowsTotal),
+            'editing_report_id'=>null,'created_at'=>time(),
         ];
         Logger::system('report.preview_built',['company_id'=>$companyId,'rows'=>count($draftRows),'unknown'=>count($unknown),'file'=>$draft['source_filename']]);
         return $draft;
@@ -112,6 +133,12 @@ final class AccountingService {
 
     public static function normalizeClientDraft(array $sessionDraft,string $json,bool $requireResolved=true): array {
         $input=json_decode($json,true,512,JSON_THROW_ON_ERROR);
+        // Date is part of the draft, not a read-only property of the original report.
+        if(isset($input['report_date_input'])){
+            $newDateInput=trim((string)$input['report_date_input']);
+            $sessionDraft['report_date']=self::normalizeBusinessDate($newDateInput);
+            $sessionDraft['report_date_input']=$newDateInput;
+        }
         if(!is_array($input) || !isset($input['rows']) || !is_array($input['rows'])) throw new RuntimeException('اطلاعات پیش‌نمایش معتبر نیست.');
         if(count($input['rows'])<1 || count($input['rows'])>5000) throw new RuntimeException('تعداد ردیف‌های پیش‌نمایش نامعتبر است.');
         $companyId=(int)$sessionDraft['company_id'];$panels=[];foreach(self::panelsForCompany($companyId) as $p)$panels[(int)$p['id']]=$p;
@@ -180,6 +207,8 @@ final class AccountingService {
             }
             $ins=$pdo->prepare('INSERT INTO daily_report_rows(daily_report_id,account_id,panel_id,source_username,original_name_snapshot,display_name_snapshot,member_win,rate_type_snapshot,rate_value_snapshot,loss_percent_snapshot,commission,received,paid,row_origin) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
             foreach($rows as $r)$ins->execute([$reportId,$r['account_id'],$r['panel_id'],$r['username'],$r['original_name'],$r['name'],$r['member_win'],$r['rate_type'],$r['rate'],$r['loss_percent'],$r['commission'],$r['received'],$r['paid'],$r['row_origin']]);
+            require_once __DIR__.'/ReportAudit622.php';
+            ReportAudit622::persist($pdo,$reportId,$draft,$userId);
             $pdo->commit();
             Logger::audit($editingId?'report.updated':'report.finalized',['report_id'=>$reportId,'company_id'=>$companyId,'rows'=>count($rows),'totals'=>$tot]);
             Logger::system('report.finalized',['report_id'=>$reportId,'source'=>$draft['source_filename'],'rows'=>count($rows)]);
@@ -229,7 +258,39 @@ final class AccountingService {
                 'rate_type'=>$x['rate_type_snapshot'],'row_origin'=>$x['row_origin'],'register_manual'=>false,'unknown_confirmed'=>true,
             ]);
         }
-        return ['company_id'=>(int)$r['company_id'],'company_name'=>$r['company_name'],'panel_id'=>$r['panel_id']!==null?(int)$r['panel_id']:null,'panel_name'=>$r['panel_name']??null,'report_date'=>$r['report_date'],'report_date_input'=>$r['report_date'],'source_filename'=>$r['source_filename'],'source_storage_path'=>$r['source_storage_path']??null,'source_hash'=>$r['source_hash'],'duplicate_fingerprint'=>$r['duplicate_fingerprint'],'general_rate'=>$general??SettingsService::rateToCanonical(100),'special_rate'=>$special??SettingsService::rateToCanonical(200),'general_rate_input'=>SettingsService::rateFromCanonical($general??SettingsService::rateToCanonical(100)),'special_rate_input'=>SettingsService::rateFromCanonical($special??SettingsService::rateToCanonical(200)),'loss_percent'=>$pct??10,'allow_duplicate'=>true,'unknown_usernames'=>[],'rows'=>$rows,'totals'=>self::totals($rows),'editing_report_id'=>$id,'created_at'=>time()];
+        $sourceMemberWinTotal=null;
+        $sourceMemberWinRawRowsTotal=null;
+        $sourceMemberWinRoundedRowsTotal=null;
+        $rel=str_replace('\\','/',(string)($r['source_storage_path']??''));
+        if(str_starts_with($rel,'storage/report_sources/')){
+            $base=realpath(base_path('storage/report_sources'));
+            $stored=realpath(base_path($rel));
+            if($base && $stored && str_starts_with($stored,$base.DIRECTORY_SEPARATOR) && is_file($stored)){
+                try{
+                    $sourceRows=XlsxReader::rows($stored,(string)($r['source_filename']??''));
+                    $sourceObjects=XlsxReader::objects($sourceRows,['Username','Member Win']);
+                    $rawSum=0.0;$roundedSum=0.0;$rowCount=0;
+                    foreach($sourceObjects as $sourceRow){
+                        $key=trim((string)($sourceRow['Username']??''));
+                        if($key==='')continue;
+                        if(preg_match('/^(grand\s*total|total)$/iu',$key)){
+                            $sourceMemberWinTotal=self::decimal($sourceRow['Member Win']??0,'Grand Total Member Win',false);
+                            continue;
+                        }
+                        $mw=self::decimal($sourceRow['Member Win']??0,'Member Win',false);
+                        $rawSum+=$mw;$roundedSum+=round($mw,2);$rowCount++;
+                    }
+                    if($rowCount>0){
+                        $sourceMemberWinRawRowsTotal=self::roundMoney($rawSum);
+                        $sourceMemberWinRoundedRowsTotal=self::roundMoney($roundedSum);
+                    }
+                }catch(Throwable $e){/* Legacy source may be unavailable; do not fabricate an Excel comparison. */}
+            }
+        }
+        return ['company_id'=>(int)$r['company_id'],'company_name'=>$r['company_name'],'panel_id'=>$r['panel_id']!==null?(int)$r['panel_id']:null,'panel_name'=>$r['panel_name']??null,'report_date'=>$r['report_date'],'report_date_input'=>self::displayBusinessDate((string)$r['report_date']),'source_filename'=>$r['source_filename'],'source_storage_path'=>$r['source_storage_path']??null,'source_hash'=>$r['source_hash'],'duplicate_fingerprint'=>$r['duplicate_fingerprint'],'general_rate'=>$general??SettingsService::rateToCanonical(100),'special_rate'=>$special??SettingsService::rateToCanonical(200),'general_rate_input'=>SettingsService::rateFromCanonical($general??SettingsService::rateToCanonical(100)),'special_rate_input'=>SettingsService::rateFromCanonical($special??SettingsService::rateToCanonical(200)),'loss_percent'=>$pct??10,'allow_duplicate'=>true,'unknown_usernames'=>[],'rows'=>$rows,'totals'=>self::totals($rows),'source_member_win_total'=>$sourceMemberWinTotal,
+            'source_member_win_raw_rows_total'=>$sourceMemberWinRawRowsTotal,
+            'source_member_win_rounded_rows_total'=>$sourceMemberWinRoundedRowsTotal,
+            'editing_report_id'=>$id,'created_at'=>time()];
     }
 
     public static function calculateRow(float $memberWin,float $rate,float $pct): array {

@@ -5,7 +5,7 @@ require_once dirname(__DIR__) . '/app/helpers.php';
 
 $configFile = base_path('config/config.php');
 $lockFile = base_path('storage/installed.lock');
-if (is_file($configFile) && is_file($lockFile)) {
+if (is_file($configFile) || is_file($lockFile)) {
     header('Location: ../index.php?page=login');
     exit;
 }
@@ -72,7 +72,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canInstall) {
         $upsert->execute([$adminUsername, password_hash($adminPassword, PASSWORD_DEFAULT), 'admin']);
         $upsert->execute([$developerUsername, password_hash($developerPassword, PASSWORD_DEFAULT), 'developer']);
 
-        $pdo->prepare("INSERT INTO app_meta(meta_key, meta_value) VALUES('app_version','0.2.0') ON DUPLICATE KEY UPDATE meta_value='0.2.0'")->execute();
+        $releaseVersion = trim((string)file_get_contents(base_path('VERSION')));
+        if (!preg_match('/^\d+\.\d+\.\d+$/D', $releaseVersion)) {
+            throw new RuntimeException('نسخه برنامه در فایل VERSION نامعتبر است.');
+        }
+        $pdo->prepare("INSERT INTO app_meta(meta_key, meta_value) VALUES('app_version',?) ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)")
+            ->execute([$releaseVersion]);
 
         $secret = bin2hex(random_bytes(32));
         $config = "<?php\nreturn " . var_export([
@@ -110,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canInstall) {
         <div>
             <div class="installer-kicker">راه‌اندازی اولیه</div>
             <h1>نصب سلطان حساب</h1>
-            <p>نسخه 0.2.0 • Company / Panel / AccountSettings</p>
+            <p>نسخه <?= e(trim((string)file_get_contents(base_path('VERSION')))) ?> • نصب تازه روی دیتابیس خالی</p>
         </div>
     </div>
 

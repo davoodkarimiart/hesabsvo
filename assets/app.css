@@ -443,3 +443,25 @@ input,select{min-height:42px;padding:8px 9px;border-radius:9px}
 .trend-kpis .trend-direction.win{background:var(--site-win-fill,#eaf8f1);color:#146c38}.trend-kpis .trend-direction.loss{background:var(--site-loss-fill,#fff0f1);color:#b42318}
 .trend-company-end-label{font:700 9px var(--font-global,Vazirmatn,Tahoma,sans-serif);paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
 @media(max-width:700px){.trend-tooltip{position:absolute!important;right:8px!important;left:8px!important;top:8px!important;max-width:none!important;transform:none!important}.trend-chart-wrap{padding-top:2px}.trend-kpis{grid-template-columns:repeat(2,1fr)}}
+
+/* v0.6.23: keep customer filter exactly aligned with the other selectors. */
+.report-filter .form-grid>.filter-customer-combo{align-self:start;min-width:0}
+.report-filter .form-grid>.filter-customer-combo>input[type=search]{min-height:42px;width:100%;box-sizing:border-box}
+.report-filter .report-customer-hint{grid-column:1/-1;margin:-3px 0 6px;padding:7px 10px;background:#f4f7fe;color:#586781;border-radius:8px;font-size:10px;line-height:1.6}
+.report-filter .report-customer-hint.hidden{display:none!important}
+
+/* v0.6.25: accessible full-width exception reason editor; isolated from global label rules. */
+#usdExceptionDialog .usd-exception-card{padding:20px!important;border-radius:19px;background:#fff;max-width:100%;overflow-x:hidden}
+#usdExceptionDialog .dialog-head{align-items:center;margin-bottom:16px}
+#usdExceptionDialog .dialog-head b{font-size:16px;font-weight:900;color:#182b47;line-height:1.6}
+#usdExceptionDialog .usd-exception-alert{margin:0 0 15px!important;padding:12px 14px!important;text-align:right;font-size:13px;line-height:1.9;border:1px solid #f2cecf;border-radius:12px}
+#usdExceptionDialog .usd-exception-field{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;width:100%;min-width:0;text-align:right}
+#usdExceptionDialog .usd-exception-field>label{display:block!important;width:100%!important;margin:0!important;font-size:13px;font-weight:900;color:#24364d;text-align:right;line-height:1.7}
+#usdExceptionDialog .usd-exception-required{font-size:11px;font-weight:600;color:#708096}
+#usdExceptionDialog #usdExceptionReason{display:block!important;box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important;min-height:124px!important;padding:14px 15px!important;margin:0!important;border:1px solid #cbd5e3!important;border-radius:12px!important;background:#fbfcff!important;color:#24364b!important;font:400 14px/1.9 Tahoma,Arial,sans-serif!important;resize:vertical!important;text-align:right!important;direction:rtl!important;outline:none!important;box-shadow:none!important}
+#usdExceptionDialog #usdExceptionReason::placeholder{color:#96a0ae;opacity:1}
+#usdExceptionDialog #usdExceptionReason:focus{border-color:#3559e0!important;box-shadow:0 0 0 3px rgba(53,89,224,.10)!important;background:#fff!important}
+#usdExceptionDialog .usd-exception-hint{font-size:11px;color:#62758b;margin:0;line-height:1.85}
+#usdExceptionDialog .usd-exception-actions{display:flex;gap:9px;align-items:stretch;justify-content:flex-start;flex-wrap:wrap;margin-top:18px}
+#usdExceptionDialog .usd-exception-actions button{min-height:44px;border-radius:11px;padding:10px 16px;font-size:12px;line-height:1.5}
+@media(max-width:600px){#usdExceptionDialog .usd-exception-card{padding:17px 14px calc(15px + env(safe-area-inset-bottom))!important;border-radius:20px 20px 0 0}#usdExceptionDialog .usd-exception-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr)}#usdExceptionDialog .usd-exception-actions button{min-width:0;width:100%;padding:9px 5px}#usdExceptionDialog #usdExceptionReason{min-height:138px!important;font-size:16px!important}}

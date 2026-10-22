@@ -1,8 +1,8 @@
-# Upgrade to v0.5.6
+# راهنمای نسخه 0.6.25
 
-No database migration is required.
+این بسته **سورس کامل برای نصب تازه** است، نه پچ قابل نصب روی هر نسخه قبلی.
 
-1. Back up the current installation.
-2. Extract this package over the application root.
-3. Run `php verify_release.php` and `php tests/phase3_formula_smoke.php`.
-4. Fully close/reopen the mobile PWA/tab so cache v056 activates.
+- برای نصب روی هاست **جدید**: `DEPLOY_CPANEL.md` را بخوانید.
+- برای انتشار سورس در GitHub: `GITHUB_SYNC_FA.md` را بخوانید.
+- برای **به‌روزرسانی سایت موجود**: از ZIP کامل برای overwrite مستقیم روی محیط عملیاتی استفاده نکنید. پیش از هر تغییر از فایل‌ها و دیتابیس بکاپ بگیرید، وضعیت migrationها و تنظیمات را بررسی و با فرایند مخصوص ارتقا اعمال کنید.
+- حذف `config/config.php`, `storage/installed.lock`, و دیگر فایل‌های runtime از این ZIP کاملاً عمدی است؛ این فایل‌ها فقط در نصب تازه ساخته می‌شوند.

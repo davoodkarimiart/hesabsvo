@@ -14,19 +14,52 @@ final class CompanyService {
         return $companies;
     }
 
-    public static function createCompany(string $name, int $userId): int {
+    /** Company transfer settings are company-level; no panel data is changed. */
+    public static function validateTransferSettings(string $role, string $percent): array {
+        if (!in_array($role, ['agent','master'], true)) {
+            throw new RuntimeException('نوع شرکت را بین ایجنت و مستر انتخاب کن.');
+        }
+        $input = strtr(trim($percent), ['۰'=>'0','۱'=>'1','۲'=>'2','۳'=>'3','۴'=>'4','۵'=>'5','۶'=>'6','۷'=>'7','۸'=>'8','۹'=>'9',
+            '٠'=>'0','١'=>'1','٢'=>'2','٣'=>'3','٤'=>'4','٥'=>'5','٦'=>'6','٧'=>'7','٨'=>'8','٩'=>'9','٫'=>'.','،'=>'.']);
+        if (!preg_match('/^(?:\d{1,3})(?:\.\d{1,3})?$/D', $input)) {
+            throw new RuntimeException('درصد ترانسفر باید عددی از ۰ تا ۱۰۰ با حداکثر ۳ رقم اعشار باشد.');
+        }
+        $value = (float)$input;
+        if ($value < 0 || $value > 100) throw new RuntimeException('درصد ترانسفر باید بین ۰ و ۱۰۰ باشد.');
+        return [$role, number_format($value,3,'.','')];
+    }
+
+    public static function createCompany(string $name, int $userId, string $role, string $percent): int {
         $name = trim($name);
         if ($name === '') throw new RuntimeException('نام شرکت الزامی است.');
+        [$role, $percent] = self::validateTransferSettings($role,$percent);
         $pdo = Database::connection();
-        $st = $pdo->prepare('INSERT INTO companies(name,active,created_by) VALUES(?,1,?)');
-        try { $st->execute([$name,$userId]); }
+        $st = $pdo->prepare('INSERT INTO companies(name,active,created_by,company_role,transfer_percent) VALUES(?,1,?,?,?)');
+        try { $st->execute([$name,$userId,$role,$percent]); }
         catch (PDOException $e) {
             if ((int)($e->errorInfo[1] ?? 0) === 1062) throw new RuntimeException('شرکتی با این نام از قبل وجود دارد.');
             throw $e;
         }
         $id = (int)$pdo->lastInsertId();
-        Logger::audit('company.created',['company_id'=>$id,'name'=>$name]);
+        Logger::audit('company.created',['company_id'=>$id,'name'=>$name,'company_role'=>$role,'transfer_percent'=>$percent]);
         return $id;
+    }
+
+    public static function updateCompany(int $id, string $name, bool $active, string $role, string $percent): void {
+        $name=trim($name);
+        if ($id<1 || $name==='') throw new RuntimeException('شناسه یا نام شرکت نامعتبر است.');
+        [$role,$percent]=self::validateTransferSettings($role,$percent);
+        $pdo=Database::connection();
+        $check=$pdo->prepare('SELECT id FROM companies WHERE id=?');$check->execute([$id]);
+        if (!$check->fetchColumn()) throw new RuntimeException('شرکت مورد نظر پیدا نشد.');
+        try {
+            $pdo->prepare('UPDATE companies SET name=?,active=?,company_role=?,transfer_percent=? WHERE id=?')
+                ->execute([$name,$active?1:0,$role,$percent,$id]);
+        } catch(PDOException $e) {
+            if ((int)($e->errorInfo[1]??0)===1062) throw new RuntimeException('شرکتی با این نام از قبل وجود دارد.');
+            throw $e;
+        }
+        Logger::audit('company.updated',['company_id'=>$id,'name'=>$name,'active'=>$active,'company_role'=>$role,'transfer_percent'=>$percent]);
     }
 
     public static function createPanel(int $companyId, string $name, string $mode, int $userId): int {

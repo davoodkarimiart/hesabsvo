@@ -10,9 +10,17 @@ final class ReportingService {
     }
 
     public static function normalizeFilters(array $f): array {
-        $f['type']=in_array(($f['type']??'daily'),['daily','monthly','multi','detail','customer_detail'],true)?$f['type']:'daily';
+        $f['type']=in_array(($f['type']??'cumulative'),['cumulative','daily','monthly','multi','detail','customer_detail'],true)?$f['type']:'daily';
         $f['company_id']=(int)($f['company_id']??0);$f['panel_id']=(int)($f['panel_id']??0);$f['customer_id']=(int)($f['customer_id']??0);if($f['type']!=='customer_detail')$f['customer_id']=0;if($f['type']==='customer_detail'&&$f['customer_id']>0){$f['company_id']=0;$f['panel_id']=0;}
         $f['from']=trim((string)($f['from']??''));$f['to']=trim((string)($f['to']??''));
+        $f['date_mode']=($f['date_mode']??'single')==='range'?'range':'single';
+        $f['date']=trim((string)($f['date']??''));
+        if($f['date_mode']==='single'){$f['from']=$f['date'];$f['to']=$f['date'];}
+        else $f['date']='';
+        if($f['type']==='cumulative'){
+            $f['panel_id']=0;
+        }
+
         if($f['company_id']>0 && $f['panel_id']>0){
             $st=Database::connection()->prepare('SELECT COUNT(*) FROM panels WHERE id=? AND company_id=? AND active=1');$st->execute([$f['panel_id'],$f['company_id']]);
             if(!(int)$st->fetchColumn())$f['panel_id']=0; // stale/foreign panel selection is reset, never accepted silently

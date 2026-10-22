@@ -86,7 +86,7 @@ final class SettingsService {
 
     public static function money(float|int|string $value,?array $settings=null): string {
         $s=$settings??self::all();$n=self::moneyNumber($value,$s);
-        $str=number_format(round($n,2),2,'.',',');$str=rtrim(rtrim($str,'0'),'.');
+        $str=number_format(round($n,0,PHP_ROUND_HALF_UP),0,'.',','); // Whole display unit, database untouched.
         return self::digits($str,(string)($s['digit_mode']??'fa'));
     }
 

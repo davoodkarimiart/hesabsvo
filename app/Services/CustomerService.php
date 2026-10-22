@@ -16,7 +16,20 @@ final class CustomerService {
         FROM customers c JOIN customer_accounts ca ON ca.customer_id=c.id JOIN accounts a ON a.id=ca.account_id JOIN panels pn ON pn.id=a.panel_id JOIN companies co ON co.id=pn.company_id LEFT JOIN daily_report_rows rr ON rr.account_id=ca.account_id LEFT JOIN daily_reports r ON r.id=rr.daily_report_id
         WHERE 1=1";$params=[];
         if(!$includeInactive)$sql.=' AND c.active=1';
-        if($q!==''){$sql.=" AND (c.display_name LIKE ? OR a.source_username LIKE ? OR a.original_name LIKE ? OR a.display_name LIKE ?)";$like='%'.$q.'%';array_push($params,$like,$like,$like,$like);}
+        // Match the whole customer by ANY linked account; don't reduce the totals to only matching accounts.
+        if($q!==''){
+            $sql.=" AND (c.display_name LIKE ? OR EXISTS (
+                SELECT 1 FROM customer_accounts search_link
+                JOIN accounts search_account ON search_account.id=search_link.account_id
+                JOIN panels search_panel ON search_panel.id=search_account.panel_id
+                JOIN companies search_company ON search_company.id=search_panel.company_id
+                WHERE search_link.customer_id=c.id
+                AND (search_account.source_username LIKE ? OR search_account.original_name LIKE ?
+                  OR search_account.display_name LIKE ? OR search_panel.name LIKE ? OR search_company.name LIKE ?)
+            ))";
+            $like='%'.str_replace(['\\','%','_'],['\\\\','\\%','\\_'],trim($q)).'%';
+            array_push($params,$like,$like,$like,$like,$like,$like);
+        }
         if($companyId>0){$sql.=' AND pn.company_id=?';$params[]=$companyId;}
         if($panelId>0){$sql.=' AND a.panel_id=?';$params[]=$panelId;}
         $sql.=' GROUP BY c.id ORDER BY c.active DESC,c.display_name,c.id';$st=$pdo->prepare($sql);$st->execute($params);$rows=$st->fetchAll();

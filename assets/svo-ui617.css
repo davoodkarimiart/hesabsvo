@@ -1,0 +1,65 @@
+/* Sultan Hesab 0.6.17 | Isolated company UI. New URL avoids cached patch stacks. */
+#company-page .company-head, .companies-grid .company-box > .company-head{
+  display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;
+  align-items:flex-start!important;justify-content:space-between!important;
+  gap:10px!important;min-width:0!important;padding:0!important;margin:0 0 10px!important;
+}
+.companies-grid .company-box > .company-head > div{flex:1 1 185px!important;min-width:0!important;max-width:100%!important}
+.companies-grid .company-box .svo-company-edit-button{
+  position:static!important;float:none!important;display:inline-flex!important;flex:0 0 auto!important;
+  width:auto!important;min-width:100px!important;max-width:140px!important;
+  height:38px!important;min-height:38px!important;margin:0!important;padding:0 12px!important;
+  border:1px solid #cddaf1!important;border-radius:10px!important;
+  background:#edf2fc!important;color:#24437e!important;
+  box-shadow:none!important;transform:none!important;text-decoration:none!important;
+  font:800 12px Tahoma,Arial,sans-serif!important;line-height:1.4!important;
+  white-space:nowrap!important;vertical-align:top!important;z-index:auto!important;
+}
+.companies-grid .company-box .svo-company-edit-button:hover{background:#e1eafb!important;border-color:#a8bee7!important}
+.companies-grid .company-box .svo-company-edit-button::before{content:none!important}
+.companies-grid .company-box>.panel-list{clear:both!important;margin:10px 0 8px!important}
+/* Use an actual SELECT, not HTML radio buttons hidden behind decorative labels. */
+.svo-company-type-label{display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  width:100%!important;min-width:0!important;gap:3px!important;font-size:12px!important;font-weight:700!important;grid-column:1/-1!important}
+.svo-company-type-label select{display:block!important;appearance:auto!important;width:100%!important;
+  min-height:42px!important;height:42px!important;padding:8px 12px!important;margin:3px 0 0!important;
+  font:600 13px Tahoma,Arial,sans-serif!important;line-height:1.5!important;
+  background:#fff!important;border:1px solid #cbd5e1!important;border-radius:10px!important;box-shadow:none!important}
+/* Dialog viewport rules override three historical app.css dialog layouts. */
+dialog.svo-company-edit-dialog,dialog#createCompanyDialog{width:min(490px,calc(100vw - 28px))!important;max-width:calc(100vw - 28px)!important;
+  max-height:90dvh!important;overflow:visible!important;margin:auto!important;padding:0!important;border:0!important;
+  background:transparent!important;box-shadow:none!important;position:fixed!important;
+  inset:0!important;transform:none!important;align-self:center!important}
+dialog.svo-company-edit-dialog::backdrop,dialog#createCompanyDialog::backdrop{background:rgba(22,31,53,.58)!important;backdrop-filter:blur(3px)}
+dialog.svo-company-edit-dialog>.dialog-card,dialog#createCompanyDialog>.dialog-card{
+  width:100%!important;max-width:100%!important;max-height:88dvh!important;overflow-y:auto!important;
+  background:#fff!important;border-radius:18px!important;padding:16px!important;margin:0!important;
+  box-shadow:0 20px 65px rgba(15,23,42,.22)!important}
+dialog.svo-company-edit-dialog .dialog-head,dialog#createCompanyDialog .dialog-head{
+  display:flex!important;flex-direction:row!important;justify-content:space-between!important;
+  align-items:flex-start!important;gap:10px!important;margin-bottom:13px!important}
+dialog.svo-company-edit-dialog .dialog-head>.icon-btn,dialog#createCompanyDialog .dialog-head>.icon-btn{
+  width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;flex:0 0 34px!important}
+dialog.svo-company-edit-dialog .company-form,dialog#createCompanyDialog .company-form{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important;
+  margin:0!important;padding:0!important;align-items:stretch!important}
+dialog.svo-company-edit-dialog .company-form>label,dialog#createCompanyDialog .company-form>label{
+  display:flex!important;flex-direction:column!important;gap:3px!important;min-width:0!important;width:100%!important;
+  font-size:12px!important;font-weight:700!important;color:#48546b!important}
+dialog.svo-company-edit-dialog .company-form>label.toggle-line,dialog#createCompanyDialog .company-form>label.toggle-line{
+  display:inline-flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;
+  min-height:28px!important;gap:8px!important}
+dialog.svo-company-edit-dialog .company-form label.toggle-line input{height:16px!important;min-height:16px!important;width:16px!important;min-width:16px!important;margin:0!important;flex:none!important}
+dialog.svo-company-edit-dialog .company-form button.company-save-btn,dialog#createCompanyDialog .company-form button.company-save-btn{
+  display:flex!important;min-height:44px!important;height:44px!important;width:100%!important;
+  grid-column:1/-1!important;font-size:13px!important;font-weight:800!important}
+dialog.svo-company-edit-dialog .company-form input:not([type=checkbox]),dialog#createCompanyDialog .company-form input:not([type=checkbox]){
+  height:42px!important;min-height:42px!important;padding:9px 11px!important;margin:0!important;font-size:15px!important}
+.svo-mother-page{display:grid;gap:8px;grid-template-columns:minmax(0,1fr)!important}
+.svo-mother-page img{width:100%!important;max-width:100%!important;height:auto!important;object-fit:contain!important}
+@media(max-width:700px){
+  .companies-grid .company-box>.company-head{gap:7px!important}
+  .companies-grid .company-box .svo-company-edit-button{min-width:92px!important;max-width:112px!important;height:34px!important;min-height:34px!important;font-size:11px!important;padding:0 8px!important}
+  dialog.svo-company-edit-dialog,dialog#createCompanyDialog{width:calc(100vw - 16px)!important;max-width:calc(100vw - 16px)!important;max-height:88dvh!important;inset:0!important;position:fixed!important;margin:auto!important;transform:none!important}
+  dialog.svo-company-edit-dialog>.dialog-card,dialog#createCompanyDialog>.dialog-card{width:100%!important;max-height:86dvh!important;padding:12px!important;border-radius:16px!important}
+}
