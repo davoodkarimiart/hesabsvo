@@ -16,8 +16,6 @@ jobs:
           test -f database/migrations/014_company_transfer_settings.sql
           test -f database/migrations/015_company_archive.sql
           test -f database/migrations/016_auth_hardening.sql
-          test -f database/migrations/015_company_archive.sql
-          test -f database/migrations/016_auth_hardening.sql
           test -f app/Support/LoginGuard630.php
           test -f tests/auth630_security_smoke.php
       - name: PHP syntax
