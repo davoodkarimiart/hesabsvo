@@ -36,6 +36,7 @@ header('X-Frame-Options: SAMEORIGIN');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/Logger.php';
+header('X-Request-ID: ' . Logger::requestId());
 require_once __DIR__ . '/Auth.php';
 require_once __DIR__ . '/Migrator.php';
 require_once __DIR__ . '/Support/XlsxReader.php';
@@ -49,11 +50,27 @@ require_once __DIR__ . '/Services/ReportingService.php';
 require_once __DIR__ . '/Support/ReportHeading626.php';
 require_once __DIR__ . '/Services/TransferService.php';
 
+set_error_handler(static function(int $severity, string $message, string $file, int $line): bool {
+    if (!(error_reporting() & $severity)) return false;
+    if (in_array($severity, [E_USER_ERROR, E_RECOVERABLE_ERROR], true)) {
+        Logger::error('php.error', ['severity'=>$severity, 'message'=>$message, 'file'=>basename($file), 'line'=>$line]);
+    }
+    return false; // retain standard PHP handling
+});
+
+register_shutdown_function(static function(): void {
+    $last = error_get_last();
+    if (!$last || !in_array($last['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) return;
+    Logger::error('php.fatal', ['type'=>$last['type'], 'message'=>$last['message'], 'file'=>basename($last['file']), 'line'=>$last['line']]);
+});
+
 set_exception_handler(function(Throwable $e): void {
-    if (class_exists('Logger')) Logger::error($e->getMessage(), ['type'=>get_class($e),'file'=>basename($e->getFile()),'line'=>$e->getLine()]);
+    Logger::error('exception.uncaught', ['type'=>get_class($e),'message'=>$e->getMessage(),'file'=>basename($e->getFile()),'line'=>$e->getLine()]);
     http_response_code(500);
+    $id = Logger::requestId();
+    header('X-Request-ID: '.$id);
     $debug = (bool) config_get('app.debug', false);
-    echo '<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><body style="font-family:Tahoma;padding:30px"><h2>خطای برنامه</h2><p>یک خطای داخلی رخ داده است.</p>';
+    echo '<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><body style="font-family:Tahoma;padding:30px"><h2>خطای برنامه</h2><p>یک خطای داخلی رخ داده است.</p><p>شناسه پیگیری: ' . e($id) . '</p>';
     if ($debug) echo '<pre>' . e((string)$e) . '</pre>';
     echo '</body></html>';
 });

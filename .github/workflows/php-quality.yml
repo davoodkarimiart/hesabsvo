@@ -9,15 +9,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Release source integrity
         run: |
-          test "$(cat VERSION)" = "0.6.30"
+          test "$(cat VERSION)" = "0.6.53"
           test ! -e config/config.php
           test ! -e storage/installed.lock
+          test ! -e storage/mcp/credentials.json
+          test ! -e storage/mcp/oauth.json
           test ! -e error_log
-          test -f database/migrations/014_company_transfer_settings.sql
-          test -f database/migrations/015_company_archive.sql
           test -f database/migrations/016_auth_hardening.sql
-          test -f app/Support/LoginGuard630.php
-          test -f tests/auth630_security_smoke.php
+          test -f app/Services/DeveloperBackup633.php
+          test -f mcp.php
+          test -f oauth.php
+          test -f cron_soltan_backup.php
       - name: PHP syntax
         run: |
           find . -type f -name '*.php' -print0 | xargs -0 -n1 php -l

@@ -1,31 +1,14 @@
-# انتشار سورس v0.6.30 روی GitHub
+# همگام‌سازی سورس ۰٫۶٫۵۳ در GitHub
 
-مخزن هدف فقط: **https://github.com/davoodkarimiart/hesabsvo**. این بسته باید **Extract** و فایل‌هایش جایگزین فایل‌های قبلی شود. صرفاً گذاشتن فایل ZIP در Repository باعث آپدیت کد نمی‌شود.
+مخزن سورس اجرایی: `davoodkarimiart/hesabsvo`. مخزن `davoodkarimiart/soltanhesab` فقط نقشه‌راه و سوابق پروژه است.
 
-مخزن `soltanhesab` محل نقشه راه است و نباید این سورس جایگزین آن شود.
+این handoff از snapshot نسخهٔ ۰٫۶٫۴۹ و پچ‌های رسمی ۰٫۶٫۵۰ تا ۰٫۶٫۵۳ ساخته شده است. فایل‌های مخزن GitHub را با سورس همسان کنید، ولی `.github`، migrationها، محافظ‌های `.htaccess` و فایل‌های جاری مخزن را حفظ کنید. انتشار از طریق branch و PR انجام شود؛ force-push نکنید.
 
-## دستور پیشنهادی برای بورک / Codex / Work
+قبل از merge:
 
-> سورس مرجع در `davoodkarimiart/hesabsvo` را با محتویات این ZIP جایگزین کن، تاریخچه Git را نگه دار و `.github`، migrations، installer و تست‌ها را ثبت کن. قبل از commit بررسی کن هیچ فایل حساس یا داده مشتری داخل diff نیست. نسخه باید `0.6.30` باشد. Pull Request یا commit بساز و نتایج تست را گزارش بده. Force-push نکن.
+- `VERSION` باید `0.6.53` باشد.
+- `config/config.php`، کلیدها، `storage/mcp/`، tokenهای Telegram/OAuth، لاگ‌ها، بکاپ‌ها، فایل‌های مشتری و archiveهای ZIP نباید در تغییرات باشند.
+- workflow باید نسخه و فایل‌های Phase 11 را بررسی کند، lint PHP/JS و smoke testها را اجرا کند.
+- وضعیت OAuth/MCP، backup/restore و ارسال Telegram در یادداشت انتشار دقیق و بدون ادعای تأییدنشده ثبت شود.
 
-### روش خط فرمان در کلون تازه
-
-```bash
-ZIP_PATH="$HOME/Downloads/hesabsvo-v0.6.30-github-full-source.zip"
-git clone https://github.com/davoodkarimiart/hesabsvo.git
-cd hesabsvo
-# اول شاخه جاری و تغییرات احتمالی جدید را بررسی کنید.
-git status --short
-# فقط در کلون تازه و تمیز، فایل‌های tracked نسخه قبل حذف شوند:
-git rm -r -- .
-unzip -oq "$ZIP_PATH" -d .
-git add -A
-git status --short
-# Sensitive files check (these should NOT be present in git changes):
-git diff --cached --name-only | grep -E '(^config/config\.php$|^storage/installed\.lock$|^storage/logs/|(^|/)error_log$|\.sql\.gz$)' && { echo 'STOP: private files in commit'; exit 1; } || true
-php tests/phase3_formula_smoke.php
-git commit -m "release: consolidate complete source v0.6.30"
-git push origin main
-```
-
-اگر `main` در این فاصله جلو رفته، تغییرات جدید را بررسی و ادغام کنید؛ `force-push` مجاز نیست. انتشار نهایی بعد از تست واقعی نصب تازه انجام شود.
+برای ارتقای سایت فعال این ZIP را روی هاست Extract نکنید؛ این بسته برای همگام‌سازی سورس و نصب تازه است.

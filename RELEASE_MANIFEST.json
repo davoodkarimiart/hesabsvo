@@ -1,17 +1,16 @@
 {
-  "version": "0.6.30",
-  "source_base": "0.6.25",
+  "version": "0.6.53",
+  "source_base": "GitHub v0.6.30 plus verified server snapshot v0.6.49 and official patches v0.6.50-v0.6.53",
   "patches": [
-    "0.6.26",
-    "0.6.27",
-    "0.6.28",
-    "0.6.29",
-    "0.6.30"
+    "0.6.50",
+    "0.6.51",
+    "0.6.52",
+    "0.6.53"
   ],
   "files": {
     ".github/workflows/php-quality.yml": {
-      "sha256": "70da8a9a3976c209d22bcabbfe2bd71742967168619b90bbd6b33be7fee63e45",
-      "bytes": 1159
+      "sha256": "313305c03a90f2fab6ebf2762b5bcac2555d831aa63fb52629babe2cd06c7c4d",
+      "bytes": 1167
     },
     ".gitignore": {
       "sha256": "e9d863673b994c14b80c083f4d810eab29c9aa1ff572869bfb00b7df55c13870",
@@ -26,31 +25,31 @@
       "bytes": 169
     },
     "CHANGELOG.md": {
-      "sha256": "b6a7edc3b4ca800b6e06f508318e93cb72749d84682873f0f74fbfacf94c7338",
-      "bytes": 1403
+      "sha256": "73d920a3fc837b4a5f764e0bfd918e93fc2171bfae3ee914bed9926d4a121ed2",
+      "bytes": 1622
     },
     "DEPLOY_CPANEL.md": {
-      "sha256": "1302d4add6276616698386cc2f6c2b3b108e8a3bde7069338953ce6542e59d82",
-      "bytes": 2293
+      "sha256": "e5c173a7769198b2fa95304d419e2812664a0bbcd22eeb5b8a097f85a2e022d1",
+      "bytes": 1758
     },
     "GITHUB_SYNC_FA.md": {
-      "sha256": "0364e3f56693ff6315313bec6bb38d07a3f912e3db7662789fb2a23e407595fb",
-      "bytes": 2083
+      "sha256": "b9e1bb403aae0d0773e19f10d47a04ebcf17d085d71dc7ca162865335b90bb46",
+      "bytes": 1387
     },
     "README.md": {
-      "sha256": "3752291b45dbd6a8876c4a875717cef7c59d023c3dcc0bb32f9368bca29d8041",
-      "bytes": 2758
+      "sha256": "078954c871240d6e452c41d3b58b559ff759c0b1067bd70e76f6decd03f16d47",
+      "bytes": 2214
     },
     "RELEASE_NOTES_FA.md": {
-      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
-      "bytes": 1
+      "sha256": "7f378b0a87fa4a44095d58a82d96fb043a2d7155455fb206f4fcc12515212163",
+      "bytes": 1664
     },
     "UPGRADE.md": {
-      "sha256": "91bd6e2d8ac45994ed61fbdac2dc37cbf495a65eb94360f2dd47b38c4bd427dc",
-      "bytes": 1121
+      "sha256": "b037cfa98ad9131b22f3bb482dbd73f9895359aaf751768ddff53d15458f47c5",
+      "bytes": 1127
     },
     "VERSION": {
-      "sha256": "ba421492725057b7959ea98d454fd6bff797427a61e17a843e0fa307b0d29a33",
+      "sha256": "a23a66f98481052961834e4a84a712bd9f5710f195fc00f7a3fb612eeaad5760",
       "bytes": 7
     },
     "app/.htaccess": {
@@ -66,8 +65,8 @@
       "bytes": 756
     },
     "app/Logger.php": {
-      "sha256": "35f53ac6cfb2e9bb374cb3f0578740460290dfbf39fc03ac7c793f76d325f484",
-      "bytes": 1607
+      "sha256": "d9a142af1eba7aa56678e7769b73e83fd60fe5ef192a0df964d3cda16cf68e18",
+      "bytes": 3002
     },
     "app/Migrator.php": {
       "sha256": "767eb2908d183e0a7e702bb055d8136de03c41aabea5cca8c15de2cf36df11d9",
@@ -88,6 +87,10 @@
     "app/Services/CustomerService.php": {
       "sha256": "90837047ccaec2a3676cba1ec5a24ba953bc4a6b7954ff9fe21402e0bcce291a",
       "bytes": 19711
+    },
+    "app/Services/DeveloperBackup633.php": {
+      "sha256": "510978ace25569f199ada9d295b530d4bdc1bb261e0b56349091acb937751923",
+      "bytes": 7880
     },
     "app/Services/ReportAudit622.php": {
       "sha256": "2b2730d971266fb7e2411d60510cee13c46ee05fffd23ff9eaa4b26be91422d1",
@@ -130,8 +133,8 @@
       "bytes": 6963
     },
     "app/bootstrap.php": {
-      "sha256": "5e06686cc5067458848db02e1a52cec547352133025bacf59a95c5331d0d7659",
-      "bytes": 2397
+      "sha256": "b85f36ee488b8c1739ba22805bd98f95c0db21ba63b135ac7057120e139dfdbf",
+      "bytes": 3311
     },
     "app/helpers.php": {
       "sha256": "dcd20de90c83557d117c0bf40303b3def9db9045ec2f6ddb599aea1652d7a0c2",
@@ -277,6 +280,10 @@
       "sha256": "07d980a5175c2397a530e47658733cc7e153c916918dbe63fba3e5f3460e17da",
       "bytes": 583
     },
+    "cron_soltan_backup.php": {
+      "sha256": "98a7e98b9acd63ab0be2f426a69d0bfe5bace94b009a1abd35b10dc8fddc1415",
+      "bytes": 596
+    },
     "cumulative_accounts_excel.php": {
       "sha256": "cdc02416256441008f510041fa2d775b975df62ecb0dcd828f7d76cbcea35785",
       "bytes": 1236
@@ -373,6 +380,22 @@
       "sha256": "819c6243355279a1cc64320a142523be47c0fe6eae6533b10b6bc11fa1217644",
       "bytes": 755
     },
+    "developer_backups.php": {
+      "sha256": "0e2f97a71e067fc56ff49cd55eebaa877b6495498cbfe9f624afafd0055de416",
+      "bytes": 10466
+    },
+    "developer_client_error.php": {
+      "sha256": "2f85421075f8b58a92e599c3138ea88181b140beba8db66d0e58b49b8e99ddaf",
+      "bytes": 1538
+    },
+    "developer_diagnostics.php": {
+      "sha256": "df6d6fba217105b26b029826c050ed32016675fed692be54f074f22d6d47a001",
+      "bytes": 6943
+    },
+    "docs/PHASE11_ACCEPTANCE.md": {
+      "sha256": "e2e61f6b46ba435ca5e2beb067d04234b63993ac8e999f6c6909c2be2119d9ba",
+      "bytes": 1984
+    },
     "docs/RUNTIME_SOURCE.md": {
       "sha256": "5d52241113d3b5e5a4b00f4823ac4d818c60deac7497317e450b7c356bef935f",
       "bytes": 710
@@ -402,16 +425,40 @@
       "bytes": 12519
     },
     "index.php": {
-      "sha256": "69ba0c809d0615bc6df36337b27de9e7722a936e138e4e6f6920b8dc7f12c5f9",
-      "bytes": 170032
+      "sha256": "414498b122f40cf69853e977d5b61d3bea3581246b908749f9621a731aac3541",
+      "bytes": 171279
     },
     "install/index.php": {
-      "sha256": "79e68ee7333360652c6e2610c6c63e64babaef52a21fab95dcdd4748285f0e92",
-      "bytes": 10799
+      "sha256": "ce7f047796900b950910cd1ce2ea9e7e680350d062a75bf44616d35873cf3e51",
+      "bytes": 10340
     },
     "manifest.webmanifest": {
       "sha256": "a2df08e05f17fbd3690aaa9785a7d8ac7453549d92e8d1167e9667a506ab20a9",
       "bytes": 821
+    },
+    "mcp.php": {
+      "sha256": "f34706c208b414fb0c28b6f1d606b932bc1a0ad110bf060866035c298fb2cb59",
+      "bytes": 41854
+    },
+    "mcp_connections.php": {
+      "sha256": "3fe99da1d973680f892f7aff1c74a0c176fdcfa71713341a58f25f143ac86e31",
+      "bytes": 7763
+    },
+    "mcp_credential.php": {
+      "sha256": "12bb2f2bba43fee5362e498080bf984a4e244444f7f2ca82ffbc2e11f7381e28",
+      "bytes": 2036
+    },
+    "mcp_oauth_lib.php": {
+      "sha256": "cbbeeee3b7b05f61e457eb06e8f746768a6057ccdd93e49bf1a7e9e37c6a07ad",
+      "bytes": 3490
+    },
+    "mcp_permissions.php": {
+      "sha256": "dc2b5d6f58c746ee752822a0b173a82b57484b04317fece90b16aef00bc1f885",
+      "bytes": 6446
+    },
+    "oauth.php": {
+      "sha256": "b779e4cccc048f194219f50c942e46c9a89ef3425083038dc529a2ad0d5b9230",
+      "bytes": 8635
     },
     "offline.html": {
       "sha256": "e196e0203bfac2509b7aa69a534c680ba8a563761517486ebc808053b5d0c1a6",
@@ -564,6 +611,10 @@
     "upgrade/v0.4.9.php": {
       "sha256": "0bb40ef5193cfe9c49f2dff1166e4f4303bf74a834bdf18e9325ee125b2cc684",
       "bytes": 1083
+    },
+    "verify_release.php": {
+      "sha256": "0c4fc14781fac533d459ba95ad0c54a8c65e6ad9640ab1abc8a4f055faa0b62f",
+      "bytes": 2579
     }
   }
 }
