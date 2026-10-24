@@ -10,8 +10,8 @@
   ],
   "files": {
     ".github/workflows/php-quality.yml": {
-      "sha256": "bd09b786c254f9ea765ebf56222dd56ba6342df344b538637349c480c0f8d69e",
-      "bytes": 1282
+      "sha256": "70da8a9a3976c209d22bcabbfe2bd71742967168619b90bbd6b33be7fee63e45",
+      "bytes": 1159
     },
     ".gitignore": {
       "sha256": "e9d863673b994c14b80c083f4d810eab29c9aa1ff572869bfb00b7df55c13870",
