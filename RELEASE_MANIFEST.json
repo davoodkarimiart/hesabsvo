@@ -1,131 +1,569 @@
 {
-  "version": "0.6.25",
-  "base_repository": "davoodkarimiart/hesabsvo",
-  "baseline_commit": "15f80058ac4a22b3c61824b7186783ce28b4f6d1",
-  "format": "full clean install source; GitHub root directory, not legacy patch",
+  "version": "0.6.30",
+  "source_base": "0.6.25",
+  "patches": [
+    "0.6.26",
+    "0.6.27",
+    "0.6.28",
+    "0.6.29",
+    "0.6.30"
+  ],
   "files": {
-    ".github/workflows/php-quality.yml": "0fbb365d26112c6e9b1ddd90e6066bb7fb5c02acd5b58bc191ad1159a19558d3",
-    ".gitignore": "2d14c50c2d968b9dc50ee95028a2841c753a061d56159f284d31e0a54d813922",
-    ".htaccess": "55fb7552eaf23a806bf06456a218e1e1c55ac3e148e63b990280823b7cb2d06e",
-    ".user.ini.example": "11ece5ef15ee4a8eee8e71090dc32b57e8ec6f8d99ed8b29484f90989bbc5fa2",
-    "CHANGELOG.md": "8defd64edcc26316dd02235d5378c1f290e67d6f50c4b8b8340bf996c3aa9502",
-    "DEPLOY_CPANEL.md": "a562447562dca6ca03068fa50f684f26cee8bcb57367f1f7b391715e2c04cbe2",
-    "GITHUB_SYNC_FA.md": "5ec274e14046f903d597a266d9506887c72c7009b4b5a907b7eb554b3d3f6890",
-    "README.md": "20d8300c632e07370a44a30133c74b647061912a36a2e96773518ae638299f21",
-    "RELEASE_NOTES_FA.md": "e809edd8e89f17bc64d567b2c7dc67c6e2c029cac03a768b07d055b21e93f1a6",
-    "UPGRADE.md": "f1ee56dabf1feafcffb443a9e3f8e4f65272d802c96805fd01bebb0de6c48026",
-    "VERSION": "7646ee04436966cca164d5a52d29fc4cc7e6669d1ab1bf2740af63c16005baef",
-    "app/.htaccess": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
-    "app/Auth.php": "399ec915d6cbf6109a2e6fbb0bfcd8437282abae9b4c3d3f9e0bb8ef61482f74",
-    "app/Database.php": "d57cdcee48d7f1828f842d5d0430578c38989cba563b5958012312087de273b3",
-    "app/Logger.php": "35f53ac6cfb2e9bb374cb3f0578740460290dfbf39fc03ac7c793f76d325f484",
-    "app/Migrator.php": "767eb2908d183e0a7e702bb055d8136de03c41aabea5cca8c15de2cf36df11d9",
-    "app/Services/AccountSettingsService.php": "878836299a3f05386c992ff31844a4d6bdc8af3d797c57e490fa8bb2bdab4848",
-    "app/Services/AccountingService.php": "aace362165e5d22dfbd2aef669257058b35f69c2bae34f5a400a0c9535b978d9",
-    "app/Services/CompanyService.php": "7120e6f9d4e8f4b4c98684b107129851509a18ea739d82b1cd1d5128072da6bd",
-    "app/Services/CustomerService.php": "90837047ccaec2a3676cba1ec5a24ba953bc4a6b7954ff9fe21402e0bcce291a",
-    "app/Services/ReportAudit622.php": "2b2730d971266fb7e2411d60510cee13c46ee05fffd23ff9eaa4b26be91422d1",
-    "app/Services/ReportingService.php": "63bbc936b472db36bcfd6add2d3b6e47d563a7e5dbd484f03a1935010af5e8d3",
-    "app/Services/SettingsService.php": "28e982a6185d3a08f6e43a98f152672c938266013c0b9b9ee9b6745bc6d02520",
-    "app/Services/TransferService.php": "d229055f41994da0bd3e4abb15c06a2538504bb32a64a1913eeee1894fafcafb",
-    "app/Support/CumulativeNet614.php": "eecdc779ba64daccb5cdd76f7ded12a29b15fce992f18cc2be74e8bd3aec8673",
-    "app/Support/NameHelper.php": "8c3cfaf391a732a4fa3b9a1e9afbf63ab9e94771ba53b4ac390b717c827433ae",
-    "app/Support/ReportXlsx68.php": "8144a386e6ed8ce876e53409486a31f770911db00b91a4b2f3cc4055952bc330",
-    "app/Support/XlsxReader.php": "066efb5833a60b94512cad0aec75618cb431fe9aa863c55ff23825db70a094ac",
-    "app/bootstrap.php": "b5eccd8f1126acd22f63987a7df25d55240a6ff2df1575080b9555a751e070d5",
-    "app/helpers.php": "dcd20de90c83557d117c0bf40303b3def9db9045ec2f6ddb599aea1652d7a0c2",
-    "assets/app.css": "400b2eab4e07aa56a2fbf2907c16f1f44a16eafade05ead981bb458c1250d6cc",
-    "assets/app.js": "0e116972ee3877f5986c5ff3ec52d5cb3c5ca4aa68d955ecb758c85e2828ece2",
-    "assets/brand/apple-touch-icon.png": "f4c7c4bdea02458604dd41a2e90c85210faceb7cd307873fef36472174a921ac",
-    "assets/brand/favicon-64.png": "9d10b4cda1569d0c9a6d849fea394d89715532ca7eb99ace5a277a47aa9b2ad6",
-    "assets/brand/login-golpooch-mobile.jpg": "ea0b7e7d1516aeb821c53ffc816860cdfa06b461a081c5f1375d3f91a0815ded",
-    "assets/brand/login-golpooch.jpg": "c3c3b4764633de1066559379ec13af16ca1b01bc7068f1401faf810bbd90555a",
-    "assets/brand/pwa-192.png": "d55601f419fd9f46709e6c6dfc563b88fe0fee5a9723618e397a30e76459f1ba",
-    "assets/brand/pwa-512.png": "9e4b20ad0ce2bb5186796b446568631991c01756ea23dc166f1e89f52393e842",
-    "assets/brand/pwa-maskable-192.png": "92cd35437f178d7d2afab54116ca6c0a4fe95b62a26690d0714c7a2464560209",
-    "assets/brand/pwa-maskable-512.png": "12e8cf5b07880a8698fe5da8d3ea5f91a3ff3352180be90798f03f205a3a4c04",
-    "assets/brand/soltanhesab-logo-source.png": "07068c55bb0502ad10cfbf604c58f8a9074364bc162c1532dc4c97690807d24c",
-    "assets/brand/soltanhesab-logo.png": "57e86180e1ebe08c78e9a70a1f5f92d1c9fa5c422e5d641132825306522525c0",
-    "assets/brand/soltanhesab-mark-source.png": "cc4162c95242b4eb990a6c1b7c07f6007d399adecbadaa5560ad7ee408e9d637",
-    "assets/excel-upload.js": "f19bf548e3d497699571473b72c56c781e4a9c0102ca023e7e85886b39eaa346",
-    "assets/fonts/README.txt": "a37885a62472c83089fdb0e25e722079252b105dd84555b2dc318f3d459d6a5c",
-    "assets/svo-company-customer612.css": "690c602f863aa8fbef595ebc116e52089fc8de924a1161a9940afb0b846e041e",
-    "assets/svo-customer-live612.js": "2bbb85033533b3f2cf7017a786b314a585cbfae4937a3cede10800eb3e000484",
-    "assets/svo-image617.js": "1b0da0cfa1c8006c87b91e34bacbcaba16eda6aeaebad14584814ddbea684935",
-    "assets/svo-mobile-tables069.js": "b6de73d8cf3f0e295a4a34b2bd0846eab1a20ccdbd488e74200d3244169ff8db",
-    "assets/svo-mother614.js": "61d7fe0f4b207bdb0e1c1f8cd89126d2ae60d55a7df9b8963f12c1e1b39078b2",
-    "assets/svo-mother617.js": "5d27cc2090984d9cccd83c09eae67c63eb0eda826fbe4cea38c0f2ffe8de374d",
-    "assets/svo-patch059.css": "24d68295a320a585af928c7baf9bec4409ecd631e8f12408eabcad80b68b6a5d",
-    "assets/svo-patch059.js": "46397c5f28661bc113967e1847b244dbc382e76c24144e9f8a22414c18f7ca4e",
-    "assets/svo-patch066.css": "aa31ea8d5cc7cfe7da57e9057c8c02d4512ccbb32b3f715fd2090f02d6282e65",
-    "assets/svo-ui617.css": "91f6aab09a92a82578c8b3db427495b6877d3d7bb9c7e83bb2498d41284fa409",
-    "assets/transfer-calendar620.js": "e56a2735be9a3d566aaedd23c6f890dc52d703077bb2b41baf61ea28901f3785",
-    "assets/transfer-history620.js": "7067c86055d4d863393e7ea0353784e313b855d799eaa45c74b5b08085e99fcc",
-    "assets/transfer-receipt619.js": "36177f6c060ebd7d79cfe4f616b753635d09ce8c4a14de9095a558d1138eb249",
-    "assets/transfer619.css": "73e35f9109832f89a7dd76f29951dbf3d0bb478804e6c876571537184ec7d6ed",
-    "assets/transfer619.js": "96cbeb06b4056c79df58531dbe980f472ba4e9fcf678a3a2c57beaa93bf7eb73",
-    "config/.htaccess": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
-    "config/config.example.php": "07d980a5175c2397a530e47658733cc7e153c916918dbe63fba3e5f3460e17da",
-    "cumulative_accounts_excel.php": "cdc02416256441008f510041fa2d775b975df62ecb0dcd828f7d76cbcea35785",
-    "cumulative_data.php": "1042bc9b14a620452067b40b8df81cb0bd3f19949459ac9ac0226c55e89e1cb3",
-    "cumulative_excel.php": "d2c85725ba25bb886343f8d602acbcb04054a775c1580f3d2af4e3dbbcda9a32",
-    "cumulative_mother_preview.php": "7a20efcedbd1a015c0bd33becaa88c031f69a432f0873a5a9ecdb980c6a47cf8",
-    "cumulative_preview.php": "b3a4ad8256f330d09c62806ebae3083c02f80cacae4e86c23a844e7929f2ee3d",
-    "customer_detail_excel.php": "c9fd10ca2d1f275e2ebb467f499896422d941ef173c30ff2fa3c144078be84f8",
-    "customer_search.php": "df6a6cff2086b875017c657c3378119db26ef6817d9eecb96299c39220247dd1",
-    "database/.htaccess": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
-    "database/migrations/001_phase1.sql": "b28f5bb9b7c2a5c1b0dfae8b82f61b5682b1d2d20da61132458546cca4a9b81f",
-    "database/migrations/002_phase2.sql": "f55ad248350e07bf569853868a2ca5c12e9ac3f9fe4cde3ac3d2fc4b4c49a2e2",
-    "database/migrations/003_phase3.sql": "fcdf2c79bc0d5eee235e798a0a3bedf5763c44f5b75519d96430026e6996ef7d",
-    "database/migrations/004_phase3_guardrails.sql": "0e7af66f4768c9249007dfa94b37065059a5190a45929f965818e7b06f7c7a76",
-    "database/migrations/005_phase4_7.sql": "612c18e40f3ab3434b925a3eaf2f96a7ef07c28d122ac6a734dad4e994a43637",
-    "database/migrations/006_phase4_7_polish.sql": "fdd11714263acdb34615d6394a5da9d544a215cb69c8a598642b354e385c4e60",
-    "database/migrations/007_v042_money_canonical.sql": "346216ad3fd5af636c94a4d6c83cb9a1494ae1763f0e555e7faea10b5fa48187",
-    "database/migrations/008_v045_report_source.sql": "86520a01d5b8c912c8d794e584657937f88174e94ba2fb5cdb5d2204d85add59",
-    "database/migrations/009_v046_stability.sql": "a091940a0e83709bddb05412eaa0ab3e659c502b16015b937ead8563a2a205b6",
-    "database/migrations/010_v048_customer_reporting_ui.sql": "098d2f71b8a2e290e14c110945b94e4ff6c5c184c35b5fea999fdb64668d920b",
-    "database/migrations/011_v0410_phase47_stabilize.sql": "271d600f4cde0f144f9b822323c2fedf0bdd6c408a8bc12957ae1b32723d62a4",
-    "database/migrations/012_transfers.sql": "0a8cbd1012ea46dcc40e475dc995f5369e4460b7f3d0d890c4520fb2d15f93ae",
-    "database/migrations/013_report_usd_audits.sql": "994ba4dce1d65be3d4a4048f5c0d62c6039c82ef9378636145da32cc3fe07bd6",
-    "database/migrations/014_company_transfer_settings.sql": "8918ab85e05ec554bfb924a0e2b00874f1b33166671b9398602f368a70c7e278",
-    "docs/RUNTIME_SOURCE.md": "5d52241113d3b5e5a4b00f4823ac4d818c60deac7497317e450b7c356bef935f",
-    "docs/TEST_CHECKLIST.md": "f7e461bad82b88f7c632bc0a9a20905e945756814a84843e51c983adf6728e3d",
-    "docs/TEST_CHECKLIST_PHASE2.md": "9cf03ad7515440f2f5f9d93650445dc831eb4a3f4ef61f8f744cd70155949d1b",
-    "docs/TEST_CHECKLIST_PHASE3.md": "9a878e1665f529ad00fd46285da843186558dd4244599840c138340dda41dfc3",
-    "download_report_source.php": "5e6979171e3293e752b9b03772f8eb8b68fdf13437a9384d2f80314cf52ddea1",
-    "export.php": "18003f5d460346bc29e3c54418a09da473a127c604ca08ae8b550056f6212b99",
-    "favicon.ico": "75d752450b9e780ed4e3857ced4ba4302df8da08a8dfce6fb3c52c2d8b1cfafd",
-    "index.php": "8c96592eb703c2ee31a67bf31482d6fcf5ca89b6774f0c28fd8d16c6ecd5c985",
-    "install/index.php": "8e39159d61e3278978784d532e934a0fb444c0a80667236b68988ef7ba7c5d91",
-    "manifest.webmanifest": "a2df08e05f17fbd3690aaa9785a7d8ac7453549d92e8d1167e9667a506ab20a9",
-    "offline.html": "e196e0203bfac2509b7aa69a534c680ba8a563761517486ebc808053b5d0c1a6",
-    "print.php": "f28b2b7ec33f0c1ef0b56a8ac788d7be0daf6adcd086fafa3c5bf6deb72ab258",
-    "storage/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "storage/.htaccess": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
-    "storage/backups/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "storage/logs/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "storage/report_sources/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "summary_report.php": "12d8fca003c2e63c103d558e734367da439ea258aeef0167d31c0afcdbeb320f",
-    "sw.js": "6cdb59996abfc90f44f388d099c78b8b7f89d853e990e89f7d0fb6b370e45dd1",
-    "tests/.htaccess": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
-    "tests/phase3_formula_smoke.php": "24d8b09dbcc41f94d485600b059a6a110f1518569510d3496956d8c752a75ea5",
-    "transfer_calendar620.php": "7a51961dce495c22d66c6ba68c08f8c05328944b5dc008c258b779f08b10f672",
-    "transfer_page619.php": "291796e2763033073a0212d75d4077a78fa928e4aa9a899f5ffe206bf33c789c",
-    "transfer_preview619.php": "0754efc3d47914b81f52b52f200a58703ab7da8bb3a5a48ce17a584662c69c0f",
-    "upgrade/.htaccess": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
-    "upgrade/v0.1.1.php": "87a37bc985bf52b262c86940346b4934da9766f50339fa3f3169a4e8733650a4",
-    "upgrade/v0.2.0.php": "cfbd0623c6576768b66bde06de1b77de1fbd04befa5a4a59fe50729dd9c932f2",
-    "upgrade/v0.3.0.php": "96133a7f6b760369866fa27322db5febe10f75949c261ef4439fd49515e885a9",
-    "upgrade/v0.3.1.php": "136c70da20391994fd6aabf396cb767e6252c88eb0b5a9198be3810a72fd0243",
-    "upgrade/v0.4.0.php": "76d12d05167964cf39dc9f4f1cb5b420dd37c887b45253e1b8fe5fdca6dc4279",
-    "upgrade/v0.4.1.php": "539a1bcf9fd2967a0a9d1aa048875c799c28f0e223942dd0c3c0e9415c866b98",
-    "upgrade/v0.4.10.php": "c3cc6fe2b7262caa81b55ec8ab8a415af1d5020a89f082b9bb0f96300091033a",
-    "upgrade/v0.4.2.php": "0e2f2af408dce35f423ab85df9be502e13c863b421ef01517b1f8d7a33b5c44f",
-    "upgrade/v0.4.3.php": "cb3f5f6715e73bbc57165859e5b5ae3f17086a336bd7b35c53883ed7a8268e0e",
-    "upgrade/v0.4.4.php": "7443a9aafd1d70b77c09e09de9657af517732d5f9a52d7c5ddd3e2461df53f18",
-    "upgrade/v0.4.5.php": "ff6935e0eed1c2737fde4bbb4f859c0568b15bb2d87137f9b8942cd33bd85ec9",
-    "upgrade/v0.4.6.php": "effe71ad706a6415b86d59aee494137d4cc5427efb3c84cf737f611a8d8bfbd7",
-    "upgrade/v0.4.8.php": "a18bbfe77e21e0dfcb6ada16421ccf745c49541f978c41f8ae371161507c1e66",
-    "upgrade/v0.4.9.php": "0bb40ef5193cfe9c49f2dff1166e4f4303bf74a834bdf18e9325ee125b2cc684"
+    ".github/workflows/php-quality.yml": {
+      "sha256": "bd09b786c254f9ea765ebf56222dd56ba6342df344b538637349c480c0f8d69e",
+      "bytes": 1282
+    },
+    ".gitignore": {
+      "sha256": "e9d863673b994c14b80c083f4d810eab29c9aa1ff572869bfb00b7df55c13870",
+      "bytes": 289
+    },
+    ".htaccess": {
+      "sha256": "55fb7552eaf23a806bf06456a218e1e1c55ac3e148e63b990280823b7cb2d06e",
+      "bytes": 254
+    },
+    ".user.ini.example": {
+      "sha256": "11ece5ef15ee4a8eee8e71090dc32b57e8ec6f8d99ed8b29484f90989bbc5fa2",
+      "bytes": 169
+    },
+    "CHANGELOG.md": {
+      "sha256": "b6a7edc3b4ca800b6e06f508318e93cb72749d84682873f0f74fbfacf94c7338",
+      "bytes": 1403
+    },
+    "DEPLOY_CPANEL.md": {
+      "sha256": "1302d4add6276616698386cc2f6c2b3b108e8a3bde7069338953ce6542e59d82",
+      "bytes": 2293
+    },
+    "GITHUB_SYNC_FA.md": {
+      "sha256": "0364e3f56693ff6315313bec6bb38d07a3f912e3db7662789fb2a23e407595fb",
+      "bytes": 2083
+    },
+    "README.md": {
+      "sha256": "3752291b45dbd6a8876c4a875717cef7c59d023c3dcc0bb32f9368bca29d8041",
+      "bytes": 2758
+    },
+    "RELEASE_NOTES_FA.md": {
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "bytes": 1
+    },
+    "UPGRADE.md": {
+      "sha256": "91bd6e2d8ac45994ed61fbdac2dc37cbf495a65eb94360f2dd47b38c4bd427dc",
+      "bytes": 1121
+    },
+    "VERSION": {
+      "sha256": "ba421492725057b7959ea98d454fd6bff797427a61e17a843e0fa307b0d29a33",
+      "bytes": 7
+    },
+    "app/.htaccess": {
+      "sha256": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
+      "bytes": 19
+    },
+    "app/Auth.php": {
+      "sha256": "f5bbfe3bfa6814e1d8840fda6dea428cfc2ec33bf99bbb007232de944f7e41e2",
+      "bytes": 9780
+    },
+    "app/Database.php": {
+      "sha256": "d57cdcee48d7f1828f842d5d0430578c38989cba563b5958012312087de273b3",
+      "bytes": 756
+    },
+    "app/Logger.php": {
+      "sha256": "35f53ac6cfb2e9bb374cb3f0578740460290dfbf39fc03ac7c793f76d325f484",
+      "bytes": 1607
+    },
+    "app/Migrator.php": {
+      "sha256": "767eb2908d183e0a7e702bb055d8136de03c41aabea5cca8c15de2cf36df11d9",
+      "bytes": 1984
+    },
+    "app/Services/AccountSettingsService.php": {
+      "sha256": "878836299a3f05386c992ff31844a4d6bdc8af3d797c57e490fa8bb2bdab4848",
+      "bytes": 13741
+    },
+    "app/Services/AccountingService.php": {
+      "sha256": "aace362165e5d22dfbd2aef669257058b35f69c2bae34f5a400a0c9535b978d9",
+      "bytes": 37207
+    },
+    "app/Services/CompanyService.php": {
+      "sha256": "2be4b6af9aeed68b4b1cce5f6b6589e57201f11fddc552d55ecbe20b8f256224",
+      "bytes": 18273
+    },
+    "app/Services/CustomerService.php": {
+      "sha256": "90837047ccaec2a3676cba1ec5a24ba953bc4a6b7954ff9fe21402e0bcce291a",
+      "bytes": 19711
+    },
+    "app/Services/ReportAudit622.php": {
+      "sha256": "2b2730d971266fb7e2411d60510cee13c46ee05fffd23ff9eaa4b26be91422d1",
+      "bytes": 3458
+    },
+    "app/Services/ReportingService.php": {
+      "sha256": "617f3f39b2432f4e6a2a0f014a1d7e19504fbaf4b4ff3f1b97fa7a2c5709bfbd",
+      "bytes": 9271
+    },
+    "app/Services/SettingsService.php": {
+      "sha256": "28e982a6185d3a08f6e43a98f152672c938266013c0b9b9ee9b6745bc6d02520",
+      "bytes": 7366
+    },
+    "app/Services/TransferService.php": {
+      "sha256": "d229055f41994da0bd3e4abb15c06a2538504bb32a64a1913eeee1894fafcafb",
+      "bytes": 21223
+    },
+    "app/Support/CumulativeNet614.php": {
+      "sha256": "eecdc779ba64daccb5cdd76f7ded12a29b15fce992f18cc2be74e8bd3aec8673",
+      "bytes": 3539
+    },
+    "app/Support/LoginGuard630.php": {
+      "sha256": "ed985099b0afb9c697b91bf90bffa1895f33da68a773d5e516eba5e5695ce2e5",
+      "bytes": 3032
+    },
+    "app/Support/NameHelper.php": {
+      "sha256": "8c3cfaf391a732a4fa3b9a1e9afbf63ab9e94771ba53b4ac390b717c827433ae",
+      "bytes": 5650
+    },
+    "app/Support/ReportHeading626.php": {
+      "sha256": "f5cab2500a933b6f8a7e1a483d1c0e6dd96d4d020357055d9f08e278c4f82485",
+      "bytes": 2422
+    },
+    "app/Support/ReportXlsx68.php": {
+      "sha256": "0c8b0704a25a2f0255390cb2ffde996b91fce9d4e93dbd22e04f2c74ea810753",
+      "bytes": 11150
+    },
+    "app/Support/XlsxReader.php": {
+      "sha256": "066efb5833a60b94512cad0aec75618cb431fe9aa863c55ff23825db70a094ac",
+      "bytes": 6963
+    },
+    "app/bootstrap.php": {
+      "sha256": "5e06686cc5067458848db02e1a52cec547352133025bacf59a95c5331d0d7659",
+      "bytes": 2397
+    },
+    "app/helpers.php": {
+      "sha256": "dcd20de90c83557d117c0bf40303b3def9db9045ec2f6ddb599aea1652d7a0c2",
+      "bytes": 2247
+    },
+    "assets/app.css": {
+      "sha256": "b2f52e5a74fe8666886118d1e5b45b6e58bf078bdba962a4b5315ee05a850448",
+      "bytes": 95839
+    },
+    "assets/app.js": {
+      "sha256": "0e116972ee3877f5986c5ff3ec52d5cb3c5ca4aa68d955ecb758c85e2828ece2",
+      "bytes": 11180
+    },
+    "assets/brand/apple-touch-icon.png": {
+      "sha256": "f4c7c4bdea02458604dd41a2e90c85210faceb7cd307873fef36472174a921ac",
+      "bytes": 28890
+    },
+    "assets/brand/favicon-64.png": {
+      "sha256": "9d10b4cda1569d0c9a6d849fea394d89715532ca7eb99ace5a277a47aa9b2ad6",
+      "bytes": 5698
+    },
+    "assets/brand/login-golpooch-mobile.jpg": {
+      "sha256": "ea0b7e7d1516aeb821c53ffc816860cdfa06b461a081c5f1375d3f91a0815ded",
+      "bytes": 245401
+    },
+    "assets/brand/login-golpooch.jpg": {
+      "sha256": "c3c3b4764633de1066559379ec13af16ca1b01bc7068f1401faf810bbd90555a",
+      "bytes": 260957
+    },
+    "assets/brand/pwa-192.png": {
+      "sha256": "d55601f419fd9f46709e6c6dfc563b88fe0fee5a9723618e397a30e76459f1ba",
+      "bytes": 31864
+    },
+    "assets/brand/pwa-512.png": {
+      "sha256": "9e4b20ad0ce2bb5186796b446568631991c01756ea23dc166f1e89f52393e842",
+      "bytes": 154967
+    },
+    "assets/brand/pwa-maskable-192.png": {
+      "sha256": "92cd35437f178d7d2afab54116ca6c0a4fe95b62a26690d0714c7a2464560209",
+      "bytes": 21471
+    },
+    "assets/brand/pwa-maskable-512.png": {
+      "sha256": "12e8cf5b07880a8698fe5da8d3ea5f91a3ff3352180be90798f03f205a3a4c04",
+      "bytes": 105136
+    },
+    "assets/brand/soltanhesab-logo-source.png": {
+      "sha256": "07068c55bb0502ad10cfbf604c58f8a9074364bc162c1532dc4c97690807d24c",
+      "bytes": 567104
+    },
+    "assets/brand/soltanhesab-logo.png": {
+      "sha256": "57e86180e1ebe08c78e9a70a1f5f92d1c9fa5c422e5d641132825306522525c0",
+      "bytes": 125270
+    },
+    "assets/brand/soltanhesab-mark-source.png": {
+      "sha256": "cc4162c95242b4eb990a6c1b7c07f6007d399adecbadaa5560ad7ee408e9d637",
+      "bytes": 899048
+    },
+    "assets/excel-upload.js": {
+      "sha256": "f19bf548e3d497699571473b72c56c781e4a9c0102ca023e7e85886b39eaa346",
+      "bytes": 2119
+    },
+    "assets/fonts/README.txt": {
+      "sha256": "a37885a62472c83089fdb0e25e722079252b105dd84555b2dc318f3d459d6a5c",
+      "bytes": 375
+    },
+    "assets/security629.css": {
+      "sha256": "09a54b4530910f177345e2e28fc02531b898e53e53a910cd56f2eccb705c9078",
+      "bytes": 4570
+    },
+    "assets/settings630.css": {
+      "sha256": "50e4d725d64309bf40bde5724f06985b8529e4757b4cfc0367241be45ce83eef",
+      "bytes": 2900
+    },
+    "assets/settings630.js": {
+      "sha256": "1df9abd6986f64f4b2ffe4a29994cf847d8455eb36d06c3e7920318875270478",
+      "bytes": 1540
+    },
+    "assets/svo-company-customer612.css": {
+      "sha256": "690c602f863aa8fbef595ebc116e52089fc8de924a1161a9940afb0b846e041e",
+      "bytes": 4375
+    },
+    "assets/svo-customer-live612.js": {
+      "sha256": "2bbb85033533b3f2cf7017a786b314a585cbfae4937a3cede10800eb3e000484",
+      "bytes": 4753
+    },
+    "assets/svo-image617.js": {
+      "sha256": "1b0da0cfa1c8006c87b91e34bacbcaba16eda6aeaebad14584814ddbea684935",
+      "bytes": 3870
+    },
+    "assets/svo-mobile-tables069.js": {
+      "sha256": "b6de73d8cf3f0e295a4a34b2bd0846eab1a20ccdbd488e74200d3244169ff8db",
+      "bytes": 1043
+    },
+    "assets/svo-mother614.js": {
+      "sha256": "61d7fe0f4b207bdb0e1c1f8cd89126d2ae60d55a7df9b8963f12c1e1b39078b2",
+      "bytes": 8520
+    },
+    "assets/svo-mother617.js": {
+      "sha256": "df388889a1b75347f9910bdb54be39022476d054ee91ecbc8ac312de78b69862",
+      "bytes": 8697
+    },
+    "assets/svo-patch059.css": {
+      "sha256": "24d68295a320a585af928c7baf9bec4409ecd631e8f12408eabcad80b68b6a5d",
+      "bytes": 16652
+    },
+    "assets/svo-patch059.js": {
+      "sha256": "46397c5f28661bc113967e1847b244dbc382e76c24144e9f8a22414c18f7ca4e",
+      "bytes": 11903
+    },
+    "assets/svo-patch066.css": {
+      "sha256": "aa31ea8d5cc7cfe7da57e9057c8c02d4512ccbb32b3f715fd2090f02d6282e65",
+      "bytes": 9891
+    },
+    "assets/svo-ui617.css": {
+      "sha256": "91f6aab09a92a82578c8b3db427495b6877d3d7bb9c7e83bb2498d41284fa409",
+      "bytes": 6307
+    },
+    "assets/transfer-calendar620.js": {
+      "sha256": "e56a2735be9a3d566aaedd23c6f890dc52d703077bb2b41baf61ea28901f3785",
+      "bytes": 9794
+    },
+    "assets/transfer-history620.js": {
+      "sha256": "7067c86055d4d863393e7ea0353784e313b855d799eaa45c74b5b08085e99fcc",
+      "bytes": 1999
+    },
+    "assets/transfer-receipt619.js": {
+      "sha256": "36177f6c060ebd7d79cfe4f616b753635d09ce8c4a14de9095a558d1138eb249",
+      "bytes": 8489
+    },
+    "assets/transfer619.css": {
+      "sha256": "73e35f9109832f89a7dd76f29951dbf3d0bb478804e6c876571537184ec7d6ed",
+      "bytes": 38084
+    },
+    "assets/transfer619.js": {
+      "sha256": "96cbeb06b4056c79df58531dbe980f472ba4e9fcf678a3a2c57beaa93bf7eb73",
+      "bytes": 18954
+    },
+    "config/.htaccess": {
+      "sha256": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
+      "bytes": 19
+    },
+    "config/config.example.php": {
+      "sha256": "07d980a5175c2397a530e47658733cc7e153c916918dbe63fba3e5f3460e17da",
+      "bytes": 583
+    },
+    "cumulative_accounts_excel.php": {
+      "sha256": "cdc02416256441008f510041fa2d775b975df62ecb0dcd828f7d76cbcea35785",
+      "bytes": 1236
+    },
+    "cumulative_data.php": {
+      "sha256": "1042bc9b14a620452067b40b8df81cb0bd3f19949459ac9ac0226c55e89e1cb3",
+      "bytes": 2738
+    },
+    "cumulative_excel.php": {
+      "sha256": "2a2af71b5308dc7829989dabab62101a5b6523b17ce777cf6f0445624c38b77b",
+      "bytes": 2475
+    },
+    "cumulative_mother_preview.php": {
+      "sha256": "7a20efcedbd1a015c0bd33becaa88c031f69a432f0873a5a9ecdb980c6a47cf8",
+      "bytes": 3431
+    },
+    "cumulative_preview.php": {
+      "sha256": "b3a4ad8256f330d09c62806ebae3083c02f80cacae4e86c23a844e7929f2ee3d",
+      "bytes": 2317
+    },
+    "customer_detail_excel.php": {
+      "sha256": "c933182c952858695a6b7cb577f4fcfaad0fb6076fb86d5068cac6ba12bd1ccf",
+      "bytes": 1603
+    },
+    "customer_search.php": {
+      "sha256": "df6a6cff2086b875017c657c3378119db26ef6817d9eecb96299c39220247dd1",
+      "bytes": 1824
+    },
+    "database/.htaccess": {
+      "sha256": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
+      "bytes": 19
+    },
+    "database/migrations/001_phase1.sql": {
+      "sha256": "b28f5bb9b7c2a5c1b0dfae8b82f61b5682b1d2d20da61132458546cca4a9b81f",
+      "bytes": 1768
+    },
+    "database/migrations/002_phase2.sql": {
+      "sha256": "f55ad248350e07bf569853868a2ca5c12e9ac3f9fe4cde3ac3d2fc4b4c49a2e2",
+      "bytes": 6973
+    },
+    "database/migrations/003_phase3.sql": {
+      "sha256": "fcdf2c79bc0d5eee235e798a0a3bedf5763c44f5b75519d96430026e6996ef7d",
+      "bytes": 349
+    },
+    "database/migrations/004_phase3_guardrails.sql": {
+      "sha256": "0e7af66f4768c9249007dfa94b37065059a5190a45929f965818e7b06f7c7a76",
+      "bytes": 1064
+    },
+    "database/migrations/005_phase4_7.sql": {
+      "sha256": "612c18e40f3ab3434b925a3eaf2f96a7ef07c28d122ac6a734dad4e994a43637",
+      "bytes": 2004
+    },
+    "database/migrations/006_phase4_7_polish.sql": {
+      "sha256": "fdd11714263acdb34615d6394a5da9d544a215cb69c8a598642b354e385c4e60",
+      "bytes": 653
+    },
+    "database/migrations/007_v042_money_canonical.sql": {
+      "sha256": "346216ad3fd5af636c94a4d6c83cb9a1494ae1763f0e555e7faea10b5fa48187",
+      "bytes": 807
+    },
+    "database/migrations/008_v045_report_source.sql": {
+      "sha256": "86520a01d5b8c912c8d794e584657937f88174e94ba2fb5cdb5d2204d85add59",
+      "bytes": 168
+    },
+    "database/migrations/009_v046_stability.sql": {
+      "sha256": "a091940a0e83709bddb05412eaa0ab3e659c502b16015b937ead8563a2a205b6",
+      "bytes": 168
+    },
+    "database/migrations/010_v048_customer_reporting_ui.sql": {
+      "sha256": "098d2f71b8a2e290e14c110945b94e4ff6c5c184c35b5fea999fdb64668d920b",
+      "bytes": 677
+    },
+    "database/migrations/011_v0410_phase47_stabilize.sql": {
+      "sha256": "271d600f4cde0f144f9b822323c2fedf0bdd6c408a8bc12957ae1b32723d62a4",
+      "bytes": 178
+    },
+    "database/migrations/012_transfers.sql": {
+      "sha256": "0a8cbd1012ea46dcc40e475dc995f5369e4460b7f3d0d890c4520fb2d15f93ae",
+      "bytes": 2850
+    },
+    "database/migrations/013_report_usd_audits.sql": {
+      "sha256": "994ba4dce1d65be3d4a4048f5c0d62c6039c82ef9378636145da32cc3fe07bd6",
+      "bytes": 595
+    },
+    "database/migrations/014_company_transfer_settings.sql": {
+      "sha256": "8918ab85e05ec554bfb924a0e2b00874f1b33166671b9398602f368a70c7e278",
+      "bytes": 1170
+    },
+    "database/migrations/015_company_archive.sql": {
+      "sha256": "e80b779c37511d8d6a4ad3967bad093d520759240cd2b1b396bd4fec8261a07e",
+      "bytes": 160
+    },
+    "database/migrations/016_auth_hardening.sql": {
+      "sha256": "819c6243355279a1cc64320a142523be47c0fe6eae6533b10b6bc11fa1217644",
+      "bytes": 755
+    },
+    "docs/RUNTIME_SOURCE.md": {
+      "sha256": "5d52241113d3b5e5a4b00f4823ac4d818c60deac7497317e450b7c356bef935f",
+      "bytes": 710
+    },
+    "docs/TEST_CHECKLIST.md": {
+      "sha256": "f7e461bad82b88f7c632bc0a9a20905e945756814a84843e51c983adf6728e3d",
+      "bytes": 902
+    },
+    "docs/TEST_CHECKLIST_PHASE2.md": {
+      "sha256": "9cf03ad7515440f2f5f9d93650445dc831eb4a3f4ef61f8f744cd70155949d1b",
+      "bytes": 1219
+    },
+    "docs/TEST_CHECKLIST_PHASE3.md": {
+      "sha256": "9a878e1665f529ad00fd46285da843186558dd4244599840c138340dda41dfc3",
+      "bytes": 1068
+    },
+    "download_report_source.php": {
+      "sha256": "5e6979171e3293e752b9b03772f8eb8b68fdf13437a9384d2f80314cf52ddea1",
+      "bytes": 2891
+    },
+    "export.php": {
+      "sha256": "a0cae7d15e03200b33e7e066b7d4fc7973867413a0ba1a0e092f878ad7f17869",
+      "bytes": 6021
+    },
+    "favicon.ico": {
+      "sha256": "75d752450b9e780ed4e3857ced4ba4302df8da08a8dfce6fb3c52c2d8b1cfafd",
+      "bytes": 12519
+    },
+    "index.php": {
+      "sha256": "69ba0c809d0615bc6df36337b27de9e7722a936e138e4e6f6920b8dc7f12c5f9",
+      "bytes": 170032
+    },
+    "install/index.php": {
+      "sha256": "79e68ee7333360652c6e2610c6c63e64babaef52a21fab95dcdd4748285f0e92",
+      "bytes": 10799
+    },
+    "manifest.webmanifest": {
+      "sha256": "a2df08e05f17fbd3690aaa9785a7d8ac7453549d92e8d1167e9667a506ab20a9",
+      "bytes": 821
+    },
+    "offline.html": {
+      "sha256": "e196e0203bfac2509b7aa69a534c680ba8a563761517486ebc808053b5d0c1a6",
+      "bytes": 648
+    },
+    "print.php": {
+      "sha256": "762edd59baabc06a3531f4eac015b7bac866f9a171303466275b591a68276033",
+      "bytes": 13002
+    },
+    "storage/.gitkeep": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "storage/.htaccess": {
+      "sha256": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
+      "bytes": 19
+    },
+    "storage/backups/.gitkeep": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "storage/logs/.gitkeep": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "storage/report_sources/.gitkeep": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "summary_report.php": {
+      "sha256": "12d8fca003c2e63c103d558e734367da439ea258aeef0167d31c0afcdbeb320f",
+      "bytes": 8981
+    },
+    "sw.js": {
+      "sha256": "6cdb59996abfc90f44f388d099c78b8b7f89d853e990e89f7d0fb6b370e45dd1",
+      "bytes": 1109
+    },
+    "tests/.htaccess": {
+      "sha256": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
+      "bytes": 19
+    },
+    "tests/auth629_db_mock.php": {
+      "sha256": "0461dc0ef4b532d40f9685fbdd398c5b77d584afd23b20c777811bdd2cd5bc52",
+      "bytes": 5506
+    },
+    "tests/auth629_smoke.php": {
+      "sha256": "0ddae9e03c5e74be3bdf8862966e2fb6f6ac78973d444c16278677c34f7a270e",
+      "bytes": 1644
+    },
+    "tests/auth630_burst_mock.php": {
+      "sha256": "2479ecda8b2b2f64ec8b46bf6bd5183f5fbfd130490530e50cc59a3978b81e49",
+      "bytes": 6458
+    },
+    "tests/auth630_security_smoke.php": {
+      "sha256": "4d44b607d67eb5e8e11fa4fb945c3668545430ace83107185f2d71fcb9a52a7e",
+      "bytes": 1965
+    },
+    "tests/company_purge628_db_mock.php": {
+      "sha256": "ead1f050f1e1d007b27eda8e9d9de2b9e45d8e4c44f7075441e3d9a0f4022aca",
+      "bytes": 6717
+    },
+    "tests/company_purge628_smoke.php": {
+      "sha256": "ad03553b1e3e59518960dc08a1b9d4c0c9860489766fce1e6d66355d893c9383",
+      "bytes": 1472
+    },
+    "tests/company_removal627_db_mock.php": {
+      "sha256": "4b47630954e970a8aff76b148cff093c441ea4f5d51c4f439493bb0893c7939a",
+      "bytes": 4882
+    },
+    "tests/company_removal627_smoke.php": {
+      "sha256": "e5b66b98bf74173f6043183161fd137b5cdbc257a43ab0d653c178146fc66d61",
+      "bytes": 1421
+    },
+    "tests/phase3_formula_smoke.php": {
+      "sha256": "24d8b09dbcc41f94d485600b059a6a110f1518569510d3496956d8c752a75ea5",
+      "bytes": 623
+    },
+    "tests/report_headings626_smoke.php": {
+      "sha256": "bd893b4d8bbed221275a27451fc2e3ce792be7ae0272b999eed76fd1a9e77aa4",
+      "bytes": 1418
+    },
+    "transfer_calendar620.php": {
+      "sha256": "7a51961dce495c22d66c6ba68c08f8c05328944b5dc008c258b779f08b10f672",
+      "bytes": 1248
+    },
+    "transfer_page619.php": {
+      "sha256": "291796e2763033073a0212d75d4077a78fa928e4aa9a899f5ffe206bf33c789c",
+      "bytes": 23521
+    },
+    "transfer_preview619.php": {
+      "sha256": "0754efc3d47914b81f52b52f200a58703ab7da8bb3a5a48ce17a584662c69c0f",
+      "bytes": 1166
+    },
+    "upgrade/.htaccess": {
+      "sha256": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
+      "bytes": 19
+    },
+    "upgrade/v0.1.1.php": {
+      "sha256": "87a37bc985bf52b262c86940346b4934da9766f50339fa3f3169a4e8733650a4",
+      "bytes": 2984
+    },
+    "upgrade/v0.2.0.php": {
+      "sha256": "cfbd0623c6576768b66bde06de1b77de1fbd04befa5a4a59fe50729dd9c932f2",
+      "bytes": 2179
+    },
+    "upgrade/v0.3.0.php": {
+      "sha256": "96133a7f6b760369866fa27322db5febe10f75949c261ef4439fd49515e885a9",
+      "bytes": 2118
+    },
+    "upgrade/v0.3.1.php": {
+      "sha256": "136c70da20391994fd6aabf396cb767e6252c88eb0b5a9198be3810a72fd0243",
+      "bytes": 2114
+    },
+    "upgrade/v0.4.0.php": {
+      "sha256": "76d12d05167964cf39dc9f4f1cb5b420dd37c887b45253e1b8fe5fdca6dc4279",
+      "bytes": 2058
+    },
+    "upgrade/v0.4.1.php": {
+      "sha256": "539a1bcf9fd2967a0a9d1aa048875c799c28f0e223942dd0c3c0e9415c866b98",
+      "bytes": 413
+    },
+    "upgrade/v0.4.10.php": {
+      "sha256": "c3cc6fe2b7262caa81b55ec8ab8a415af1d5020a89f082b9bb0f96300091033a",
+      "bytes": 4889
+    },
+    "upgrade/v0.4.2.php": {
+      "sha256": "0e2f2af408dce35f423ab85df9be502e13c863b421ef01517b1f8d7a33b5c44f",
+      "bytes": 487
+    },
+    "upgrade/v0.4.3.php": {
+      "sha256": "cb3f5f6715e73bbc57165859e5b5ae3f17086a336bd7b35c53883ed7a8268e0e",
+      "bytes": 1926
+    },
+    "upgrade/v0.4.4.php": {
+      "sha256": "7443a9aafd1d70b77c09e09de9657af517732d5f9a52d7c5ddd3e2461df53f18",
+      "bytes": 1092
+    },
+    "upgrade/v0.4.5.php": {
+      "sha256": "ff6935e0eed1c2737fde4bbb4f859c0568b15bb2d87137f9b8942cd33bd85ec9",
+      "bytes": 684
+    },
+    "upgrade/v0.4.6.php": {
+      "sha256": "effe71ad706a6415b86d59aee494137d4cc5427efb3c84cf737f611a8d8bfbd7",
+      "bytes": 2505
+    },
+    "upgrade/v0.4.8.php": {
+      "sha256": "a18bbfe77e21e0dfcb6ada16421ccf745c49541f978c41f8ae371161507c1e66",
+      "bytes": 1076
+    },
+    "upgrade/v0.4.9.php": {
+      "sha256": "0bb40ef5193cfe9c49f2dff1166e4f4303bf74a834bdf18e9325ee125b2cc684",
+      "bytes": 1083
+    }
   }
 }

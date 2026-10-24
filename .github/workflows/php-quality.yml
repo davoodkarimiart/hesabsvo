@@ -7,16 +7,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check version and clean release boundaries
+      - name: Release source integrity
         run: |
-          test "$(cat VERSION)" = "0.6.25"
+          test "$(cat VERSION)" = "0.6.30"
           test ! -e config/config.php
           test ! -e storage/installed.lock
           test ! -e error_log
           test -f database/migrations/014_company_transfer_settings.sql
+          test -f database/migrations/015_company_archive.sql
+          test -f database/migrations/016_auth_hardening.sql
+          test -f database/migrations/015_company_archive.sql
+          test -f database/migrations/016_auth_hardening.sql
+          test -f app/Support/LoginGuard630.php
+          test -f tests/auth630_security_smoke.php
       - name: PHP syntax
         run: |
           find . -type f -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: JS syntax
         run: |
           find assets -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: Accounting and auth smoke
+        run: |
+          php tests/phase3_formula_smoke.php
+          php tests/company_removal627_smoke.php
+          php tests/company_purge628_smoke.php
+          php tests/auth629_smoke.php
+          php tests/auth630_security_smoke.php

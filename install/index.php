@@ -42,11 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canInstall) {
         if ($dbName === '' || $dbUser === '') {
             throw new RuntimeException('نام دیتابیس و کاربر دیتابیس الزامی است.');
         }
-        if ($adminUsername === '' || strlen($adminPassword) < 8) {
-            throw new RuntimeException('نام کاربری Admin و رمز حداقل ۸ کاراکتری الزامی است.');
+        if ($adminUsername === '' || strlen($adminPassword) < 12 || strlen($adminPassword)>72) {
+            throw new RuntimeException('نام کاربری Admin و رمز ۱۲ تا ۷۲ بایتی الزامی است.');
         }
-        if ($developerUsername === '' || strlen($developerPassword) < 8) {
-            throw new RuntimeException('نام کاربری Developer و رمز حداقل ۸ کاراکتری الزامی است.');
+        if ($developerUsername === '' || strlen($developerPassword) < 12 || strlen($developerPassword)>72) {
+            throw new RuntimeException('نام کاربری Developer و رمز ۱۲ تا ۷۲ بایتی الزامی است.');
         }
         if (strcasecmp($adminUsername, $developerUsername) === 0) {
             throw new RuntimeException('نام کاربری Admin و Developer باید متفاوت باشد.');
@@ -160,12 +160,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canInstall) {
                 <div class="role-card admin-role">
                     <div class="role-title"><span>👤</span><div><b>Admin</b><small>مدیریت روزمره سیستم</small></div></div>
                     <label>نام کاربری Admin<input name="admin_username" value="<?= e((string)($_POST['admin_username'] ?? 'admin')) ?>" required autocomplete="username"></label>
-                    <label>رمز Admin<input name="admin_password" type="password" minlength="8" required autocomplete="new-password"></label>
+                    <label>رمز Admin<input name="admin_password" type="password" minlength="12" maxlength="72" required autocomplete="new-password"></label>
                 </div>
                 <div class="role-card developer-role">
                     <div class="role-title"><span>🛠️</span><div><b>Developer</b><small>Health، لاگ، Backup و MCP</small></div></div>
                     <label>نام کاربری Developer<input name="developer_username" value="<?= e((string)($_POST['developer_username'] ?? 'developer')) ?>" required autocomplete="username"></label>
-                    <label>رمز Developer<input name="developer_password" type="password" minlength="8" required autocomplete="new-password"></label>
+                    <label>رمز Developer<input name="developer_password" type="password" minlength="12" maxlength="72" required autocomplete="new-password"></label>
                 </div>
             </div>
             <label class="installer-timezone">Timezone<input name="timezone" value="<?= e((string)($_POST['timezone'] ?? 'Asia/Tehran')) ?>" required></label>

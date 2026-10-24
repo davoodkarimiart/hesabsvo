@@ -20,7 +20,7 @@
   if(!sections.length)throw Error('داده‌ای برای تصویر مادر وجود ندارد.');
   const totalRows=sections.reduce((s,sec)=>s+sec.rows.length,0);
   if(totalRows>250)throw Error('ردیف‌های فایل مادر زیاد است؛ برای خروجی کامل، اکسل را دانلود کن.');
-  const pad=24,cardGap=26,cardW=820,headH=92,rowH=44,tableHeadH=44,footH=48,pageTop=138,pageBottom=34;
+  const pad=24,cardGap=26,cardW=820,headH=92,rowH=44,tableHeadH=44,footH=48,pageTop=154,pageBottom=34;
   const widths=[340,210,270];
   const cards=sections.map(sec=>({sec,height:headH+tableHeadH+Math.max(1,sec.rows.length)*rowH+footH}));
   const contentH=cards.reduce((sum,card,idx)=>sum+card.height+(idx?cardGap:0),0);
@@ -30,10 +30,12 @@
   const ctx=canvas.getContext('2d');if(!ctx)throw Error('مرورگر امکان تولید تصویر ندارد.');ctx.setTransform(scale,0,0,scale,0,0);
   ctx.fillStyle='#f8fafc';ctx.fillRect(0,0,w,h);
   const companyNames=[...new Set(sections.map(s=>String(s.title).split('|')[0].trim()).filter(Boolean))];
-  const reportHeading=companyNames.length===1?'مادر '+companyNames[0]:'مادر ترکیبی';
+  const reportHeading=companyNames.length===1?'ریپورت سایت '+companyNames[0]:'ریپورت سایت';
   drawText(ctx,reportHeading,w/2,38,w-40,34,'#101828',900);
-  drawText(ctx,`${sections.length} پنل انتخاب شده • ${totalRows} ردیف`,w/2,74,w-40,18,'#667085',700);
-  drawText(ctx,'خروجی تصویر دقیقاً به‌صورت تک‌ستونه ساخته شده است.',w/2,104,w-50,17,'#667085',700);
+  const dates=[...new Set(sections.map(s=>String(s.title).split('|')[2]?.trim()||'').filter(v=>/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(v)))].sort();
+  const dateText=dates.length===1?'تاریخ: '+dates[0]:dates.length?'بازه: '+dates[0]+' تا '+dates[dates.length-1]:'';
+  if(dateText)drawText(ctx,dateText,w/2,82,w-40,23,'#1e4268',900);
+  drawText(ctx,`${sections.length} پنل انتخاب شده • ${totalRows} ردیف`,w/2,120,w-40,18,'#667085',750);
   const drawCell=(x,y,cw,ch,fill,text,color='#182230',font=15,weight=800,dir='rtl')=>{rect(ctx,x,y,cw,ch,fill,'#c9d3e0',1,0);drawText(ctx,text,x+cw/2,y+ch/2,cw-12,font,color,weight,'center',dir)};
   let top=pageTop;
   cards.forEach(({sec,height},index)=>{
@@ -52,18 +54,18 @@
         const mv=Number(row.member_win)||0;
         const color=i===2&&mv<0?'#b42318':i===2&&mv>0?'#1557ac':'#182230';
         const dir=i===0?'ltr':'ltr';
-        drawCell(cx,cy,widths[i],rowH,idx%2===0?'#fff':'#f8fafc',vals[i],color,i===0?14:15,i===2?900:800,dir);
+        drawCell(cx,cy,widths[i],rowH,idx%2===0?'#fff':'#f8fafc',vals[i],color,i===0?15:17,900,dir);
         cx+=widths[i];
       }
     });
     cy=top+headH+tableHeadH+rows.length*rowH;
-    drawCell(x,cy,widths[0],footH,'#d4eee1','Grand Total','#182230',15,900,'ltr');
-    drawCell(x+widths[0],cy,widths[1],footH,'#d4eee1',fmt(sec.turnover_total),'#182230',15,900,'ltr');
-    drawCell(x+widths[0]+widths[1],cy,widths[2],footH,'#d4eee1',fmt(sec.member_win_total),Number(sec.member_win_total)<0?'#b42318':'#1557ac',15,900,'ltr');
+    drawCell(x,cy,widths[0],footH,'#d4eee1','Grand Total','#182230',16,900,'ltr');
+    drawCell(x+widths[0],cy,widths[1],footH,'#d4eee1',fmt(sec.turnover_total),'#182230',17,900,'ltr');
+    drawCell(x+widths[0]+widths[1],cy,widths[2],footH,'#d4eee1',fmt(sec.member_win_total),Number(sec.member_win_total)<0?'#b42318':'#1557ac',17,900,'ltr');
     top+=height+cardGap;
   });
   const blob=await SvoImage617.encode(canvas);
-  return SvoImage617.file(blob,'mother-combined.png');
+  return SvoImage617.file(blob,'site-report.png');
  }
  async function prepare(ids,key){
   pending=true;clean();text('فایل‌های مادر در حال خواندن و تبدیل به تصویر تک‌ستونه هستند…');
@@ -87,5 +89,5 @@
  window.svoMotherExcel=function(){const ids=selected();if(!ids.length){text('گزارشی انتخاب نشده.',true);return false}const a=document.createElement('a');a.href=query('cumulative_excel.php',ids);document.body.append(a);a.click();a.remove();text('درخواست دانلود XLSX ارسال شد.');return false};
  window.svoMotherImage=function(){if(objectURL)gallery.scrollIntoView({block:'nearest',behavior:'smooth'});else text(err||'تصویر در حال آماده‌شدن است…',!!err);return false};
  window.svoMotherCopy622=async function(){try{if(!file)throw Error('ابتدا تصویر مادر را آماده کن.');await SvoImage617.copyImage(()=>file,file.name);text('تصویر مادر در کلیپ‌بورد کپی شد.')}catch(e){text(e.message,true)}};
- window.svoMotherShare=function(){if(!file){text(err||'ابتدا منتظر آماده‌شدن تصویر بمان.',!!err);return false}SvoImage617.shareReady(file,'اکسل مادر ترکیبی',()=>text('اشتراک مستقیم پشتیبانی نمی‌شود؛ از ذخیره PNG استفاده کن و آن را به‌صورت فایل ارسال کن.',true));return false};
+ window.svoMotherShare=function(){if(!file){text(err||'ابتدا منتظر آماده‌شدن تصویر بمان.',!!err);return false}SvoImage617.shareReady(file,'ریپورت سایت',()=>text('اشتراک مستقیم پشتیبانی نمی‌شود؛ از ذخیره PNG استفاده کن و آن را به‌صورت فایل ارسال کن.',true));return false};
 })();

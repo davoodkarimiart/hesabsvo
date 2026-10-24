@@ -1,43 +1,31 @@
-# آپدیت ریپوزیتوری hesabsvo با این ZIP
+# انتشار سورس v0.6.30 روی GitHub
 
-ریپوزیتوری: https://github.com/davoodkarimiart/hesabsvo
+مخزن هدف فقط: **https://github.com/davoodkarimiart/hesabsvo**. این بسته باید **Extract** و فایل‌هایش جایگزین فایل‌های قبلی شود. صرفاً گذاشتن فایل ZIP در Repository باعث آپدیت کد نمی‌شود.
 
-آخرین نسخه مشاهده‌شده پیش از تهیه این بسته: `0.5.6` روی `main` (کامیت `15f80058`). بسته فعلی: `0.6.25`.
+مخزن `soltanhesab` محل نقشه راه است و نباید این سورس جایگزین آن شود.
 
-## روش پیشنهادی با Git (روی کامپیوتر)
+## دستور پیشنهادی برای بورک / Codex / Work
 
-1. بسته ZIP را از ChatGPT دانلود کنید و اسم و مسیر آن را مشخص کنید.
-2. یک clone تازه از GitHub بگیرید؛ **روی کپی پوشه هاست زنده کار نکنید**.
-3. کدهای نسخه قبلی داخل clone را با فایل‌های ZIP جایگزین کنید، `git add -A` بزنید و تفاوت فایل‌ها را مرور کنید.
-4. قبل از push با `git status` بررسی کنید هیچ `config/config.php`, `storage/installed.lock`, `error_log` و داده خصوصی وارد commit نشده باشد.
+> سورس مرجع در `davoodkarimiart/hesabsvo` را با محتویات این ZIP جایگزین کن، تاریخچه Git را نگه دار و `.github`، migrations، installer و تست‌ها را ثبت کن. قبل از commit بررسی کن هیچ فایل حساس یا داده مشتری داخل diff نیست. نسخه باید `0.6.30` باشد. Pull Request یا commit بساز و نتایج تست را گزارش بده. Force-push نکن.
 
-نمونه دستورات لینوکس / مک (در فولدر جدا و با ZIP دانلودشده کنار خودتان):
+### روش خط فرمان در کلون تازه
 
 ```bash
-# Archive file must be at this exact location or change ZIP_PATH.
-ZIP_PATH="$HOME/Downloads/hesabsvo-v0.6.25-github-fresh-install.zip"
+ZIP_PATH="$HOME/Downloads/hesabsvo-v0.6.30-github-full-source.zip"
 git clone https://github.com/davoodkarimiart/hesabsvo.git
 cd hesabsvo
-
-# Remove OLD tracked release files from this fresh clone, keep .git history intact.
+# اول شاخه جاری و تغییرات احتمالی جدید را بررسی کنید.
+git status --short
+# فقط در کلون تازه و تمیز، فایل‌های tracked نسخه قبل حذف شوند:
 git rm -r -- .
 unzip -oq "$ZIP_PATH" -d .
-
 git add -A
 git status --short
-# Review all changed paths before committing.
-git commit -m "release: full clean-install source v0.6.25"
+# Sensitive files check (these should NOT be present in git changes):
+git diff --cached --name-only | grep -E '(^config/config\.php$|^storage/installed\.lock$|^storage/logs/|(^|/)error_log$|\.sql\.gz$)' && { echo 'STOP: private files in commit'; exit 1; } || true
+php tests/phase3_formula_smoke.php
+git commit -m "release: consolidate complete source v0.6.30"
 git push origin main
 ```
 
-نکته: اگر شاخه main بعد از ساخت بسته تغییر کرده باشد، اول تغییرات جدید را بررسی و با آن ادغام کنید؛ blind force-push نکنید. این دستورها بعد از `git rm` همه فایل‌های قدیمی را پاک می‌کنند و فایل‌های این بسته را جایگزین می‌کنند؛ روی مخزن کلون‌شده مخصوص این کار اجرا شوند.
-
-**صرف آپلود کردن فایل ZIP داخل GitHub سورس‌ها را به‌روزرسانی نمی‌کند؛** ZIP باید Extract شود و محتویاتش commit شوند.
-
-## بررسی پس از آپدیت
-
-- فایل `VERSION` در GitHub باید `0.6.25` باشد.
-- پوشه `database/migrations` باید فایل `014_company_transfer_settings.sql` را داشته باشد.
-- فایل‌های `transfer_page619.php`, `transfer_calendar620.php` و `assets/transfer-receipt619.js` باید حضور داشته باشند.
-- workflow در `.github/workflows/php-quality.yml` باید lint PHP و JavaScript را انجام دهد.
-- هیچ رمز/توکن، دیتابیس، لاگ یا نسخه بکاپ در مخزن نباشد.
+اگر `main` در این فاصله جلو رفته، تغییرات جدید را بررسی و ادغام کنید؛ `force-push` مجاز نیست. انتشار نهایی بعد از تست واقعی نصب تازه انجام شود.

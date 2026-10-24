@@ -35,4 +35,4 @@ foreach($all as $part)foreach($part as $v){
  $rows[]=['kind'=>$kind,'values'=>$v];
 }
 require_once __DIR__.'/app/Support/ReportXlsx68.php';
-ReportXlsx68::download('مادر ترکیبی','مبالغ دلاری با دقت منبع | گزارش‌های انتخابی',['Username','Turnover','Member Win'],[36,22,23],['text','dollar','member'],$rows,'mother-combined.xlsx','مادر ترکیبی');
+ReportXlsx68::download('ریپورت سایت '.$selected['company_name'],'بازه: '.$selected['date_label'].' | مقادیر دلاری گزارش‌های انتخابی',['Username','Turnover','Member Win'],[36,22,23],['text','dollar','member'],$rows,'site-report-combined.xlsx','ریپورت سایت',true);

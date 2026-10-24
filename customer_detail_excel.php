@@ -21,6 +21,6 @@ foreach($data['rows'] as $r){
   (int)round((float)$r['paid']/$factor,0,PHP_ROUND_HALF_UP),
  ]];
 }
-$companies=array_unique(array_filter(array_map(fn($r)=>trim((string)($r['company_name']??'')),$data['rows'])));$title=($data['type']==='detail'?'ریز ':'ریز مشتری ').(count($companies)===1?reset($companies):'');
-$subtitle='مبالغ به '.SettingsService::moneyUnit($s).'، بدون اعشار | Member Win به دلار با ۲ رقم اعشار';
+$title=ReportHeading626::title($data);
+$subtitle=implode(' | ',array_filter([ReportHeading626::period($data),'مبالغ به '.SettingsService::moneyUnit($s),'Member Win به دلار با ۲ رقم اعشار']));
 ReportXlsx68::download($title,$subtitle,$headers,$widths,$types,$rows,'soltan-detail-rtl-v068.xlsx',$data['type']==='detail'?'ریز پرداخت':'ریز پرداخت مشتری');

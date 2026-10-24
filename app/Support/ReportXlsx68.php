@@ -31,7 +31,7 @@ final class ReportXlsx68 {
         return $s;
     }
     /** row item: ['values'=>[...],'kind'=>'data|total']; type strings: text, integer, dollar, received, paid, commission, member */
-    public static function download(string $title,string $subtitle,array $headers,array $widths,array $types,array $rows,string $filename,string $sheetName='گزارش'):never {
+    public static function download(string $title,string $subtitle,array $headers,array $widths,array $types,array $rows,string $filename,string $sheetName='گزارش',bool $emphasizeNumbers=false):never {
         if(!class_exists('ZipArchive'))throw new RuntimeException('افزونه ZIP روی هاست فعال نیست.');
         self::$sharedStrings=[];self::$sharedIndex=[];self::$sharedReferences=0;
         $n=count($headers);
@@ -43,7 +43,7 @@ final class ReportXlsx68 {
         foreach($widths as $j=>$width){$w=max(8,min(38,(float)$width));$body.='<col min="'.($j+1).'" max="'.($j+1).'" width="'.$w.'" customWidth="1"/>';}
         $body.='</cols><sheetData>';
         $body.='<row r="1" ht="36" customHeight="1">'.self::cell($title,'A',1,1).'</row>';
-        $body.='<row r="2" ht="24" customHeight="1">'.self::cell($subtitle,'A',2,2).'</row>';
+        $body.='<row r="2" ht="32" customHeight="1">'.self::cell($subtitle,'A',2,2).'</row>';
         $body.='<row r="3" ht="27" customHeight="1">';
         foreach($headers as $j=>$h)$body.=self::cell($h,self::col($j),3,3);
         $body.='</row>';
@@ -51,7 +51,7 @@ final class ReportXlsx68 {
         foreach($rows as $item){
             $values=$item['values']??[];if(count($values)!==$n)throw new RuntimeException('تعداد ستون‌های یکی از ردیف‌های اکسل نامعتبر است.');
             $isTotal=($item['kind']??'data')==='total';
-            $body.='<row r="'.$r.'" ht="24" customHeight="1">';
+            $body.='<row r="'.$r.'" ht="'.($emphasizeNumbers?29:24).'" customHeight="1">';
             foreach($values as $j=>$value){
                 $type=$types[$j];$style=$isTotal?4:0;
                 if(is_int($value)||is_float($value)){
@@ -64,6 +64,11 @@ final class ReportXlsx68 {
                         default=>6,
                     };
                     if($isTotal){$style=match($type){'member'=>((float)$value<0?12:((float)$value>0?13:4)),default=>14};}
+                    if ($emphasizeNumbers) {
+                        $style=$isTotal
+                           ? ($type==='member' ? ((float)$value<0?19:((float)$value>0?20:18)) : 18)
+                           : ($type==='member' ? ((float)$value<0?16:((float)$value>0?17:15)) : 15);
+                    }
                 }
                 $body.=self::cell($value,self::col($j),$r,$style);
             }
@@ -80,13 +85,16 @@ final class ReportXlsx68 {
         $shared.='</sst>';
         $ns='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
         $styles='<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="'.$ns.'">'
-          .'<fonts count="6">'
+          .'<fonts count="9">'
           .'<font><sz val="11"/><name val="Tahoma"/></font>'
           .'<font><b/><sz val="16"/><color rgb="FFFFFFFF"/><name val="Tahoma"/></font>'
-          .'<font><b/><sz val="10"/><color rgb="FF334155"/><name val="Tahoma"/></font>'
+          .'<font><b/><sz val="13"/><color rgb="FF1E4268"/><name val="Tahoma"/></font>'
           .'<font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Tahoma"/></font>'
           .'<font><b/><sz val="11"/><color rgb="FFB91C1C"/><name val="Tahoma"/></font>'
           .'<font><b/><sz val="11"/><color rgb="FF1456AD"/><name val="Tahoma"/></font>'
+          .'<font><b/><sz val="13"/><name val="Tahoma"/></font>'
+          .'<font><b/><sz val="13"/><color rgb="FFB91C1C"/><name val="Tahoma"/></font>'
+          .'<font><b/><sz val="13"/><color rgb="FF1456AD"/><name val="Tahoma"/></font>'
           .'</fonts><fills count="7"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>'
           .'<fill><patternFill patternType="solid"><fgColor rgb="FF35456A"/></patternFill></fill>'
           .'<fill><patternFill patternType="solid"><fgColor rgb="FFF1F5F9"/></patternFill></fill>'
@@ -98,7 +106,8 @@ final class ReportXlsx68 {
         $sty=[ // font,fill,border,numberFormat
           [0,0,1,0],[1,2,1,0],[2,3,1,0],[3,2,1,0],[0,4,1,0],
           [0,0,1,4],[0,0,1,3],[4,0,1,4],[5,0,1,4],[0,5,1,3],[0,6,1,3],[0,4,1,3],
-          [4,4,1,4],[5,4,1,4],[0,4,1,3]
+          [4,4,1,4],[5,4,1,4],[0,4,1,3],
+          [6,0,1,4],[7,0,1,4],[8,0,1,4],[6,4,1,4],[7,4,1,4],[8,4,1,4]
         ];
         $styles.='<cellXfs count="'.count($sty).'">';
         foreach($sty as [$font,$fill,$border,$num]){

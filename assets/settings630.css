@@ -1,0 +1,24 @@
+/* v0.6.30 — actual, accessible settings tabs, isolated forms and readable actions. */
+.s630-shell{max-width:1150px;margin:0 auto;min-width:0}
+.s630-tabs{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:6px;margin:12px 0 18px;border:1px solid #d9e3f0;border-radius:17px;background:#edf3fb;box-shadow:0 3px 16px #0d31550a}
+.s630-tab{min-height:53px;display:flex;align-items:center;justify-content:center;gap:9px;border:1px solid transparent!important;border-radius:12px!important;background:transparent!important;color:#52647c!important;font-size:15px!important;font-weight:850!important;cursor:pointer;padding:11px 14px;white-space:normal;text-align:center;line-height:1.5}
+.s630-tab[aria-selected=true]{background:#fff!important;color:#153c87!important;border-color:#c7d9f3!important;box-shadow:0 3px 14px #183b6d13}
+.s630-tab-icon{display:inline-grid;place-items:center;font-size:20px;width:25px;height:25px;color:inherit}
+.s630-tab:focus-visible{outline:3px solid #3b82f6;outline-offset:1px}
+.s630-panel[hidden]{display:none!important}
+.s630-panel{animation:s630-enter .12s ease-out;min-width:0}
+@keyframes s630-enter{from{opacity:.55;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+.s630-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:10px 3px 0}
+.s630-panel-head h2{font-size:19px;font-weight:900;color:var(--ink,#17253c);margin:0 0 3px}
+.s630-panel-head p{font-size:13px;line-height:1.7;color:var(--muted,#64748b);margin:0}
+.s630-panel .settings-security-intro{margin-bottom:13px;padding:15px 17px}
+.s630-security-status{margin-top:12px;display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:10px;border:1px solid #dae5f6;background:#fff;color:#415674;font-size:12px;line-height:1.9}
+.s630-dot{width:8px;height:8px;border-radius:50%;background:#2563eb;flex:0 0 8px;margin-top:9px}
+.s630-panel .settings-security-layout{margin-top:0}
+.s630-panel .settings-layout{margin-top:0!important}
+.s630-panel .settings-layout .settings-save{width:100%;max-width:320px;justify-self:end;position:static!important;min-height:48px;margin-top:5px;box-shadow:0 3px 10px #234f8315}
+.s630-panel input:not([type=color]):not([type=range]),.s630-panel select{font-size:16px!important}
+.s630-panel .settings-security-card{margin:0}
+.s630-turnstile{min-height:66px;max-width:100%;overflow:hidden;display:flex;justify-content:center}
+@media(max-width:740px){.s630-tabs{gap:5px;padding:5px;margin-top:8px;margin-bottom:13px}.s630-tab{min-height:51px;font-size:13px!important;gap:4px;padding:9px 5px}.s630-tab-icon{font-size:17px;width:20px;height:20px}.s630-panel-head{padding-top:4px}.s630-panel-head h2{font-size:17px}.s630-panel .settings-layout .settings-save{max-width:none}.s630-panel .settings-security-layout{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.s630-panel{animation:none}}

@@ -41,7 +41,7 @@ final class ReportingService {
         $w=implode(' AND ',$where);
 
         if($type==='monthly'||$type==='multi'){
-            $sql="SELECT r.id,r.report_date,CAST(r.total_received AS DECIMAL(24,6)) received,CAST(r.total_paid AS DECIMAL(24,6)) paid,CAST(r.total_commission AS DECIMAL(24,6)) commission,(CAST(r.total_received AS DECIMAL(24,6))-CAST(r.total_paid AS DECIMAL(24,6))) net FROM daily_reports r WHERE $w ORDER BY r.report_date DESC,r.id DESC LIMIT 5000";
+            $sql="SELECT r.id,r.report_date,c.name company_name,CAST(r.total_received AS DECIMAL(24,6)) received,CAST(r.total_paid AS DECIMAL(24,6)) paid,CAST(r.total_commission AS DECIMAL(24,6)) commission,(CAST(r.total_received AS DECIMAL(24,6))-CAST(r.total_paid AS DECIMAL(24,6))) net FROM daily_reports r JOIN companies c ON c.id=r.company_id WHERE $w ORDER BY r.report_date DESC,r.id DESC LIMIT 5000";
         } elseif(in_array($type,['detail','customer_detail'],true)){
             $whereDetail=$w;$pd=$p;
             if($type==='customer_detail'&&$f['customer_id']>0){$whereDetail.=' AND EXISTS(SELECT 1 FROM customer_accounts ca2 WHERE ca2.account_id=rr.account_id AND ca2.customer_id=?)';$pd[]=$f['customer_id'];}
@@ -56,11 +56,44 @@ final class ReportingService {
         // Normalize DB DECIMAL strings once here so rendering never calls numeric functions on strings.
         foreach($rows as &$r){foreach(['received','paid','commission','net','member_win'] as $k)if(array_key_exists($k,$r))$r[$k]=(float)$r[$k];}unset($r);
 
+        // Display context is captured before monthly aggregation discards company/date columns.
+        $sourceRowsForContext = $rows;
+        $companyNames = []; $firstDate = null; $lastDate = null;
+        foreach ($rows as $sourceRow) {
+            $companyName = trim((string)($sourceRow['company_name'] ?? ''));
+            if ($companyName !== '') $companyNames[$companyName] = true;
+            $reportDate = (string)($sourceRow['report_date'] ?? '');
+            if ($reportDate !== '') {
+                if ($firstDate === null || $reportDate < $firstDate) $firstDate = $reportDate;
+                if ($lastDate === null || $reportDate > $lastDate) $lastDate = $reportDate;
+            }
+        }
+        if (!$companyNames && $f['company_id'] > 0) {
+            $companyStmt = $pdo->prepare('SELECT name FROM companies WHERE id=? LIMIT 1');
+            $companyStmt->execute([$f['company_id']]);
+            $fallbackName = trim((string)$companyStmt->fetchColumn());
+            if ($fallbackName !== '') $companyNames[$fallbackName] = true;
+        }
+        $context = ['companies'=>array_keys($companyNames),'from'=>$firstDate,'to'=>$lastDate];
+
         if($type==='monthly'||$type==='multi'){
             $groups=[];foreach($rows as $r){$fa=AccountingService::displayBusinessDate((string)$r['report_date']);$period=substr($fa,0,7);if(!isset($groups[$period]))$groups[$period]=['period'=>$period,'reports'=>0,'received'=>0.0,'paid'=>0.0,'commission'=>0.0,'net'=>0.0];$groups[$period]['reports']++;$groups[$period]['received']+=$r['received'];$groups[$period]['paid']+=$r['paid'];$groups[$period]['commission']+=$r['commission'];$groups[$period]['net']+=$r['net'];}$rows=array_values($groups);usort($rows,fn($a,$b)=>strcmp($b['period'],$a['period']));$rows=array_slice($rows,0,($f['from']!==''||$f['to']!=='')?120:10);
+            // The header must describe the months actually shown, not older rows excluded by the 10/120-month display limit.
+            $visiblePeriods=array_fill_keys(array_column($rows,'period'),true);
+            $visibleCompanies=[];$visibleFrom=null;$visibleTo=null;
+            foreach ($sourceRowsForContext as $sourceRow) {
+                $date=(string)$sourceRow['report_date'];
+                $period=substr(AccountingService::displayBusinessDate($date),0,7);
+                if (!isset($visiblePeriods[$period])) continue;
+                $company=trim((string)($sourceRow['company_name']??''));
+                if ($company!=='') $visibleCompanies[$company]=true;
+                if ($visibleFrom===null || $date<$visibleFrom) $visibleFrom=$date;
+                if ($visibleTo===null || $date>$visibleTo) $visibleTo=$date;
+            }
+            $context=['companies'=>array_keys($visibleCompanies),'from'=>$visibleFrom,'to'=>$visibleTo];
         }
         $tot=['received'=>0.0,'paid'=>0.0,'commission'=>0.0,'net'=>0.0];foreach($rows as $r){foreach(['received','paid','commission'] as $k)$tot[$k]+=(float)($r[$k]??0);}$tot['net']=$tot['received']-$tot['paid'];
-        return ['type'=>$type,'rows'=>$rows,'totals'=>$tot,'filters'=>$f];
+        return ['type'=>$type,'rows'=>$rows,'totals'=>$tot,'filters'=>$f,'context'=>$context];
     }
     private static function date(string $v): string {return AccountingService::normalizeBusinessDate($v);}
     private static function columnExists(PDO $pdo,string $table,string $column): bool {$st=$pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name=? AND column_name=?');$st->execute([$table,$column]);return (bool)$st->fetchColumn();}
