@@ -103,7 +103,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canInstall) {
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#3559e0">
 <title>نصب سلطان حساب</title>
-<link rel="stylesheet" href="../assets/app.css">
+<link rel="stylesheet" href="../assets/app.css?v=0653">
+<link rel="stylesheet" href="installer.css?v=0653">
 </head>
 <body class="installer-page">
 <main class="install-shell">
