@@ -22,6 +22,8 @@ $checks = [
     'پوشه config قابل نوشتن' => is_writable(base_path('config')),
     'پوشه storage قابل نوشتن' => is_writable(base_path('storage')),
 ];
+$installerVersion = trim((string)@file_get_contents(base_path('VERSION')));
+if (!preg_match('/^\\d+\\.\\d+\\.\\d+$/', $installerVersion)) { $installerVersion = '0.6.53'; }
 $canInstall = !in_array(false, $checks, true);
 $error = '';
 $success = false;
@@ -73,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canInstall) {
         $upsert->execute([$adminUsername, password_hash($adminPassword, PASSWORD_DEFAULT), 'admin']);
         $upsert->execute([$developerUsername, password_hash($developerPassword, PASSWORD_DEFAULT), 'developer']);
 
-        $pdo->prepare("INSERT INTO app_meta(meta_key, meta_value) VALUES('app_version','0.6.53') ON DUPLICATE KEY UPDATE meta_value='0.6.53'")->execute();
+        $pdo->prepare("INSERT INTO app_meta(meta_key, meta_value) VALUES('app_version',?) ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)")->execute([$installerVersion]);
 
         $secret = bin2hex(random_bytes(32));
         $config = "<?php\nreturn " . var_export([
@@ -111,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canInstall) {
         <div>
             <div class="installer-kicker">راه‌اندازی اولیه</div>
             <h1>نصب سلطان حساب</h1>
-            <p>نسخه 0.6.53 • Company / Panel / AccountSettings</p>
+            <p>نسخه <?= e($installerVersion) ?> • نصب کامل سلطان حساب</p>
         </div>
     </div>
 
