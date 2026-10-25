@@ -1,4 +1,4 @@
-# Soltan Hesab: RFC 8414 / RFC 9728 OAuth discovery and private-path protection
+# Soltan Hesab v0.6.53: production hardening and RFC 8414 / RFC 9728 OAuth discovery
 Options -Indexes
 <IfModule mod_rewrite.c>
 RewriteEngine On
