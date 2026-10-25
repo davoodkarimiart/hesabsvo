@@ -1,6 +1,10 @@
 name: Publish customer installer
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-installer.yml'
   workflow_dispatch:
     inputs:
       version:
@@ -29,7 +33,7 @@ jobs:
       - name: Validate version and PHP syntax
         shell: bash
         env:
-          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version || '0.6.53' }}
         run: |
           set -euo pipefail
           test "$(tr -d '\r\n ' < VERSION)" = "$RELEASE_VERSION"
@@ -47,7 +51,7 @@ jobs:
       - name: Build clean installer ZIP
         shell: bash
         env:
-          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version || '0.6.53' }}
         run: |
           set -euo pipefail
           mkdir -p dist
@@ -82,7 +86,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version || '0.6.53' }}
         run: |
           set -euo pipefail
           TAG="v${RELEASE_VERSION}"
