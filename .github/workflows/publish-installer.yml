@@ -57,14 +57,14 @@ jobs:
           from pathlib import Path
           root=Path('.')
           output=Path(sys.argv[1])
-          disallowed={'.git','.github','dist','node_modules','.idea','.vscode','tests','docs','upgrade'}
+          disallowed={'.git','.github','dist','node_modules','.idea','.vscode','tests'}
           forbidden={'.env','config.php','installed.lock','credentials.json','oauth.json','settings.json','error_log','.user.ini'}
           count=0
           with zipfile.ZipFile(output,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
               for path in sorted(root.rglob('*')):
                   if not path.is_file() or any(part in disallowed for part in path.parts):continue
                   if path.name in forbidden or path.name.endswith(('.sql.gz','.sql.zip','.bak','.log')):continue
-                  if 'storage' in path.parts:continue
+                  if 'storage' in path.parts and path.name != '.gitkeep':continue
                   data=path.read_bytes()
                   info=zipfile.ZipInfo(path.as_posix(),date_time=(2026,1,1,0,0,0))
                   info.compress_type=zipfile.ZIP_DEFLATED
@@ -73,7 +73,7 @@ jobs:
                   count+=1
           with zipfile.ZipFile(output) as z:
               assert z.testzip() is None
-              assert {'install/index.php','mcp.php','.htaccess','cron_soltan_backup.php','database/migrations/017_phase12_company_transfer_columns.sql'}.issubset(z.namelist())
+              assert {'install/index.php','install/installer.css','mcp.php','.htaccess','cron_soltan_backup.php','storage/.gitkeep','database/migrations/017_phase12_company_transfer_columns.sql'}.issubset(z.namelist())
           print('Installer files:',count,'Output:',output)
           PY
           (cd dist && sha256sum *.zip > SHA256SUMS.txt)
