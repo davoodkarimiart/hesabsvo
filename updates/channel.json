@@ -1,0 +1,11 @@
+{
+  "product": "soltanhesab",
+  "release": "0.6.53-p2",
+  "notes": "رفع نمایش اعلان کپی تصویر در بالاترین لایه پاپ‌آپ؛ راه‌اندازی مرکز به‌روزرسانی Developer.",
+  "files": [
+    {
+      "path": "assets/app.js",
+      "sha256": "0e714a388ef13d9be854b5fdf043eea9e3d2adb5e8b3da78e313ccd8d6a88c5c"
+    }
+  ]
+}
