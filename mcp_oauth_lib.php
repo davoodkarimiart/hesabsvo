@@ -1,7 +1,16 @@
 <?php
 declare(strict_types=1);
-const SOLTAN_MCP_RESOURCE='https://soltan.toseno.ir/mcp.php';
-const SOLTAN_OAUTH_ISSUER='https://soltan.toseno.ir';
+$soltanBase = rtrim((string)config_get('app.url', ''), '/');
+if (!preg_match('~^https://[a-z0-9.-]+(?::[0-9]{2,5})?$~iD', $soltanBase)) {
+    // SERVER_NAME is provisioned by the web server, not the untrusted Host header.
+    $soltanHost = (string)($_SERVER['SERVER_NAME'] ?? '');
+    if (!preg_match('/^[a-z0-9.-]+$/iD', $soltanHost)) {
+        throw new RuntimeException('MCP requires an HTTPS app.url in config/config.php');
+    }
+    $soltanBase = 'https://' . $soltanHost;
+}
+define('SOLTAN_MCP_RESOURCE', $soltanBase . '/mcp.php');
+define('SOLTAN_OAUTH_ISSUER', $soltanBase);
 function mo_file():string {return __DIR__.'/storage/mcp/oauth.json';}
 function mo_data():array { $f=mo_file();$x=is_file($f)?json_decode((string)file_get_contents($f),true):null;return is_array($x)?$x:['clients'=>[],'codes'=>[],'refresh'=>[]];}
 function mo_save(array $data):void {$f=mo_file();$dir=dirname($f);if(!is_dir($dir))mkdir($dir,0700,true);@chmod($dir,0700);file_put_contents($dir.'/.htaccess',"Require all denied\nDeny from all\n");$tmp=$f.'.'.bin2hex(random_bytes(6));if(file_put_contents($tmp,json_encode($data,JSON_UNESCAPED_SLASHES),LOCK_EX)===false)throw new RuntimeException('Write failed');chmod($tmp,0600);if(!rename($tmp,$f))throw new RuntimeException('Commit failed');}
