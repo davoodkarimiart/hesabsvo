@@ -348,7 +348,7 @@ final class AccountingService {
         [$gy,$gm,$gd]=self::jalaliToGregorian($y,$mo,$d);if(!checkdate($gm,$gd,$gy))throw new RuntimeException('تاریخ شمسی گزارش معتبر نیست.');return sprintf('%04d-%02d-%02d',$gy,$gm,$gd);
     }
     public static function todayFa(): string {
-        [$jy,$jm,$jd]=self::gregorianToJalali((int)date('Y'),(int)date('n'),(int)date('j'));
+        [$jy,$jm,$jd]=self::gregorianToJalali((int)date('Y', strtotime('yesterday')),(int)date('n', strtotime('yesterday')),(int)date('j', strtotime('yesterday')));
         return sprintf('%04d/%02d/%02d',$jy,$jm,$jd);
     }
 
