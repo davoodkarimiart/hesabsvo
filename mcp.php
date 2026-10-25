@@ -3,6 +3,7 @@ declare(strict_types=1);
 // MCP Phase 11.1: authenticated, stateless, read-only JSON-RPC 2.0 endpoint.
 require_once __DIR__.'/app/bootstrap.php';
 require_once __DIR__.'/app/Services/DeveloperBackup633.php';
+require_once __DIR__.'/mcp_oauth_lib.php';
 header('Cache-Control: no-store');
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
@@ -18,13 +19,13 @@ if (($_SERVER['REQUEST_METHOD']??'')!=='POST') $err(405,'POST required');
 if (stripos((string)($_SERVER['CONTENT_TYPE']??''),'application/json')!==0)$err(415,'application/json required');
 if (!str_contains((string)($_SERVER['HTTP_ACCEPT']??''),'application/json')&&!str_contains((string)($_SERVER['HTTP_ACCEPT']??''),'*/*'))$err(406,'Accept application/json required');
 $header=$_SERVER['HTTP_AUTHORIZATION']??($_SERVER['REDIRECT_HTTP_AUTHORIZATION']??'');
-if (!preg_match('/^Bearer ([A-Za-z0-9_-]{32,128})$/D',(string)$header,$m)) {header('WWW-Authenticate: Bearer realm="soltan-mcp", resource_metadata="https://soltan.toseno.ir/.well-known/oauth-protected-resource"');$err(401,'Bearer token required');}
+if (!preg_match('/^Bearer ([A-Za-z0-9_-]{32,128})$/D',(string)$header,$m)) {header('WWW-Authenticate: Bearer realm="soltan-mcp", resource_metadata="' . SOLTAN_OAUTH_ISSUER . '/.well-known/oauth-protected-resource"');$err(401,'Bearer token required');}
 require_once __DIR__.'/mcp_oauth_lib.php';
 $registry=__DIR__.'/storage/mcp/credentials.json';
 $tokens=is_file($registry)?json_decode((string)file_get_contents($registry),true):null;
 $found=null;
 foreach (($tokens['entries']??[]) as $entry) {if(is_array($entry)&&hash_equals((string)($entry['hash']??''),hash('sha256',$m[1]))) {$found=$entry;break;}}
-if (!$found || ($found['expires_at']??0)<time() || (isset($found['audience']) && $found['audience']!==SOLTAN_MCP_RESOURCE)) {header('WWW-Authenticate: Bearer realm="soltan-mcp", error="invalid_token", resource_metadata="https://soltan.toseno.ir/.well-known/oauth-protected-resource"');$err(401,'Invalid or expired credential');}
+if (!$found || ($found['expires_at']??0)<time() || (isset($found['audience']) && $found['audience']!==SOLTAN_MCP_RESOURCE)) {header('WWW-Authenticate: Bearer realm="soltan-mcp", error="invalid_token", resource_metadata="' . SOLTAN_OAUTH_ISSUER . '/.well-known/oauth-protected-resource"');$err(401,'Invalid or expired credential');}
 $q=Database::connection()->prepare('SELECT id,username,role,active,security_version FROM users WHERE id=? LIMIT 1');$q->execute([(int)$found['user_id']]);$user=$q->fetch(PDO::FETCH_ASSOC);
 if (!$user || (int)$user['active']!==1 || (int)$user['security_version']!==(int)$found['security_version'])$err(401,'User inactive or access revoked');
 // Scope checks are per-tool, not global; developer diagnostic scopes never belong to ordinary users.
