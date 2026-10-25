@@ -17,7 +17,7 @@ $viewTransfer=$transferView>0?TransferService::get($transferView):null;
 $editTransfer=$transferEdit>0?TransferService::get($transferEdit):null;
 if($editTransfer&&$editTransfer['status']!=='final')$editTransfer=null;
 if($editTransfer)$transferTab='new';
-$today=new DateTimeImmutable('today');
+$today=new DateTimeImmutable('yesterday');
 $defaultEnd=$today->format('Y-m-d');
 $defaultStart=$today->modify('-6 days')->format('Y-m-d');
 $transferFmtUsd=fn($v)=>number_format((float)$v,2,'.',',');
