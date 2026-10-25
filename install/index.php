@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canInstall) {
 
         $migrationFiles = glob(base_path('database/migrations/*.sql')) ?: [];
         sort($migrationFiles, SORT_NATURAL);
-        if(count($migrationFiles)<16)throw new RuntimeException('بسته نصب ناقص است: فایل‌های Migration کافی نیستند.');
+        if (count($migrationFiles) < 16) throw new RuntimeException('بسته نصب ناقص است: فایل‌های Migration کافی نیستند.');
         foreach ($migrationFiles as $migrationFile) {
             $version = basename($migrationFile, '.sql');
             $sql = file_get_contents($migrationFile);
