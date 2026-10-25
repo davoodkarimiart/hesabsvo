@@ -14,7 +14,7 @@
 
 ## 📦 دریافت نسخه نصبی
 
-**دریافت فایل نصبی رسمی از GitHub:** به [صفحه Releases](https://github.com/davoodkarimiart/hesabsvo/releases) بروید. پس از انتشار فایل ZIP در بخش **Assets** همان نسخه، از آنجا دریافت کنید.
+**دریافت فایل نصبی رسمی از GitHub:** به [صفحه Releases](https://github.com/davoodkarimiart/hesabsvo/releases) بروید. برای انتشار نخستین فایل نصبی از [گردش‌کار آماده انتشار](https://github.com/davoodkarimiart/hesabsvo/actions/workflows/publish-installer.yml) گزینه **Run workflow** را بزنید و نسخه `0.6.53` را وارد کنید. پس از انتشار فایل ZIP در بخش **Assets** همان نسخه، از آنجا دریافت کنید.
 
 > **مهم:** آرشیو پیش‌فرض GitHub با نام `Source code (zip)` لزوماً بسته آماده نصب نیست. برای نصب مشتری فقط ZIP با عنوان `soltanhesab-...customer-install.zip` را که در Assets بارگذاری و با SHA-256 انتشار تطبیق داده شده دانلود کنید. تا قبل از ظاهرشدن فایل در Releases، نسخه نصب نهایی از داخل GitHub قابل دانلود محسوب نمی‌شود.
 
