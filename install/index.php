@@ -60,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canInstall) {
 
         $migrationFiles = glob(base_path('database/migrations/*.sql')) ?: [];
         sort($migrationFiles, SORT_NATURAL);
+        if(count($migrationFiles)<16)throw new RuntimeException('بسته نصب ناقص است: فایل‌های Migration کافی نیستند.');
         foreach ($migrationFiles as $migrationFile) {
             $version = basename($migrationFile, '.sql');
             $sql = file_get_contents($migrationFile);
@@ -72,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canInstall) {
         $upsert->execute([$adminUsername, password_hash($adminPassword, PASSWORD_DEFAULT), 'admin']);
         $upsert->execute([$developerUsername, password_hash($developerPassword, PASSWORD_DEFAULT), 'developer']);
 
-        $pdo->prepare("INSERT INTO app_meta(meta_key, meta_value) VALUES('app_version','0.2.0') ON DUPLICATE KEY UPDATE meta_value='0.2.0'")->execute();
+        $pdo->prepare("INSERT INTO app_meta(meta_key, meta_value) VALUES('app_version','0.6.53') ON DUPLICATE KEY UPDATE meta_value='0.6.53'")->execute();
 
         $secret = bin2hex(random_bytes(32));
         $config = "<?php\nreturn " . var_export([
@@ -110,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canInstall) {
         <div>
             <div class="installer-kicker">راه‌اندازی اولیه</div>
             <h1>نصب سلطان حساب</h1>
-            <p>نسخه 0.2.0 • Company / Panel / AccountSettings</p>
+            <p>نسخه 0.6.53 • Company / Panel / AccountSettings</p>
         </div>
     </div>
 
