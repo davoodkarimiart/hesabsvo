@@ -1,6 +1,10 @@
+# Soltan Hesab: RFC 8414 / RFC 9728 OAuth discovery and private-path protection
 Options -Indexes
 <IfModule mod_rewrite.c>
 RewriteEngine On
+RewriteRule ^\.well-known/oauth-protected-resource/?$ oauth.php?endpoint=resource [END,QSA]
+RewriteRule ^\.well-known/oauth-protected-resource/mcp\.php/?$ oauth.php?endpoint=resource [END,QSA]
+RewriteRule ^\.well-known/oauth-authorization-server/?$ oauth.php?endpoint=metadata [END,QSA]
 RewriteRule ^(?:app|config|database|storage|docs|upgrade|tests)(?:/|$) - [F,L,NC]
 </IfModule>
 <FilesMatch "^(\.env(?:\..*)?|.*\.log|.*\.sql|.*\.bak|.*\.ini)$">
