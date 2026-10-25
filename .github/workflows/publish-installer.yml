@@ -77,7 +77,7 @@ jobs:
                   count+=1
           with zipfile.ZipFile(output) as z:
               assert z.testzip() is None
-              assert {'install/index.php','install/installer.css','mcp.php','.htaccess','cron_soltan_backup.php','storage/.gitkeep','database/migrations/017_phase12_company_transfer_columns.sql'}.issubset(z.namelist())
+              assert {'install/index.php','assets/app.css','mcp.php','.htaccess','cron_soltan_backup.php','storage/.gitkeep','database/migrations/017_phase12_company_transfer_columns.sql'}.issubset(z.namelist())
           print('Installer files:',count,'Output:',output)
           PY
           (cd dist && sha256sum *.zip > SHA256SUMS.txt)
