@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canInstall) {
 
         $secret = bin2hex(random_bytes(32));
         $config = "<?php\nreturn " . var_export([
-            'app'=>['name'=>'سلطان حساب','url'=>'','timezone'=>$timezone,'installed'=>true,'secret'=>$secret,'debug'=>false],
+            'app'=>['name'=>'سلطان حساب','url'=>'https://'.(string)($_SERVER['SERVER_NAME'] ?? ''),'timezone'=>$timezone,'installed'=>true,'secret'=>$secret,'debug'=>false],
             'db'=>['host'=>$dbHost,'port'=>$dbPort,'name'=>$dbName,'user'=>$dbUser,'pass'=>$dbPass,'charset'=>'utf8mb4'],
             'telegram'=>['enabled'=>false,'bot_token'=>'','chat_id'=>''],
             'backup'=>['keep_local'=>7,'schedule'=>'daily'],
