@@ -2,7 +2,7 @@
 declare(strict_types=1);
 $soltanBase = rtrim((string)config_get('app.url', ''), '/');
 if (!preg_match('~^https://[a-z0-9.-]+(?::[0-9]{2,5})?$~iD', $soltanBase)) {
-    // SERVER_NAME is provisioned by the web server, not the untrusted Host header.
+    // SERVER_NAME is provisioned by the web server and not a user-supplied Host header.
     $soltanHost = (string)($_SERVER['SERVER_NAME'] ?? '');
     if (!preg_match('/^[a-z0-9.-]+$/iD', $soltanHost)) {
         throw new RuntimeException('MCP requires an HTTPS app.url in config/config.php');
