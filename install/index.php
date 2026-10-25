@@ -23,7 +23,7 @@ $checks = [
     'پوشه storage قابل نوشتن' => is_writable(base_path('storage')),
 ];
 $installerVersion = trim((string)@file_get_contents(base_path('VERSION')));
-if (!preg_match('/^\\d+\\.\\d+\\.\\d+$/', $installerVersion)) { $installerVersion = '0.6.53'; }
+if (!preg_match('/^\d+\.\d+\.\d+$/', $installerVersion)) { $installerVersion = '0.6.53'; }
 $canInstall = !in_array(false, $checks, true);
 $error = '';
 $success = false;
