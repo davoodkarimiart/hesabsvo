@@ -1,0 +1,96 @@
+name: Publish customer installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g. 0.6.53)"
+        required: true
+        default: "0.6.53"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Validate and publish installer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: none
+          coverage: none
+
+      - name: Validate version and PHP syntax
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n ' < VERSION)" = "$RELEASE_VERSION"
+          find . -type f -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l > /tmp/php-lint.log
+          test "$(find database/migrations -maxdepth 1 -name '*.sql' | wc -l)" -ge 16
+          test -f .htaccess
+          test -f install/index.php
+          test -f cron_soltan_backup.php
+          test -f mcp.php
+          if grep -rEnI 'soltan\.toseno\.ir|tosino\.ir' --include='*.php' --include='*.js' --include='*.html' .; then
+            echo "::error::Old fixed domain found"
+            exit 1
+          fi
+
+      - name: Build clean installer ZIP
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          FILE="dist/soltanhesab-v${RELEASE_VERSION}-customer-install.zip"
+          python3 - "$FILE" <<'PY'
+          import os,sys,zipfile
+          from pathlib import Path
+          root=Path('.')
+          output=Path(sys.argv[1])
+          disallowed={'.git','.github','dist','node_modules','.idea','.vscode','tests','docs','upgrade'}
+          forbidden={'.env','config.php','installed.lock','credentials.json','oauth.json','settings.json','error_log','.user.ini'}
+          count=0
+          with zipfile.ZipFile(output,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for path in sorted(root.rglob('*')):
+                  if not path.is_file() or any(part in disallowed for part in path.parts):continue
+                  if path.name in forbidden or path.name.endswith(('.sql.gz','.sql.zip','.bak','.log')):continue
+                  if 'storage' in path.parts:continue
+                  data=path.read_bytes()
+                  info=zipfile.ZipInfo(path.as_posix(),date_time=(2026,1,1,0,0,0))
+                  info.compress_type=zipfile.ZIP_DEFLATED
+                  info.external_attr=(0o100644<<16)
+                  z.writestr(info,data)
+                  count+=1
+          with zipfile.ZipFile(output) as z:
+              assert z.testzip() is None
+              assert {'install/index.php','mcp.php','.htaccess','cron_soltan_backup.php','database/migrations/017_phase12_company_transfer_columns.sql'}.issubset(z.namelist())
+          print('Installer files:',count,'Output:',output)
+          PY
+          (cd dist && sha256sum *.zip > SHA256SUMS.txt)
+
+      - name: Create GitHub Release with installer
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${RELEASE_VERSION}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::error::Release $TAG already exists; aborting to avoid changing a published customer package"
+            exit 1
+          fi
+          gh release create "$TAG" dist/*.zip dist/SHA256SUMS.txt \
+            --title "Soltan Hesab ${RELEASE_VERSION} | Customer Installer" \
+            --notes-file docs/PHASE12_RELEASE_FINAL.md \
+            --latest
