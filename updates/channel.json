@@ -1,11 +1,11 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p2",
-  "notes": "رفع نمایش اعلان کپی تصویر در بالاترین لایه پاپ‌آپ؛ راه‌اندازی مرکز به‌روزرسانی Developer.",
+  "release": "0.6.53-p3",
+  "notes": "نمایش لینک مرکز به‌روزرسانی داخل پنل Developer بخش System Health؛ بدون تغییر دیتابیس.",
   "files": [
     {
-      "path": "assets/app.js",
-      "sha256": "0e714a388ef13d9be854b5fdf043eea9e3d2adb5e8b3da78e313ccd8d6a88c5c"
+      "path": "index.php",
+      "sha256": "b9d0aba67f496c416d843ffc20531107205a351e43f0037ce87bd767a9b42731"
     }
   ]
 }
