@@ -72,6 +72,10 @@
   window.svoCopyToast=function(message='تصویر کپی شد'){
     let el=document.getElementById('svoCopyToast');
     if(!el){el=document.createElement('div');el.id='svoCopyToast';el.setAttribute('role','status');el.setAttribute('aria-live','polite');el.style.cssText='position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#166534;color:white;padding:11px 24px;border-radius:12px;box-shadow:0 8px 25px #0003;z-index:2147483647;font:600 14px system-ui,sans-serif;text-align:center;pointer-events:none;opacity:0;transition:opacity .18s';document.body.appendChild(el)}
+    // Modal dialogs live in the browser top layer; page-level z-index cannot cover them.
+    const openDialogs=[...document.querySelectorAll('dialog[open]')];
+    const host=openDialogs.length?openDialogs[openDialogs.length-1]:document.body;
+    if(el.parentElement!==host)host.appendChild(el);
     el.textContent=message;el.style.opacity='1';clearTimeout(el._hide);el._hide=setTimeout(()=>{el.style.opacity='0'},2200);
   };
 })();
