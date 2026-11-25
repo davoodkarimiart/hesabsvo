@@ -62,13 +62,13 @@ if(isset($data)&&in_array($data['type'],['period_transfer','transfer_history'],t
         $add(['ترانسفرهای دوره (تومان کامل)'],'total');
         // Keep all numbers in the first two columns of the shared worksheet or as exact strings in a separate section.
         $add(['تاریخ تسویه','شماره سند','نوع تسویه','مبلغ (تومان)']);
-        foreach(ReportingService::transferTable($data)['rows'] as $r){$v=$r['values'];$v[3]=number_format($v[3],6,'.','');$add($v);}
+        foreach(ReportingService::transferTable($data)['rows'] as $r){$v=$r['values'];$v[3]=$v[3];$add($v);}
     }else{
         // Full-toman amounts in history are not scaled by display preferences.
-        $items=[];foreach(ReportingService::transferTable($data)['rows'] as $r){$v=$r['values'];$v[5]=number_format($v[5],6,'.','');$add($v);}
+        $items=[];foreach(ReportingService::transferTable($data)['rows'] as $r){$v=$r['values'];$v[5]=$v[5];$add($v);}
         $widths=[18,20,32,24,15,27];
     }
-    foreach(ReportingService::transferSummary($data) as $s)$add([$s['label'],number_format($s['value'],6,'.','')],'total');
+    foreach(ReportingService::transferSummary($data) as $s)$add([$s['label'],$s['value']],'total');
     if($data['type']==='period_transfer'){$v=(float)$data['transfer_totals']['adjusted_net'];$add(['نتیجه پس از ترانسفرها: '.ReportingService::netLabel($v),(int)round(abs($v)/$factor)],'total');}
 }
 $fname='report-'.date('Ymd-His').'.xlsx';

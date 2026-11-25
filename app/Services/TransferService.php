@@ -188,6 +188,43 @@ final class TransferService {
         $st=$pdo->prepare("SELECT COUNT(*) documents, COALESCE(SUM(CASE WHEN t.status='final' THEN 1 ELSE 0 END),0) final_count, COALESCE(SUM(CASE WHEN t.status='final' AND t.direction='from_master' THEN ABS(t.total_toman) ELSE 0 END),0) received, COALESCE(SUM(CASE WHEN t.status='final' AND t.direction='to_master' THEN ABS(t.total_toman) ELSE 0 END),0) paid FROM transfers t".$filter);
         $st->execute($params);return $st->fetch(PDO::FETCH_ASSOC);
     }
+
+    /** Fixed six-place arithmetic without a bcmath dependency or binary rounding. */
+    private static function decimalParts(string|int|float $value): array {
+        $s=is_float($value)?sprintf('%.6F',$value):trim((string)$value);
+        if(!preg_match('/^([+-]?)(\d+)(?:\.(\d{1,6}))?$/D',$s,$m))throw new RuntimeException('مبلغ ذخیره‌شده نامعتبر است.');
+        $digits=ltrim($m[2].str_pad($m[3]??'',6,'0'),'0');
+        return [$m[1]==='-'&&$digits!==''?-1:1,$digits===''?'0':$digits];
+    }
+    private static function decimalString(int $sign,string $digits): string {
+        $digits=str_pad(ltrim($digits,'0')?:'0',7,'0',STR_PAD_LEFT);
+        return ($sign<0&&trim($digits,'0')!==''?'-':'').substr($digits,0,-6).'.'.substr($digits,-6);
+    }
+    public static function decimalAbs(string|int|float $value): string {
+        [, $digits]=self::decimalParts($value);return self::decimalString(1,$digits);
+    }
+    public static function decimalAdd(string|int|float $left,string|int|float $right): string {
+        [$sa,$a]=self::decimalParts($left);[$sb,$b]=self::decimalParts($right);
+        if($sa===$sb){
+            $n=max(strlen($a),strlen($b));$a=str_pad($a,$n,'0',STR_PAD_LEFT);$b=str_pad($b,$n,'0',STR_PAD_LEFT);
+            $carry=0;$out='';for($i=$n-1;$i>=0;$i--){$d=(int)$a[$i]+(int)$b[$i]+$carry;$out=($d%10).$out;$carry=intdiv($d,10);}
+            return self::decimalString($sa,($carry?(string)$carry:'').$out);
+        }
+        $cmp=strlen($a)<=>strlen($b);if($cmp===0)$cmp=strcmp($a,$b);
+        if($cmp===0)return '0.000000';
+        if($cmp<0){[$a,$b]=[$b,$a];$sa=$sb;}
+        $n=strlen($a);$b=str_pad($b,$n,'0',STR_PAD_LEFT);$borrow=0;$out='';
+        for($i=$n-1;$i>=0;$i--){$d=(int)$a[$i]-(int)$b[$i]-$borrow;$borrow=$d<0?1:0;$out=($d+10*$borrow).$out;}
+        return self::decimalString($sa,$out);
+    }
+    public static function decimalSubtract(string|int|float $left,string|int|float $right): string {
+        [$sign,$digits]=self::decimalParts($right);return self::decimalAdd($left,self::decimalString(-$sign,$digits));
+    }
+    public static function formatToman(string|int|float $value,array $settings=[]): string {
+        $v=self::decimalAbs($value);[$whole,$fraction]=explode('.',$v);$fraction=rtrim($fraction,'0');
+        $text=preg_replace('/\B(?=(\d{3})+(?!\d))/',',',$whole).($fraction!==''?'.'.$fraction:'');
+        return SettingsService::digits($text,(string)($settings['digit_mode']??'en'));
+    }
     /** Complete read-only export, using the same effective-date and direction filter as history. */
     public static function settlementReport(string $q='',int $companyId=0,string $status='',string $start='',string $end='',string $direction=''): array {
         [$filter,$params]=self::settlementFilter($q,$companyId,$status,$start,$end,$direction);
@@ -195,10 +232,10 @@ final class TransferService {
         $st=$pdo->prepare('SELECT t.* FROM transfers t'.$filter.' ORDER BY t.period_end ASC,t.id ASC');$st->execute($params);
         $rows=$st->fetchAll(PDO::FETCH_ASSOC);
         // Derive summaries from the same result snapshot; never include voided documents.
-        $received=0.0;$paid=0.0;$final=0;
+        $received='0.000000';$paid='0.000000';$final=0;
         foreach($rows as $r){if($r['status']!=='final')continue;$final++;
-            if($r['direction']==='from_master')$received+=abs((float)$r['total_toman']);
-            elseif($r['direction']==='to_master')$paid+=abs((float)$r['total_toman']);
+            if($r['direction']==='from_master')$received=self::decimalAdd($received,self::decimalAbs($r['total_toman']));
+            elseif($r['direction']==='to_master')$paid=self::decimalAdd($paid,self::decimalAbs($r['total_toman']));
         }
         return ['rows'=>$rows,'totals'=>['documents'=>count($rows),'final_count'=>$final,'received'=>$received,'paid'=>$paid]];
     }

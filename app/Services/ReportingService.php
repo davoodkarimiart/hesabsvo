@@ -124,17 +124,17 @@ final class ReportingService {
             ORDER BY r.report_date ASC,r.id ASC,rr.panel_id ASC";
         $st=$pdo->prepare($sql);$st->execute([$f['company_id'],$from,$to]);
         $byReport=[];foreach($st->fetchAll(PDO::FETCH_ASSOC) as $r)$byReport[$r['id']][]=$r;
-        $rows=[];$panelTotals=[];$tot=['received'=>0.0,'paid'=>0.0,'commission'=>0.0,'net'=>0.0];
+        $rows=[];$panelTotals=[];$tot=['received'=>0.0,'paid'=>0.0,'commission'=>0.0,'net'=>0.0];$exact=['received'=>'0.000000','paid'=>'0.000000','commission'=>'0.000000'];
         foreach($byReport as $group){
-            $header=$group[0];
+            $header=$group[0];foreach(['received','paid','commission'] as $k)$exact[$k]=TransferService::decimalAdd($exact[$k],$header['header_'.$k]);
             if(count($group)===1){
                 $group[0]['panel_name']=$header['panel_id']!==null?$header['panel_name']:$header['header_panel_name'];
                 $group[0]['panel_id']=$header['panel_id']??$header['header_panel_id'];
                 foreach(['received','paid','commission'] as $k)$group[0][$k]=$header['header_'.$k];
             }else{
                 foreach(['received','paid','commission'] as $k){
-                    $sum=0.0;foreach($group as $g)$sum+=(float)$g[$k];
-                    if(abs($sum-(float)$header['header_'.$k])>0.0001)throw new RuntimeException('اختلاف جمع سطرهای پنل با سند شماره '.$header['id'].'؛ گزارش قابل انتشار نیست.');
+                    $sum='0.000000';foreach($group as $g)$sum=TransferService::decimalAdd($sum,$g[$k]);
+                    if(abs((float)TransferService::decimalSubtract($sum,$header['header_'.$k]))>0.0001)throw new RuntimeException('اختلاف جمع سطرهای پنل با سند شماره '.$header['id'].'؛ گزارش قابل انتشار نیست.');
                 }
             }
             foreach($group as $g){
@@ -145,9 +145,10 @@ final class ReportingService {
                 foreach(['received','paid','commission','net'] as $k)$panelTotals[$key][$k]+=$g[$k];
             }
         }
-        $tot['net']=$tot['received']-$tot['paid'];
+        $exactNet=TransferService::decimalSubtract($exact['received'],$exact['paid']);
+        foreach($exact as $k=>$v)$tot[$k]=(float)$v;$tot['net']=(float)$exactNet;
         $tr=TransferService::settlementReport('',$f['company_id'],'final',$from,$to);
-        $tr['totals']['adjusted_net']=$tot['net']+(float)$tr['totals']['paid']-(float)$tr['totals']['received'];
+        $tr['totals']['adjusted_net']=TransferService::decimalSubtract(TransferService::decimalAdd($exactNet,$tr['totals']['paid']),$tr['totals']['received']);
         $name=$pdo->prepare('SELECT name FROM companies WHERE id=?');$name->execute([$f['company_id']]);$company=(string)$name->fetchColumn();
         if($company==='')throw new RuntimeException('شرکت انتخاب‌شده پیدا نشد.');
         return ['type'=>'period_transfer','rows'=>$rows,'totals'=>$tot,'panel_totals'=>array_values($panelTotals),
@@ -168,7 +169,7 @@ final class ReportingService {
         foreach(($customer?($data['transfers']??[]):($data['rows']??[])) as $r){
             $date=AccountingService::displayBusinessDate($r['period_end']);
             $direction=TransferService::directionLabel($r['direction'],$customer);
-            $amount=abs((float)$r['total_toman']);
+            $amount=TransferService::decimalAbs($r['total_toman']);
             $values=$customer?[$date,$r['transfer_code'],$direction,$amount]:[$date,$r['company_name_snapshot'],$r['transfer_code'],$direction,$r['status']==='final'?'نهایی':'ابطال‌شده',$amount];
             $rows[]=['values'=>$values,'direction'=>TransferService::directionClass($r['direction'],$customer),'status'=>$r['status']];
         }
@@ -177,11 +178,11 @@ final class ReportingService {
     public static function transferSummary(array $data): array {
         $t=$data['transfer_totals']??[];$customer=($data['type']??'')==='period_transfer';
         return $customer?[
-            ['label'=>'جمع پرداختی به سایت (تومان)','value'=>(float)($t['received']??0),'direction'=>'negative'],
-            ['label'=>'جمع دریافتی از سایت (تومان)','value'=>(float)($t['paid']??0),'direction'=>'positive'],
+            ['label'=>'جمع پرداختی به سایت (تومان)','value'=>($t['received']??'0.000000'),'direction'=>'negative'],
+            ['label'=>'جمع دریافتی از سایت (تومان)','value'=>($t['paid']??'0.000000'),'direction'=>'positive'],
         ]:[
-            ['label'=>'جمع دریافت از مشتری (تومان)','value'=>(float)($t['received']??0),'direction'=>'positive'],
-            ['label'=>'جمع پرداخت به مشتری (تومان)','value'=>(float)($t['paid']??0),'direction'=>'negative'],
+            ['label'=>'جمع دریافت از مشتری (تومان)','value'=>($t['received']??'0.000000'),'direction'=>'positive'],
+            ['label'=>'جمع پرداخت به مشتری (تومان)','value'=>($t['paid']??'0.000000'),'direction'=>'negative'],
         ];
     }
     public static function netLabel(float $net): string {return $net>0?'برد سایت':($net<0?'باخت سایت':'تسویه صفر');}

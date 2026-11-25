@@ -22,7 +22,7 @@ $today=new DateTimeImmutable('yesterday');
 $defaultEnd=$today->format('Y-m-d');
 $defaultStart=$today->modify('-6 days')->format('Y-m-d');
 $transferFmtUsd=fn($v)=>number_format((float)$v,2,'.',',');
-$transferFmtToman=fn($v)=>number_format(abs((float)$v),0,'.',',');
+$transferFmtToman=fn($v)=>TransferService::formatToman($v,['digit_mode'=>'en']);
 $transferFmtSigned=fn($v)=>(float)$v>0?'+'.number_format((float)$v,2,'.',','):number_format((float)$v,2,'.',',');
 $transferDayTotals=[];
 if($viewTransfer){
