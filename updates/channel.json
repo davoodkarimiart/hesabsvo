@@ -1,19 +1,19 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p4",
-  "notes": "تقویم دوگانه گزارش‌ها، جهت و تاریخ تسویه ترانسفر، گزارش دوره‌ای با ترانسفر و خروجی‌های تصویر/Excel/PDF. محاسبه دقیق تومان کامل؛ بدون تغییر ساختار دیتابیس.",
+  "release": "0.6.53-p5",
+  "notes": "اصلاح چیدمان موبایل و دسکتاپ، فیلترهای مستقل گزارش ترانسفر، اعداد صحیح تومان، بازطراحی خروجی‌های اکسل و جمع‌بندی، دسترسی Developer موبایل و دکمه‌های شرکت. بدون Migration.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
-      "sha256": "96f109ddb887c941de01051b550bd24e9ef55b16d91c3f7126db4ffe76cf7d98"
+      "sha256": "7d37c87005eeb02082485f711f164f35c03d7afe89c4f25ab034eb42bb166e7f"
     },
     {
       "path": "app/Services/TransferService.php",
-      "sha256": "02d6361c874583351cf5e5c4f15a789418ed11b7f47eca13df81b836207cd98f"
+      "sha256": "655a3bcae6206093e824d49cd4e196e59848c76937d4b4b399fb96c6b7fa4cec"
     },
     {
       "path": "index.php",
-      "sha256": "a6321953c801d06b946c89d539460d4d083c17c4004249c9f1e734bc1724e48f"
+      "sha256": "15608d535a003592ba182f21d556ca5b6094f582ef26d78e095318b2115b09da"
     },
     {
       "path": "assets/transfer-calendar620.js",
@@ -21,11 +21,11 @@
     },
     {
       "path": "assets/transfer619.js",
-      "sha256": "681652baac8fe8997a8b0e51d67ebe652f532b6d0b2df40f2326da5cba1b5e40"
+      "sha256": "f4e84c3da6cbe4a5bcdce03b65a79ae71652be63e3cbd474b1756997cf5f2ad5"
     },
     {
       "path": "transfer_page619.php",
-      "sha256": "8b0aa1a8fbce372e8ac7cabd03ab02383660da07d403e04f979c7a8d08cab9c8"
+      "sha256": "3db54d7ed8facd2c870874086089483b282b5014c15317a9ab53cfc7ff055a16"
     },
     {
       "path": "assets/transfer-receipt619.js",
@@ -33,15 +33,15 @@
     },
     {
       "path": "assets/transfer619.css",
-      "sha256": "0f8be9db0a0e04c6673d9fe2460be02105ff9ed97a739e633297d63b94115a7f"
+      "sha256": "08ec8f2cdcabc010c979ae69fb5a7e1b71d90426ab629d35733ad7f759c2579f"
     },
     {
       "path": "export.php",
-      "sha256": "e63bcb2a4cef290425801ca8c73b4283dbdf43eae2a53f7a67ee8a2148a5e50d"
+      "sha256": "d769e98eafd25864cb8cfcb64db40c46f18857b98b3f6da87af6771da2552e00"
     },
     {
       "path": "print.php",
-      "sha256": "60359eabfb058cbdfac7151c3988ba54d73fbd1b6d69d4c35bb4f75659329c5e"
+      "sha256": "bbe7fa248d18dad6e2cb0b3fca6b12e809323d4326fe662186f4bb037e291798"
     }
   ]
 }
