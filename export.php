@@ -24,10 +24,11 @@ if($type==='cumulative_selected'){
     $id=(int)($_GET['id']??0);$c=CustomerService::get($id);if(!$c)exit('Customer not found');$title='حساب '.$c['display_name'];$headers=['تاریخ','شرکت','پنل','نام','Username','Member Win','کمیسیون','دریافتی','پرداختی'];
     foreach($c['ledger']['rows'] as $r)$rows[]=[ AccountingService::displayBusinessDate((string)$r['report_date']),$r['company_name'],$r['panel_name'],$r['name'],$r['source_username'],$r['member_win'],$r['commission'],$r['received'],$r['paid']];$tot=$c['ledger']['totals'];
 }else{
-    $f=$_GET;$data=ReportingService::report($f);$title=ReportHeading626::title($data);$reportPeriod=ReportHeading626::period($data);
-    if(in_array($data['type'],['detail','customer_detail'],true)){$headers=['تاریخ','شرکت','پنل','نام','Username','Member Win','کمیسیون','دریافتی','پرداختی'];foreach($data['rows'] as $r)$rows[]=[ AccountingService::displayBusinessDate((string)$r['report_date']),$r['company_name'],$r['panel_name'],$r['name'],$r['source_username'],$r['member_win'],$r['commission'],$r['received'],$r['paid']];}
+    $f=$_GET;$data=ReportingService::report($f);$title=ReportingService::title($data);$reportPeriod=ReportHeading626::period($data);
+    if($data['type']==='transfer_history'){$tt=ReportingService::transferTable($data);$headers=$tt['headers'];foreach($tt['rows'] as $r)$rows[]=$r['values'];}
+    elseif(in_array($data['type'],['detail','customer_detail'],true)){$headers=['تاریخ','شرکت','پنل','نام','Username','Member Win','کمیسیون','دریافتی','پرداختی'];foreach($data['rows'] as $r)$rows[]=[ AccountingService::displayBusinessDate((string)$r['report_date']),$r['company_name'],$r['panel_name'],$r['name'],$r['source_username'],$r['member_win'],$r['commission'],$r['received'],$r['paid']];}
     elseif(in_array($data['type'],['monthly','multi'],true)){$headers=['دوره','تعداد گزارش','دریافتی','پرداختی','کمیسیون','برد / باخت سایت'];foreach($data['rows'] as $r)$rows[]=[ $r['period'],$r['reports'],$r['received'],$r['paid'],$r['commission'],(($r['net']>0?'برد سایت ':($r['net']<0?'باخت سایت ':'تسویه ')).SettingsService::moneyNumber(abs($r['net']),$settings))];}
-    else{$headers=['تاریخ','شرکت','پنل','دریافتی','پرداختی','کمیسیون','برد / باخت سایت'];foreach($data['rows'] as $r)$rows[]=[ AccountingService::displayBusinessDate((string)$r['report_date']),$r['company_name'],$r['panel_name'],$r['received'],$r['paid'],$r['commission'],(($r['net']>0?'برد سایت ':($r['net']<0?'باخت سایت ':'تسویه ')).SettingsService::moneyNumber(abs((float)$r['net']),$settings))];}$tot=$data['totals'];
+    else{$headers=['تاریخ','شرکت','پنل','دریافتی','پرداختی','کمیسیون','برد / باخت سایت'];foreach($data['rows'] as $r)$rows[]=[ AccountingService::displayBusinessDate((string)$r['report_date']),$r['company_name'],$r['panel_name'],$r['received'],$r['paid'],$r['commission'],(($r['net']>0?'برد سایت ':($r['net']<0?'باخت سایت ':'تسویه ')).SettingsService::moneyNumber(abs((float)$r['net']),$settings))];}$tot=$data['type']==='transfer_history'?null:$data['totals'];
 }
 
 require_once __DIR__.'/app/Support/ReportXlsx68.php';
@@ -53,5 +54,22 @@ if($tot&&count($headers)>=2){
   $items[]=['kind'=>'total','values'=>$values];
  }
 }
+if(isset($data)&&in_array($data['type'],['period_transfer','transfer_history'],true)){
+    $n=count($headers);$add=static function(array $values,string $kind='data')use(&$items,$n){$items[]=['kind'=>$kind,'values'=>array_pad($values,$n,'')];};
+    if($data['type']==='period_transfer'){
+        $add(['جمع هر پنل','','','دریافتی','پرداختی','کمیسیون','برد / باخت سایت'],'total');
+        foreach($data['panel_totals'] as $p)$add([$p['panel_name'],'','',(int)round($p['received']/$factor),(int)round($p['paid']/$factor),(int)round($p['commission']/$factor),ReportingService::netLabel($p['net']).' '.SettingsService::money(abs($p['net']),$settings)]);
+        $add(['ترانسفرهای دوره (تومان کامل)'],'total');
+        // Keep all numbers in the first two columns of the shared worksheet or as exact strings in a separate section.
+        $add(['تاریخ تسویه','شماره سند','نوع تسویه','مبلغ (تومان)']);
+        foreach(ReportingService::transferTable($data)['rows'] as $r){$v=$r['values'];$v[3]=number_format($v[3],6,'.','');$add($v);}
+    }else{
+        // Full-toman amounts in history are not scaled by display preferences.
+        $items=[];foreach(ReportingService::transferTable($data)['rows'] as $r){$v=$r['values'];$v[5]=number_format($v[5],6,'.','');$add($v);}
+        $widths=[18,20,32,24,15,27];
+    }
+    foreach(ReportingService::transferSummary($data) as $s)$add([$s['label'],number_format($s['value'],6,'.','')],'total');
+    if($data['type']==='period_transfer'){$v=(float)$data['transfer_totals']['adjusted_net'];$add(['نتیجه پس از ترانسفرها: '.ReportingService::netLabel($v),(int)round(abs($v)/$factor)],'total');}
+}
 $fname='report-'.date('Ymd-His').'.xlsx';
-ReportXlsx68::download($title,implode(' | ',array_filter([$reportPeriod,'مبالغ به '.SettingsService::moneyUnit($settings)])),$headers,$widths,$types,$items,$fname,'گزارش');
+ReportXlsx68::download($title,implode(' | ',array_filter([$reportPeriod,'مبالغ به '.(($type==='transfer_history')?'تومان':SettingsService::moneyUnit($settings))])),$headers,$widths,$types,$items,$fname,'گزارش');

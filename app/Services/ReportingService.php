@@ -160,6 +160,31 @@ final class ReportingService {
         return ['type'=>'transfer_history','rows'=>$tr['rows'],'totals'=>['received'=>$tr['totals']['received'],'paid'=>$tr['totals']['paid'],'commission'=>0.0,'net'=>$tr['totals']['received']-$tr['totals']['paid']],
             'transfer_totals'=>$tr['totals'],'filters'=>$f,'context'=>['companies'=>$names,'from'=>$from,'to'=>$to]];
     }
+    /** Shared export presentation: transfer amounts remain in full toman, independently of report scaling. */
+    public static function transferTable(array $data): array {
+        $customer=($data['type']??'')==='period_transfer';
+        $headers=$customer?['تاریخ تسویه','شماره سند','نوع تسویه','مبلغ (تومان)']:['تاریخ تسویه','شرکت','شماره سند','نوع تسویه','وضعیت','مبلغ (تومان)'];
+        $rows=[];
+        foreach(($customer?($data['transfers']??[]):($data['rows']??[])) as $r){
+            $date=AccountingService::displayBusinessDate($r['period_end']);
+            $direction=TransferService::directionLabel($r['direction'],$customer);
+            $amount=abs((float)$r['total_toman']);
+            $values=$customer?[$date,$r['transfer_code'],$direction,$amount]:[$date,$r['company_name_snapshot'],$r['transfer_code'],$direction,$r['status']==='final'?'نهایی':'ابطال‌شده',$amount];
+            $rows[]=['values'=>$values,'direction'=>TransferService::directionClass($r['direction'],$customer),'status'=>$r['status']];
+        }
+        return ['headers'=>$headers,'rows'=>$rows];
+    }
+    public static function transferSummary(array $data): array {
+        $t=$data['transfer_totals']??[];$customer=($data['type']??'')==='period_transfer';
+        return $customer?[
+            ['label'=>'جمع پرداختی به سایت (تومان)','value'=>(float)($t['received']??0),'direction'=>'negative'],
+            ['label'=>'جمع دریافتی از سایت (تومان)','value'=>(float)($t['paid']??0),'direction'=>'positive'],
+        ]:[
+            ['label'=>'جمع دریافت از مشتری (تومان)','value'=>(float)($t['received']??0),'direction'=>'positive'],
+            ['label'=>'جمع پرداخت به مشتری (تومان)','value'=>(float)($t['paid']??0),'direction'=>'negative'],
+        ];
+    }
+    public static function netLabel(float $net): string {return $net>0?'برد سایت':($net<0?'باخت سایت':'تسویه صفر');}
     public static function title(array $data): string {
         $type=$data['type']??'';
         if(!in_array($type,['period_transfer','transfer_history'],true))return ReportHeading626::title($data);
