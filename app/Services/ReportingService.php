@@ -186,6 +186,32 @@ final class ReportingService {
             ['label'=>'جمع پرداخت به مشتری (تومان)','value'=>($t['paid']??'0.000000'),'direction'=>'negative'],
         ];
     }
+    /** Explicit date boundaries with LTR marks understood by legacy Excel and browsers. */
+    public static function periodLabel(array $data): string {
+        $f=$data['filters']??[];$c=$data['context']??[];
+        $from=(string)($f['from']??'');$to=(string)($f['to']??'');
+        if($from==='')$from=(string)($c['from']??'');
+        if($to==='')$to=(string)($c['to']??'');
+        if(($data['type']??'')==='transfer_history'&&$data['rows']){
+            $dates=array_column($data['rows'],'period_end');sort($dates,SORT_STRING);
+            if($from==='')$from=$dates[0]??'';if($to==='')$to=end($dates)?:'';
+        }
+        $fmt=static function(string $d):string {
+            if($d==='')return '';
+            try{$d=AccountingService::displayBusinessDate(AccountingService::normalizeBusinessDate($d));}catch(Throwable){}
+            return "\u{200E}".$d."\u{200E}";
+        };
+        if($from!==''&&$to!==''&&$from===$to)return 'تاریخ: '.$fmt($from);
+        return implode('  |  ',array_filter([$from!==''?'از تاریخ: '.$fmt($from):'',$to!==''?'تا تاریخ: '.$fmt($to):'']));
+    }
+    public static function settlementSummary(array $data): array {
+        $summary=self::transferSummary($data);
+        if(($data['type']??'')==='period_transfer'){
+            $v=$data['transfer_totals']['adjusted_net'];$net=(float)$v;
+            $summary[]=['label'=>'نتیجه نهایی: '.self::netLabel($net),'value'=>TransferService::decimalAbs($v),'direction'=>$net>0?'positive':($net<0?'negative':''),'net'=>$net];
+        }
+        return $summary;
+    }
     public static function netLabel(float $net): string {return $net>0?'برد سایت':($net<0?'باخت سایت':'تسویه صفر');}
     public static function title(array $data): string {
         $type=$data['type']??'';

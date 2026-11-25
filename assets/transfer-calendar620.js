@@ -85,7 +85,7 @@ function init(){
   const wrap=el('div','tc-report-input');field.parentNode.insertBefore(wrap,field);wrap.append(field);
   // Preserve the original value and no-JS fallback; use the same dual-date button as transfers.
   const b=el('button','tc-date-open');b.type='button';b.dataset.transferDate=field.id;b.dataset.mode='report';b.append(el('strong','tc-date-main','انتخاب تاریخ'),el('small','tc-date-secondary','شمسی / میلادی'),el('span','tc-date-icon','▦'));wrap.append(b);field.type='hidden';
-  if(!field.required){const clear=el('button','ghost tc-clear-date','پاک‌کردن تاریخ');clear.type='button';clear.addEventListener('click',()=>{field.value='';field.dispatchEvent(new Event('input',{bubbles:true}));field.dispatchEvent(new Event('change',{bubbles:true}));refresh()});wrap.append(clear);}
+  if(!field.required){const clear=el('button','ghost tc-clear-date','×');clear.type='button';clear.setAttribute('aria-label','پاک‌کردن تاریخ');clear.title='پاک‌کردن تاریخ';clear.addEventListener('click',()=>{field.value='';field.dispatchEvent(new Event('input',{bubbles:true}));field.dispatchEvent(new Event('change',{bubbles:true}));refresh()});wrap.append(clear);}
  });
  document.querySelectorAll('[data-transfer-date]').forEach(button=>{if(button.dataset.tcBound)return;button.dataset.tcBound='1';button.addEventListener('click',()=>open(button))});
  document.querySelectorAll('[data-transfer-iso],[data-report-calendar]').forEach(field=>{if(field.dataset.tcRefreshBound)return;field.dataset.tcRefreshBound='1';field.addEventListener('change',refresh);field.addEventListener('input',refresh)});
