@@ -159,22 +159,58 @@ final class TransferService {
         $calc=self::calculate($source,$percent,$rate,(string)($input['site_usd_override']??''),(string)($input['override_reason']??''));
         return ['source'=>$source,'company'=>$source['company'],'calculation'=>$calc];
     }
-    public static function listingPaginated(string $q='',int $companyId=0,string $status='',string $start='',string $end='',int $page=1,int $perPage=25): array {
+
+    /** Direction belongs to the saved settlement; do not infer it from override signs. */
+    public static function directionLabel(string $direction,bool $customerView=false): string {
+        return match($direction){
+            'from_master'=>$customerView?'پرداختی به سایت':'دریافت از مشتری',
+            'to_master'=>$customerView?'دریافتی از سایت':'پرداخت به مشتری',
+            'none'=>'تسویه صفر',default=>'نامشخص'
+        };
+    }
+    public static function directionClass(string $direction,bool $customerView=false): string {
+        if($direction==='from_master')return $customerView?'negative':'positive';
+        if($direction==='to_master')return $customerView?'positive':'negative';
+        return '';
+    }
+    private static function settlementFilter(string $q,int $companyId,string $status,string $start,string $end,string $direction): array {
         $where=[];$params=[];
         if($q!==''){$where[]='(t.transfer_code LIKE ? OR t.company_name_snapshot LIKE ? OR t.notes LIKE ?)';$like='%'.$q.'%';array_push($params,$like,$like,$like);}
         if($companyId>0){$where[]='t.company_id=?';$params[]=$companyId;}
         if(in_array($status,['final','void'],true)){$where[]='t.status=?';$params[]=$status;}
-        if($start!==''){$from=self::isoDay($start)->format('Y-m-d');$where[]='t.period_end>=?';$params[]=$from;}
-        if($end!==''){$to=self::isoDay($end)->format('Y-m-d');$where[]='t.period_start<=?';$params[]=$to;}
+        if(in_array($direction,['from_master','to_master','none'],true)){$where[]='t.direction=?';$params[]=$direction;}
+        if($start!==''){$start=self::isoDay($start)->format('Y-m-d');$where[]='t.period_end>=?';$params[]=$start;}
+        if($end!==''){$end=self::isoDay($end)->format('Y-m-d');$where[]='t.period_end<=?';$params[]=$end;}
         if($start!==''&&$end!==''&&$start>$end)throw new RuntimeException('تاریخ شروع فیلتر نباید بعد از پایان باشد.');
-        $filter=$where?' WHERE '.implode(' AND ',$where):'';
+        return [$where?' WHERE '.implode(' AND ',$where):'',$params];
+    }
+    private static function settlementTotals(PDO $pdo,string $filter,array $params): array {
+        $st=$pdo->prepare("SELECT COUNT(*) documents, COALESCE(SUM(CASE WHEN t.status='final' THEN 1 ELSE 0 END),0) final_count, COALESCE(SUM(CASE WHEN t.status='final' AND t.direction='from_master' THEN ABS(t.total_toman) ELSE 0 END),0) received, COALESCE(SUM(CASE WHEN t.status='final' AND t.direction='to_master' THEN ABS(t.total_toman) ELSE 0 END),0) paid FROM transfers t".$filter);
+        $st->execute($params);return $st->fetch(PDO::FETCH_ASSOC);
+    }
+    /** Complete read-only export, using the same effective-date and direction filter as history. */
+    public static function settlementReport(string $q='',int $companyId=0,string $status='',string $start='',string $end='',string $direction=''): array {
+        [$filter,$params]=self::settlementFilter($q,$companyId,$status,$start,$end,$direction);
+        $pdo=Database::connection();
+        $st=$pdo->prepare('SELECT t.* FROM transfers t'.$filter.' ORDER BY t.period_end ASC,t.id ASC');$st->execute($params);
+        $rows=$st->fetchAll(PDO::FETCH_ASSOC);
+        // Derive summaries from the same result snapshot; never include voided documents.
+        $received=0.0;$paid=0.0;$final=0;
+        foreach($rows as $r){if($r['status']!=='final')continue;$final++;
+            if($r['direction']==='from_master')$received+=abs((float)$r['total_toman']);
+            elseif($r['direction']==='to_master')$paid+=abs((float)$r['total_toman']);
+        }
+        return ['rows'=>$rows,'totals'=>['documents'=>count($rows),'final_count'=>$final,'received'=>$received,'paid'=>$paid]];
+    }
+    public static function listingPaginated(string $q='',int $companyId=0,string $status='',string $start='',string $end='',int $page=1,int $perPage=25,string $direction=''): array {
+        [$filter,$params]=self::settlementFilter($q,$companyId,$status,$start,$end,$direction);
         $pdo=Database::connection();
         $count=$pdo->prepare('SELECT COUNT(*) FROM transfers t'.$filter);$count->execute($params);$total=(int)$count->fetchColumn();
         $perPage=max(5,min(100,$perPage));$pages=max(1,(int)ceil($total/$perPage));$page=max(1,min($pages,$page));
         $sql='SELECT t.* FROM transfers t'.$filter.' ORDER BY t.id DESC LIMIT ? OFFSET ?';
         $st=$pdo->prepare($sql);$i=1;foreach($params as $param)$st->bindValue($i++,$param,PDO::PARAM_STR);
         $st->bindValue($i++,$perPage,PDO::PARAM_INT);$st->bindValue($i,($page-1)*$perPage,PDO::PARAM_INT);$st->execute();
-        return ['rows'=>$st->fetchAll(PDO::FETCH_ASSOC),'total'=>$total,'page'=>$page,'pages'=>$pages,'per_page'=>$perPage];
+        return ['rows'=>$st->fetchAll(PDO::FETCH_ASSOC),'total'=>$total,'page'=>$page,'pages'=>$pages,'per_page'=>$perPage,'totals'=>self::settlementTotals($pdo,$filter,$params)];
     }
     public static function listing(string $q='',int $companyId=0,string $status=''): array {
         return self::listingPaginated($q,$companyId,$status)['rows'];

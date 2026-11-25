@@ -10,13 +10,17 @@ final class ReportingService {
     }
 
     public static function normalizeFilters(array $f): array {
-        $f['type']=in_array(($f['type']??'cumulative'),['cumulative','daily','monthly','multi','detail','customer_detail'],true)?$f['type']:'daily';
+        $f['type']=in_array(($f['type']??'cumulative'),['cumulative','daily','monthly','multi','detail','customer_detail','period_transfer','transfer_history'],true)?$f['type']:'daily';
         $f['company_id']=(int)($f['company_id']??0);$f['panel_id']=(int)($f['panel_id']??0);$f['customer_id']=(int)($f['customer_id']??0);if($f['type']!=='customer_detail')$f['customer_id']=0;if($f['type']==='customer_detail'&&$f['customer_id']>0){$f['company_id']=0;$f['panel_id']=0;}
         $f['from']=trim((string)($f['from']??''));$f['to']=trim((string)($f['to']??''));
         $f['date_mode']=($f['date_mode']??'single')==='range'?'range':'single';
         $f['date']=trim((string)($f['date']??''));
         if($f['date_mode']==='single'){$f['from']=$f['date'];$f['to']=$f['date'];}
         else $f['date']='';
+        if(in_array($f['type'],['period_transfer','transfer_history'],true)){
+            $f['panel_id']=0;$f['customer_id']=0;
+            $f['q']=trim((string)($f['q']??''));$f['status']=(string)($f['status']??'');$f['direction']=(string)($f['direction']??'');
+        }
         if($f['type']==='cumulative'){
             $f['panel_id']=0;
         }
@@ -29,7 +33,10 @@ final class ReportingService {
     }
 
     public static function report(array $input): array {
-        $f=self::normalizeFilters($input);$type=$f['type'];if($type==='customer_detail'&&$f['customer_id']<=0)throw new RuntimeException('برای ریز پرداخت مشتری، یک مشتری را انتخاب کن.');$pdo=Database::connection();$where=["r.status='final'"];$p=[];
+        $f=self::normalizeFilters($input);$type=$f['type'];
+        if($type==='period_transfer')return self::periodTransfer($f);
+        if($type==='transfer_history')return self::transferHistory($f);
+        if($type==='customer_detail'&&$f['customer_id']<=0)throw new RuntimeException('برای ریز پرداخت مشتری، یک مشتری را انتخاب کن.');$pdo=Database::connection();$where=["r.status='final'"];$p=[];
         if($f['company_id']>0){$where[]='r.company_id=?';$p[]=$f['company_id'];}
         if($f['panel_id']>0){
             // report.panel_id is historical convenience only; row ownership is authoritative.
@@ -94,6 +101,69 @@ final class ReportingService {
         }
         $tot=['received'=>0.0,'paid'=>0.0,'commission'=>0.0,'net'=>0.0];foreach($rows as $r){foreach(['received','paid','commission'] as $k)$tot[$k]+=(float)($r[$k]??0);}$tot['net']=$tot['received']-$tot['paid'];
         return ['type'=>$type,'rows'=>$rows,'totals'=>$tot,'filters'=>$f,'context'=>$context];
+    }
+
+    /** Same daily report amounts, split only when immutable rows identify multiple panels. */
+    private static function periodTransfer(array $f): array {
+        if($f['company_id']<=0||$f['from']===''||$f['to']==='')throw new RuntimeException('شرکت و ابتدا و انتهای بازه گزارش را انتخاب کن.');
+        $from=self::date($f['from']);$to=self::date($f['to']);
+        if($from>$to)throw new RuntimeException('تاریخ شروع بعد از پایان است.');
+        $pdo=Database::connection();
+        // A single-panel document retains the canonical header totals. Multi-panel documents
+        // use row snapshots; unassigned rows remain explicitly unassigned.
+        $sql="SELECT r.id,r.report_date,c.name company_name,r.panel_id header_panel_id,
+            r.total_received header_received,r.total_paid header_paid,r.total_commission header_commission,
+            rr.panel_id,COALESCE(pn.name,'—') panel_name,COALESCE(hp.name,'—') header_panel_name,
+            COUNT(rr.id) row_count,COALESCE(SUM(rr.received),0) received,
+            COALESCE(SUM(rr.paid),0) paid,COALESCE(SUM(rr.commission),0) commission
+            FROM daily_reports r JOIN companies c ON c.id=r.company_id
+            LEFT JOIN daily_report_rows rr ON rr.daily_report_id=r.id
+            LEFT JOIN panels pn ON pn.id=rr.panel_id LEFT JOIN panels hp ON hp.id=r.panel_id
+            WHERE r.company_id=? AND r.status='final' AND r.deleted_at IS NULL AND r.report_date BETWEEN ? AND ?
+            GROUP BY r.id,r.report_date,c.name,r.panel_id,r.total_received,r.total_paid,r.total_commission,rr.panel_id,pn.name,hp.name
+            ORDER BY r.report_date ASC,r.id ASC,rr.panel_id ASC";
+        $st=$pdo->prepare($sql);$st->execute([$f['company_id'],$from,$to]);
+        $byReport=[];foreach($st->fetchAll(PDO::FETCH_ASSOC) as $r)$byReport[$r['id']][]=$r;
+        $rows=[];$panelTotals=[];$tot=['received'=>0.0,'paid'=>0.0,'commission'=>0.0,'net'=>0.0];
+        foreach($byReport as $group){
+            $header=$group[0];
+            if(count($group)===1){
+                $group[0]['panel_name']=$header['panel_id']!==null?$header['panel_name']:$header['header_panel_name'];
+                $group[0]['panel_id']=$header['panel_id']??$header['header_panel_id'];
+                foreach(['received','paid','commission'] as $k)$group[0][$k]=$header['header_'.$k];
+            }else{
+                foreach(['received','paid','commission'] as $k){
+                    $sum=0.0;foreach($group as $g)$sum+=(float)$g[$k];
+                    if(abs($sum-(float)$header['header_'.$k])>0.0001)throw new RuntimeException('اختلاف جمع سطرهای پنل با سند شماره '.$header['id'].'؛ گزارش قابل انتشار نیست.');
+                }
+            }
+            foreach($group as $g){
+                foreach(['received','paid','commission'] as $k){$g[$k]=(float)$g[$k];$tot[$k]+=$g[$k];}
+                $g['net']=$g['received']-$g['paid'];$rows[]=$g;
+                $key=(string)($g['panel_id']??'unassigned');
+                if(!isset($panelTotals[$key]))$panelTotals[$key]=['panel_name'=>$g['panel_name'],'received'=>0.0,'paid'=>0.0,'commission'=>0.0,'net'=>0.0];
+                foreach(['received','paid','commission','net'] as $k)$panelTotals[$key][$k]+=$g[$k];
+            }
+        }
+        $tot['net']=$tot['received']-$tot['paid'];
+        $tr=TransferService::settlementReport('',$f['company_id'],'final',$from,$to);
+        $tr['totals']['adjusted_net']=$tot['net']+(float)$tr['totals']['paid']-(float)$tr['totals']['received'];
+        $name=$pdo->prepare('SELECT name FROM companies WHERE id=?');$name->execute([$f['company_id']]);$company=(string)$name->fetchColumn();
+        if($company==='')throw new RuntimeException('شرکت انتخاب‌شده پیدا نشد.');
+        return ['type'=>'period_transfer','rows'=>$rows,'totals'=>$tot,'panel_totals'=>array_values($panelTotals),
+            'transfers'=>$tr['rows'],'transfer_totals'=>$tr['totals'],'filters'=>$f,'context'=>['companies'=>[$company],'from'=>$from,'to'=>$to]];
+    }
+    private static function transferHistory(array $f): array {
+        $from=$f['from']!==''?self::date($f['from']):'';$to=$f['to']!==''?self::date($f['to']):'';
+        $tr=TransferService::settlementReport($f['q'],$f['company_id'],$f['status'],$from,$to,$f['direction']);
+        $names=array_values(array_unique(array_column($tr['rows'],'company_name_snapshot')));
+        return ['type'=>'transfer_history','rows'=>$tr['rows'],'totals'=>['received'=>$tr['totals']['received'],'paid'=>$tr['totals']['paid'],'commission'=>0.0,'net'=>$tr['totals']['received']-$tr['totals']['paid']],
+            'transfer_totals'=>$tr['totals'],'filters'=>$f,'context'=>['companies'=>$names,'from'=>$from,'to'=>$to]];
+    }
+    public static function title(array $data): string {
+        $type=$data['type']??'';
+        if(!in_array($type,['period_transfer','transfer_history'],true))return ReportHeading626::title($data);
+        return ($type==='period_transfer'?'گزارش دوره‌ای با ترانسفر':'گزارش ترانسفرها').(!empty($data['context']['companies'])?' '.implode('، ',$data['context']['companies']):'');
     }
     private static function date(string $v): string {return AccountingService::normalizeBusinessDate($v);}
     private static function columnExists(PDO $pdo,string $table,string $column): bool {$st=$pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name=? AND column_name=?');$st->execute([$table,$column]);return (bool)$st->fetchColumn();}
