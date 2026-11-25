@@ -93,3 +93,9 @@ HTML;
  if(!str_contains($result,'data-p4-browser="PASS"')){preg_match('/data-p4-browser="[^"]*"/',$result,$m);echo 'Browser marker: '.($m[0]??'missing').PHP_EOL;}
  p4check($status===0&&str_contains($result,'data-p4-browser="PASS"'),'Chromium mobile-sized actual template and PNG smoke');
 }else{echo "[SKIP] Chromium not available".PHP_EOL;}
+
+$manifest=json_decode(file_get_contents($root.'/updates/channel.json'),true,512,JSON_THROW_ON_ERROR);
+if($manifest['release']==='0.6.53-p4'){
+ p4check(count($manifest['files'])===10,'release manifest has ten deployment files');
+ foreach($manifest['files'] as $f)p4check(hash_file('sha256',$root.'/'.$f['path'])===$f['sha256'],'release SHA256 '.$f['path']);
+}

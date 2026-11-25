@@ -1,11 +1,47 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p3",
-  "notes": "نمایش لینک مرکز به‌روزرسانی داخل پنل Developer بخش System Health؛ بدون تغییر دیتابیس.",
+  "release": "0.6.53-p4",
+  "notes": "تقویم دوگانه گزارش‌ها، جهت و تاریخ تسویه ترانسفر، گزارش دوره‌ای با ترانسفر و خروجی‌های تصویر/Excel/PDF. محاسبه دقیق تومان کامل؛ بدون تغییر ساختار دیتابیس.",
   "files": [
     {
+      "path": "app/Services/ReportingService.php",
+      "sha256": "96f109ddb887c941de01051b550bd24e9ef55b16d91c3f7126db4ffe76cf7d98"
+    },
+    {
+      "path": "app/Services/TransferService.php",
+      "sha256": "02d6361c874583351cf5e5c4f15a789418ed11b7f47eca13df81b836207cd98f"
+    },
+    {
       "path": "index.php",
-      "sha256": "b9d0aba67f496c416d843ffc20531107205a351e43f0037ce87bd767a9b42731"
+      "sha256": "a6321953c801d06b946c89d539460d4d083c17c4004249c9f1e734bc1724e48f"
+    },
+    {
+      "path": "assets/transfer-calendar620.js",
+      "sha256": "0eaff662d073444e2f0d77f17763999d9127426be79e1a822f08bbb1a3474bba"
+    },
+    {
+      "path": "assets/transfer619.js",
+      "sha256": "681652baac8fe8997a8b0e51d67ebe652f532b6d0b2df40f2326da5cba1b5e40"
+    },
+    {
+      "path": "transfer_page619.php",
+      "sha256": "8b0aa1a8fbce372e8ac7cabd03ab02383660da07d403e04f979c7a8d08cab9c8"
+    },
+    {
+      "path": "assets/transfer-receipt619.js",
+      "sha256": "2fbc028f5ed04a6791a4533ba8e34db51505dc9063bfcd0ae2b9d3b3d66d77ed"
+    },
+    {
+      "path": "assets/transfer619.css",
+      "sha256": "0f8be9db0a0e04c6673d9fe2460be02105ff9ed97a739e633297d63b94115a7f"
+    },
+    {
+      "path": "export.php",
+      "sha256": "e63bcb2a4cef290425801ca8c73b4283dbdf43eae2a53f7a67ee8a2148a5e50d"
+    },
+    {
+      "path": "print.php",
+      "sha256": "60359eabfb058cbdfac7151c3988ba54d73fbd1b6d69d4c35bb4f75659329c5e"
     }
   ]
 }
