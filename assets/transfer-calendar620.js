@@ -4,6 +4,19 @@ const pMonth=['فروردین','اردیبهشت','خرداد','تیر','مرد�
 const pWeek=['ش','ی','د','س','چ','پ','ج'];
 const fa=n=>String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
 const parse=s=>new Date(String(s)+'T12:00:00');
+const ascii=s=>String(s).replace(/[۰-۹٠-٩]/g,c=>String('۰۱۲۳۴۵۶۷۸۹'.includes(c)?'۰۱۲۳۴۵۶۷۸۹'.indexOf(c):'٠١٢٣٤٥٦٧٨٩'.indexOf(c)));
+function parseBusiness(s){
+ const m=ascii(s).trim().match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);if(!m)return null;
+ const y=+m[1],mo=+m[2],day=+m[3];if(mo<1||mo>12||day<1||day>31)return null;
+ if(y>=1700){const d=new Date(y,mo-1,day,12);return d.getFullYear()===y&&d.getMonth()===mo-1&&d.getDate()===day?d:null;}
+ if(y<1200||y>1600)return null;
+ const d=new Date(y+621,2,18,12);
+ for(let i=0;i<370;i++){const x=add(d,i),p=pers(x);if(p.year===y&&p.month===mo&&p.day===day)return x;}
+ return null;
+}
+const readDate=field=>field?.value?parseBusiness(field.value):null;
+const writeDate=(field,d)=>{field.value=field.dataset.reportCalendar!==undefined?ascii(jalali(d)):iso(d);field.dispatchEvent(new Event('input',{bubbles:true}));field.dispatchEvent(new Event('change',{bubbles:true}));};
+
 const iso=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
 const add=(d,days)=>{const x=new Date(d);x.setDate(x.getDate()+days);return x};
 const jp=new Intl.DateTimeFormat('en-US-u-ca-persian',{year:'numeric',month:'numeric',day:'numeric'});
@@ -26,13 +39,13 @@ function ensure(){if(dialog)return;
  dialog.querySelectorAll('[data-mode]').forEach(btn=>btn.addEventListener('click',()=>{calendarMode=btn.dataset.mode;render()}));
  dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
 }
-const selectedInfo=()=>{const field=active?.field;const d=field?.value&&parse(field.value);return d&&!Number.isNaN(d.getTime())?`انتخاب فعلی: ${jalali(d)}  |  ${greg(d)}`:'تاریخی انتخاب نشده است';};
+const selectedInfo=()=>{const field=active?.field;const d=readDate(field);return d&&!Number.isNaN(d.getTime())?`انتخاب فعلی: ${jalali(d)}  |  ${greg(d)}`:'تاریخی انتخاب نشده است';};
 function select(d,entry){const msg=dialog.querySelector('.tc-message');if(entry?.state==='settled'&&active.mode==='wizard'){
   const a=document.createElement('a');a.href='index.php?page=transfers&tab=list&view='+entry.transfer_id;a.textContent='مشاهده رسید '+(entry.transfer_code||'');msg.replaceChildren(document.createTextNode('این روز قبلاً تسویه شده و قابل انتخاب نیست. '),a);return;
  }
- active.field.value=iso(d);active.field.dispatchEvent(new Event('change',{bubbles:true}));refresh();dialog.querySelector('.tc-selected').textContent=selectedInfo();dialog.close();
+ writeDate(active.field,d);refresh();dialog.querySelector('.tc-selected').textContent=selectedInfo();dialog.close();
 }
-function gridDay(d,within,selected){const val=iso(d),info=states[val]||{},state=info.state||'unknown',button=el('button','tc-day tc-'+state+(within?'':' tc-outside')+(selected?' tc-picked':''));button.type='button';button.setAttribute('role','gridcell');button.setAttribute('aria-label',jalali(d)+'، '+greg(d)+'، '+(state==='settled'?'تسویه شده':state==='ready'?'گزارش موجود':state==='missing'?'بدون گزارش':'وضعیت نامشخص'));
+function gridDay(d,within,selected){const val=iso(d),info=states[val]||{},state=active.mode==='report'?'plain':(info.state||'unknown'),button=el('button','tc-day tc-'+state+(within?'':' tc-outside')+(selected?' tc-picked':''));button.type='button';button.setAttribute('role','gridcell');button.setAttribute('aria-label',jalali(d)+'، '+greg(d)+'، '+(active.mode==='report'?'':state==='settled'?'تسویه شده':state==='ready'?'گزارش موجود':state==='missing'?'بدون گزارش':'وضعیت نامشخص'));
  if(state==='settled'&&active.mode==='wizard')button.setAttribute('aria-disabled','true');
  button.append(el('b',null,fa(calendarMode==='jalali'?pers(d).day:d.getDate())));
  button.append(el('small',null,calendarMode==='jalali'?String(d.getDate()):fa(pers(d).day)));
@@ -40,6 +53,7 @@ function gridDay(d,within,selected){const val=iso(d),info=states[val]||{},state=
  button.addEventListener('click',()=>select(d,info));return button;
 }
 async function load(start,end){const company=Number(active?.company?.value||0),editing=active?.edit||0,msg=dialog.querySelector('.tc-message');
+ if(active?.mode==='report'){++seq;states={};msg.textContent='تاریخ موردنظر را انتخاب کن.';return;}
  if(company<1){states={};msg.textContent='برای دیدن روزهای تسویه‌شده، شرکت را در فرم ثبت انتخاب کن.';return;}
  const key=company+'|'+iso(start)+'|'+iso(end)+'|'+editing;
  if(key===cacheKey)return;
@@ -56,15 +70,32 @@ async function render(){ensure();const thisRender=++renderVersion;dialog.querySe
  const start=add(first,-(first.getDay()+1)%7),grid=dialog.querySelector('.tc-grid');grid.replaceChildren();
  for(const day of pWeek)grid.append(el('span','tc-weekday',day));
  const arr=Array.from({length:42},(_,i)=>add(start,i));
- const selected=active.field.value;
+ const selected=readDate(active.field)?iso(readDate(active.field)):'';
  for(const date of arr)grid.append(gridDay(date,sameMonth(date,first,calendarMode),selected===iso(date)));
  dialog.querySelector('.tc-selected').textContent=selectedInfo();
  await load(start,arr[arr.length-1]);
  if(!dialog.open||thisRender!==renderVersion)return;grid.replaceChildren();for(const day of pWeek)grid.append(el('span','tc-weekday',day));for(const date of arr)grid.append(gridDay(date,sameMonth(date,first,calendarMode),selected===iso(date)));
 }
-function open(button){ensure();const field=document.getElementById(button.dataset.transferDate);if(!field)return;active={field,mode:button.dataset.mode||'wizard',company:document.getElementById(button.dataset.companyInput||'transferCompany'),edit:Number(button.dataset.edit||0)};monthAnchor=field.value?parse(field.value):new Date();states={};cacheKey='';dialog.showModal();render()}
-function refresh(){document.querySelectorAll('[data-transfer-date]').forEach(button=>{const field=document.getElementById(button.dataset.transferDate);if(!field)return;const dt=field.value?parse(field.value):null;const title=button.querySelector('.tc-date-main');const secondary=button.querySelector('.tc-date-secondary');if(title)title.textContent=dt?jalali(dt):'انتخاب تاریخ';if(secondary)secondary.textContent=dt?greg(dt):'شمسی / میلادی';});}
-function init(){document.querySelectorAll('[data-transfer-date]').forEach(button=>button.addEventListener('click',()=>open(button)));document.querySelectorAll('[data-transfer-iso]').forEach(field=>field.addEventListener('change',refresh));refresh()}
+function open(button){ensure();const field=document.getElementById(button.dataset.transferDate);if(!field)return;active={field,mode:button.dataset.mode||'wizard',company:document.getElementById(button.dataset.companyInput||'transferCompany'),edit:Number(button.dataset.edit||0)};monthAnchor=readDate(field)||new Date();++seq;states={};cacheKey='';const report=active.mode==='report';dialog.querySelector('.tc-top strong').textContent=report?'انتخاب تاریخ':'انتخاب تاریخ ترانسفر';dialog.querySelector('.tc-top small').textContent=report?'شمسی و میلادی':'شمسی و میلادی، وضعیت تسویه هر روز';dialog.querySelector('.tc-legend').hidden=report;dialog.showModal();render()}
+function refresh(){document.querySelectorAll('[data-transfer-date]').forEach(button=>{const field=document.getElementById(button.dataset.transferDate);if(!field)return;const dt=readDate(field);const title=button.querySelector('.tc-date-main');const secondary=button.querySelector('.tc-date-secondary');if(title)title.textContent=dt?jalali(dt):'انتخاب تاریخ';if(secondary)secondary.textContent=dt?greg(dt):'شمسی / میلادی';});}
+function init(){
+ document.querySelectorAll('[data-report-calendar]').forEach((field,i)=>{
+  if(field.dataset.dualBound)return;field.dataset.dualBound='1';
+  if(!field.id)field.id='reportDualDate'+i;
+  const wrap=el('div','tc-report-input');field.parentNode.insertBefore(wrap,field);wrap.append(field);
+  // Keep an editable text input for accessibility and no-JS fallback.
+  const b=el('button','tc-date-open');b.type='button';b.dataset.transferDate=field.id;b.dataset.mode='report';b.append(el('strong','tc-date-main','انتخاب تاریخ'),el('small','tc-date-secondary','شمسی / میلادی'),el('span','tc-date-icon','▦'));wrap.append(b);
+ });
+ document.querySelectorAll('[data-transfer-date]').forEach(button=>{if(button.dataset.tcBound)return;button.dataset.tcBound='1';button.addEventListener('click',()=>open(button))});
+ document.querySelectorAll('[data-transfer-iso],[data-report-calendar]').forEach(field=>{if(field.dataset.tcRefreshBound)return;field.dataset.tcRefreshBound='1';field.addEventListener('change',refresh);field.addEventListener('input',refresh)});
+ document.querySelectorAll('[data-month-shortcut]').forEach(b=>{if(b.dataset.tcBound)return;b.dataset.tcBound='1';b.addEventListener('click',()=>{
+ const form=b.closest('form');const from=form?.querySelector('[name="from"]'),to=form?.querySelector('[name="to"]');if(!from||!to)return;
+ const first=startOfMonth(add(new Date(),-1),'jalali');const begin=b.dataset.monthShortcut==='previous'?nextMonth(first,'jalali',-1):first;
+ const end=add(nextMonth(begin,'jalali',1),-1);const radio=form.querySelector('[name="date_mode"][value="range"]');if(radio){radio.checked=true;radio.dispatchEvent(new Event('change',{bubbles:true}))}
+ writeDate(from,begin);writeDate(to,end);
+ })});
+ refresh()
+}
 window.TransferCalendar620={init,refresh,iso,parse,add,jalali,greg,resetCache:()=>{states={};cacheKey=''},open};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

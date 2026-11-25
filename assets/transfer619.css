@@ -288,3 +288,14 @@ dialog.transfer-actions-modal::backdrop,dialog.transfer-saved-dialog::backdrop{b
 .transfer-saved-dialog .transfer-receipt-actions button{border-radius:10px!important;font-weight:800!important}
 @media(max-width:420px){.transfer-receipt-final{padding:10px!important}.transfer-receipt-final::before{margin:-10px -10px 5px!important}.transfer-receipt-final>.transfer-receipt-title{font-size:18px!important}.transfer-receipt-final .transfer-company-line b{font-size:12px!important}.transfer-receipt-final .transfer-receipt-total b{font-size:16px!important}.transfer-receipt-final .transfer-receipt-line span{font-size:9px!important}}
 @media print{.transfer-receipt-final{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+/* p4: reuse transfer calendar outside the wizard and keep explicit direction colors. */
+.tc-report-input{display:grid;gap:5px;min-width:0}.tc-report-input>input{min-width:0;width:100%;font-size:12px}.tc-report-input .tc-date-open{min-height:58px}
+.transfer-direction.positive{color:#15803d!important;font-weight:800}.transfer-direction.negative{color:#b91c1c!important;font-weight:800}
+.tc-legend[hidden]{display:none!important}.tc-day.tc-plain{background:#fff}.tc-day.tc-plain.tc-picked{outline:2px solid #4b19cf}
+.p4-report-extra{margin-top:16px}.p4-report-extra h3{margin:12px 0 8px}.p4-report-extra .accounting-table{width:100%;table-layout:fixed;overflow-wrap:anywhere}
+.p4-report-extra .accounting-table td,.p4-report-extra .accounting-table th{white-space:normal!important;overflow-wrap:anywhere!important}
+.p4-report-extra .p4-code{direction:ltr;font-size:11px!important;word-break:break-all}
+.p4-report-extra .p4-final{margin:12px 0;padding:12px;text-align:center;font-weight:900;border:1px solid #bbb;border-radius:8px}
+.p4-report-extra .p4-final b{display:block;margin-top:5px;font-size:1.25em}
+@media(max-width:700px){.p4-report-extra .p4-code{font-size:8.5px!important}.p4-report-extra .accounting-table td,.p4-report-extra .accounting-table th{font-size:clamp(8px,2.5vw,11px)!important}}

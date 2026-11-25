@@ -43,16 +43,17 @@ function buildReceipt(){
     rect(left,yy,cardW,cardH,9,'#f7f9fc');
     txt(item.label,left+cardW-12,yy+12,cardW-24,10,'#78899c',700);
     const val=item.label==='بازه میلادی'?item.value.replace(/\s+تا\s+/,' → '):item.value;
-    const color=item.member?numcolor(item.value):'#203b59';
+    const color=item.label==='نوع تسویه'?(item.value==='دریافت از مشتری'?'#15803d':item.value==='پرداخت به مشتری'?'#b91c1c':'#203b59'):item.member?numcolor(item.value):'#203b59';
     const isLatin=/\d/.test(val)||val.includes('$');
     txt(val,left+cardW-12,yy+31,cardW-24,item.member?16:13,color,900,'right',isLatin?'ltr':'rtl');
   });
   y+=bodyH+4;
   if(total){
-    rect(pad,y,width-2*pad,totalH-11,11,'#e5f4ed');
-    rect(width-pad-5,y+12,3,totalH-35,2,'#2a9371');
+    const outgoing=rows.some(r=>r.label==='نوع تسویه'&&r.value==='پرداخت به مشتری');
+    rect(pad,y,width-2*pad,totalH-11,11,outgoing?'#fee2e2':'#e5f4ed');
+    rect(width-pad-5,y+12,3,totalH-35,2,outgoing?'#b91c1c':'#2a9371');
     txt(total.label,width-pad-17,y+19,width-2*pad-34,12,'#3f7964',800);
-    txt(total.value.replace(/^\s*[-−]/,''),width-pad-17,y+44,width-2*pad-34,22,'#145d46',900);
+    txt(total.value.replace(/^\s*[-−]/,''),width-pad-17,y+44,width-2*pad-34,22,outgoing?'#991b1b':'#145d46',900);
   }
   y+=totalH;
   if(details.length){
