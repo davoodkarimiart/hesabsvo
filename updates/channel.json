@@ -1,11 +1,11 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p5",
-  "notes": "اصلاح چیدمان موبایل و دسکتاپ، فیلترهای مستقل گزارش ترانسفر، اعداد صحیح تومان، بازطراحی خروجی‌های اکسل و جمع‌بندی، دسترسی Developer موبایل و دکمه‌های شرکت. بدون Migration.",
+  "release": "0.6.53-p6",
+  "notes": "اصلاح فرم هر هفت گزارش، نمایش بازه تاریخ، رنگ‌بندی پنل و ترانسفر، جمع‌بندی افقی سه‌ستونه و هماهنگی تصویر و چاپ. موتور اکسل و ساختار دیتابیس بدون تغییر.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
-      "sha256": "7d37c87005eeb02082485f711f164f35c03d7afe89c4f25ab034eb42bb166e7f"
+      "sha256": "682a29f357cfea5f849c2ef27eaa7305e4211999958ce807952965ec4123fba0"
     },
     {
       "path": "app/Services/TransferService.php",
@@ -13,11 +13,11 @@
     },
     {
       "path": "index.php",
-      "sha256": "15608d535a003592ba182f21d556ca5b6094f582ef26d78e095318b2115b09da"
+      "sha256": "31625580aa238bc4adb0b5525a455735598259abe9a8c58602a5d04930990014"
     },
     {
       "path": "assets/transfer-calendar620.js",
-      "sha256": "0eaff662d073444e2f0d77f17763999d9127426be79e1a822f08bbb1a3474bba"
+      "sha256": "8fb8f073a1baba1beeb9d621a3ee5024beac401d4ff85f29a34318eecfbcdc7e"
     },
     {
       "path": "assets/transfer619.js",
@@ -33,7 +33,7 @@
     },
     {
       "path": "assets/transfer619.css",
-      "sha256": "08ec8f2cdcabc010c979ae69fb5a7e1b71d90426ab629d35733ad7f759c2579f"
+      "sha256": "af4622b675ec50136890e2d899b44bf84a4a2e0089426369f4aa28ee71dee20c"
     },
     {
       "path": "export.php",
@@ -41,7 +41,7 @@
     },
     {
       "path": "print.php",
-      "sha256": "bbe7fa248d18dad6e2cb0b3fca6b12e809323d4326fe662186f4bb037e291798"
+      "sha256": "3476294dde35b0f1c82291b21952b5a2f5098fd57433973dda9540162bf9ef45"
     }
   ]
 }
