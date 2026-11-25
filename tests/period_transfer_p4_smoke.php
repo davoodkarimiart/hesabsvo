@@ -9,7 +9,7 @@ function p4check($condition,string $label):void{if(!$condition)throw new Runtime
 p4check(TransferService::decimalAdd('999999999999999999.999999','0.000001')==='1000000000000000000.000000','six-place carry without float overflow');
 p4check(TransferService::decimalSubtract('10.000001','11.000002')==='-1.000001','signed subtraction');
 p4check(TransferService::decimalAdd('-10.000001','10.000001')==='0.000000','exact zero');
-p4check(TransferService::formatToman('1234567890.123456',['digit_mode'=>'en'])==='1,234,567,890.123456','exact transfer display');
+p4check(TransferService::formatToman('1234567890.123456',['digit_mode'=>'en'])==='1,234,567,890','whole toman display');
 p4check(TransferService::directionLabel('from_master',true)==='پرداختی به سایت'&&TransferService::directionLabel('from_master')==='دریافت از مشتری','stored direction reverses only in customer report');
 p4check(TransferService::directionLabel('to_master',true)==='دریافتی از سایت'&&TransferService::directionClass('to_master',true)==='positive','customer receives green');
 class Database {public static PDO $pdo;public static function connection():PDO{return self::$pdo;}}
@@ -60,7 +60,7 @@ $rf=$d['filters'];$_GET=$filters;$reportData=$d;$reportError='';$qs=http_build_q
 $reportFilters=['companies'=>[['id'=>1,'name'=>'Fixture']],'panels'=>[['id'=>1,'company_id'=>1,'name'=>'Panel A','company_name'=>'Fixture'],['id'=>4,'company_id'=>1,'name'=>'Panel B','company_name'=>'Fixture']],'customers'=>[]];
 $uiSettings=SettingsService::defaults();$uiSettings['digit_mode']='en';
 ob_start();eval('?>'.$template);$html=ob_get_clean();
-p4check(str_contains($html,'id="p4TransferTable"')&&str_contains($html,'TR-1')&&str_contains($html,'TR-2')&&str_contains($html,'180.125'),'actual period template renders exact final and documents');
+p4check(str_contains($html,'id="p4TransferTable"')&&str_contains($html,'TR-1')&&str_contains($html,'TR-2')&&str_contains($html,'>180</b>'),'actual period template renders rounded final and documents');
 p4check(!str_contains($html,'TR-3')&&!str_contains($html,'TR-4'),'render excludes outside and void documents');
 preg_match_all('~<script\b[^>]*>(.*?)</script>~s',$html,$scripts);
 foreach($scripts[1] as $i=>$js){if(trim($js)==='')continue;$file=tempnam(sys_get_temp_dir(),'p4js');file_put_contents($file,$js);exec('node --check '.escapeshellarg($file).' 2>&1',$lines,$status);unlink($file);p4check($status===0,'rendered inline JS '.$i);}

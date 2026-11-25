@@ -220,9 +220,17 @@ final class TransferService {
     public static function decimalSubtract(string|int|float $left,string|int|float $right): string {
         [$sign,$digits]=self::decimalParts($right);return self::decimalAdd($left,self::decimalString(-$sign,$digits));
     }
+    /** Round only for presentation, half away from zero; never change stored decimals. */
+    public static function wholeToman(string|int|float $value): string {
+        [$sign,$digits]=self::decimalParts($value);
+        $absolute=self::decimalString(1,$digits);
+        [$whole,$fraction]=explode('.',$absolute);
+        if((int)$fraction>=500000)$whole=explode('.',self::decimalAdd($whole,'1'))[0];
+        return ($sign<0&&$whole!=='0'?'-':'').$whole;
+    }
     public static function formatToman(string|int|float $value,array $settings=[]): string {
-        $v=self::decimalAbs($value);[$whole,$fraction]=explode('.',$v);$fraction=rtrim($fraction,'0');
-        $text=preg_replace('/\B(?=(\d{3})+(?!\d))/',',',$whole).($fraction!==''?'.'.$fraction:'');
+        $whole=self::wholeToman(self::decimalAbs($value));
+        $text=preg_replace('/\B(?=(\d{3})+(?!\d))/',',',$whole);
         return SettingsService::digits($text,(string)($settings['digit_mode']??'en'));
     }
     /** Complete read-only export, using the same effective-date and direction filter as history. */

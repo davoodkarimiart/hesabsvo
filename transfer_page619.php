@@ -28,7 +28,6 @@ $transferDayTotals=[];
 if($viewTransfer){
  foreach($viewTransfer['reports'] as $rr){$d=(string)$rr['report_date'];$transferDayTotals[$d]=($transferDayTotals[$d]??0.0)+(float)$rr['member_win_snapshot'];}
 }
-$transferReportQuery=http_build_query(['page'=>'analytics','type'=>'transfer_history','company_id'=>$transferCompanyFilter,'q'=>$transferQ,'status'=>$transferStatusFilter,'direction'=>$transferDirectionFilter,'date_mode'=>'range','from'=>$transferFrom,'to'=>$transferTo]);
 $companiesForJs=array_map(fn($c)=>['id'=>(int)$c['id'],'name'=>(string)$c['name'],'role'=>(string)($c['company_role']??''),'percent'=>(string)($c['transfer_percent']??'')],$companies);
 ?>
 <section class="section-title transfer-top-title"><div><h1>ترانسفر</h1><p>تسویه دلاری با سایت مادر، مستقل از نرخ حساب مشتری‌ها</p></div></section>
@@ -88,7 +87,7 @@ $companiesForJs=array_map(fn($c)=>['id'=>(int)$c['id'],'name'=>(string)$c['name'
 window.TRANSFER_SETUP619=<?=json_encode(['companies'=>$companiesForJs,'defaultStart'=>$defaultStart,'defaultEnd'=>$defaultEnd,'edit'=>$editTransfer?[
 'id'=>(int)$editTransfer['id'],'company_id'=>(int)$editTransfer['company_id'],'period_type'=>$editTransfer['period_type'],'period_start'=>$editTransfer['period_start'],'period_end'=>$editTransfer['period_end'],'site_usd_applied'=>$editTransfer['site_usd_applied'],'site_usd_calculated'=>$editTransfer['site_usd_calculated'],'override_reason'=>$editTransfer['override_reason'],'transfer_percent'=>$editTransfer['transfer_percent'],'usd_rate_toman'=>$editTransfer['usd_rate_toman'],'notes'=>$editTransfer['notes']
 ]:null],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG)?>;
-</script><script defer src="assets/transfer-calendar620.js?v=654"></script><script defer src="assets/transfer619.js?v=654"></script>
+</script><script defer src="assets/transfer-calendar620.js?v=654"></script><script defer src="assets/transfer619.js?v=655"></script>
 <?php else: ?>
 <section class="card transfer-history">
  <h2>سوابق و مدیریت ترانسفرها</h2>
@@ -102,14 +101,14 @@ window.TRANSFER_SETUP619=<?=json_encode(['companies'=>$companiesForJs,'defaultSt
     <label>نوع تسویه<select name="direction"><option value="">همه</option><?php foreach(['from_master','to_master','none'] as $d):?><option value="<?=e($d)?>" <?=$transferDirectionFilter===$d?'selected':''?>><?=e(TransferService::directionLabel($d))?></option><?php endforeach;?></select></label>
     <div class="tc-date-field"><span>از تاریخ تسویه</span><input type="hidden" data-transfer-iso id="historyFrom" name="from" value="<?=e($transferFrom)?>"><button type="button" class="tc-date-open" data-transfer-date="historyFrom" data-mode="report" data-company-input="historyCompany"><strong class="tc-date-main">انتخاب تاریخ</strong><small class="tc-date-secondary">شمسی / میلادی</small><span class="tc-date-icon">▦</span></button></div>
     <div class="tc-date-field"><span>تا تاریخ تسویه</span><input type="hidden" data-transfer-iso id="historyTo" name="to" value="<?=e($transferTo)?>"><button type="button" class="tc-date-open" data-transfer-date="historyTo" data-mode="report" data-company-input="historyCompany"><strong class="tc-date-main">انتخاب تاریخ</strong><small class="tc-date-secondary">شمسی / میلادی</small><span class="tc-date-icon">▦</span></button></div>
+   <div class="p5-history-month"><span>انتخاب سریع ماه</span><div><button class="ghost" type="button" data-month-shortcut="previous">ماه قبل</button><button class="ghost" type="button" data-month-shortcut="current">ماه جاری</button></div></div>
    </div>
-   <div class="transfer-filter-actions"><button class="primary" type="submit">اعمال فیلترها</button><a class="btn ghost" href="index.php?page=transfers&tab=list">پاک‌کردن فیلترها</a><button class="ghost" type="button" id="transferClearDates">پاک‌کردن تاریخ‌ها</button><button class="ghost" type="button" data-month-shortcut="previous">ماه قبل</button><button class="ghost" type="button" data-month-shortcut="current">ماه جاری</button></div>
+   <div class="transfer-filter-actions"><button class="primary" type="submit">اعمال فیلترها</button><a class="btn ghost" href="index.php?page=transfers&tab=list">پاک‌کردن فیلترها</a><button class="ghost" type="button" id="transferClearDates">پاک‌کردن تاریخ‌ها</button></div>
    <p class="transfer-hint">مبنای تاریخ تسویه، آخرین روز بازه سند است؛ تاریخ ثبت برای حسابرسی نگهداری می‌شود.</p>
   </div>
  </form>
+ <section class="p5-transfer-overview" aria-label="جمع ترانسفرهای فیلترشده"><div class="p5-transfer-overview-head"><strong>جمع ترانسفرها</strong><span>فقط اسناد نهایی · تومان</span></div><div class="p5-transfer-totals"><div><span>دریافت از مشتری</span><b class="transfer-direction positive"><?=e($transferFmtToman($transferList['totals']['received']))?></b></div><div><span>پرداخت به مشتری</span><b class="transfer-direction negative"><?=e($transferFmtToman($transferList['totals']['paid']))?></b></div></div></section>
  <div class="transfer-list-meta"><?=e((string)$transferList['total'])?> ترانسفر پیدا شد • صفحه <?=e((string)$transferList['page'])?> از <?=e((string)$transferList['pages'])?></div>
- <div class="account-totals"><div><span>دریافت از مشتری (تومان)</span><b class="transfer-direction positive"><?=e($transferFmtToman($transferList['totals']['received']))?></b></div><div><span>پرداخت به مشتری (تومان)</span><b class="transfer-direction negative"><?=e($transferFmtToman($transferList['totals']['paid']))?></b></div></div>
- <div class="final-actions"><a class="btn primary" href="index.php?<?=e($transferReportQuery)?>">گزارش کامل ترانسفرهای فیلترشده</a></div>
  <?php if(!$transferRows):?><div class="notice warn">ترانسفری برای این جست‌وجو پیدا نشد.</div><?php endif;?>
  <div class="transfer-table-scroll"><table class="transfer-manage-table"><thead><tr><th>شرکت / دوره</th><th>مبلغ نهایی (تومان)</th><th>عملیات</th></tr></thead><tbody>
  <?php foreach($transferRows as $r):?>

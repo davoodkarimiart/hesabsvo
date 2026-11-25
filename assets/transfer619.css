@@ -301,3 +301,61 @@ dialog.transfer-actions-modal::backdrop,dialog.transfer-saved-dialog::backdrop{b
 @media(max-width:700px){.p4-report-extra .p4-code{font-size:8.5px!important}.p4-report-extra .accounting-table td,.p4-report-extra .accounting-table th{font-size:clamp(8px,2.5vw,11px)!important}}
 
 .tc-report-input .tc-clear-date{font-size:11px;min-height:28px;padding:3px 8px;justify-self:start}.transfer-receipt-final .transfer-receipt-total.negative{background:#fee2e2!important;border-color:#fecaca!important;border-right-color:#b91c1c!important}.transfer-receipt-final .transfer-receipt-total.negative b,.transfer-receipt-final .transfer-receipt-total.negative span{color:#991b1b!important}.transfer-receipt-final .transfer-receipt-total:not(.positive):not(.negative){background:#f1f5f9!important;border-color:#cbd5e1!important;border-right-color:#64748b!important}.transfer-receipt-final .transfer-receipt-total:not(.positive):not(.negative) b,.transfer-receipt-final .transfer-receipt-total:not(.positive):not(.negative) span{color:#475569!important}
+
+/* P5: compact, balanced desktop filters and touch-friendly mobile controls. */
+.top-actions .p5-dev-action{display:inline-flex!important;align-items:center;justify-content:center}
+.transfer-history .transfer-filter-grid{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;gap:10px 12px}
+.transfer-history .transfer-filter-grid label,.transfer-history .tc-date-field,.p5-history-month{display:grid;gap:6px;min-width:0;font-size:12px;font-weight:700;color:#39475b}
+.transfer-history .tc-date-open{min-height:48px!important;border-radius:10px!important;gap:1px;padding-block:6px!important}
+.p5-history-month>div,.p5-report-month>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.p5-history-month button,.p5-report-month button{min-height:48px;padding:6px!important;font-size:11px!important;white-space:nowrap}
+.p5-transfer-overview{margin:14px 0 10px;border:1px solid #e2e8f0;border-radius:12px;padding:12px;background:#fff}
+.p5-transfer-overview-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px;font-size:12px}
+.p5-transfer-overview-head span{color:#64748b;font-size:10px}
+.p5-transfer-totals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.p5-transfer-totals>div{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:0;gap:4px;padding:9px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px}
+.p5-transfer-totals>div>span{font-size:11px;color:#64748b}.p5-transfer-totals b{font-size:clamp(13px,2vw,19px);direction:ltr;unicode-bidi:isolate;max-width:100%;overflow-wrap:anywhere}
+.p5-report-totals{grid-template-columns:repeat(3,minmax(0,1fr));margin:12px 0}
+#reportFilterForm .form-grid{grid-template-columns:repeat(12,minmax(0,1fr))!important;align-items:start;gap:10px!important}
+#reportFilterForm .form-grid>label{grid-column:span 4;min-width:0}
+#reportFilterForm .date-mode-field{grid-column:span 4;min-width:0}
+#reportFilterForm .date-mode-field[hidden],#reportFilterForm .p5-transfer-filters[hidden]{display:none!important}
+#reportFilterForm .svo-date-switch{gap:10px;padding:5px 0}
+#reportFilterForm .svo-date-switch label{white-space:nowrap}
+#reportFilterForm .p5-transfer-filters{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#reportFilterForm .p5-report-month{grid-column:span 4;min-width:0;display:grid;gap:5px;font-size:12px;font-weight:700}
+#reportFilterForm .tc-date-open{min-height:48px!important;padding-block:5px!important;gap:1px}
+#reportFilterForm .tc-clear-date{min-height:26px!important;padding:2px 8px!important}
+#reportFilterForm[data-report-type="period_transfer"] .form-grid>label:first-child,#reportFilterForm[data-report-type="transfer_history"] .form-grid>label:first-child{grid-column:span 6}
+#reportFilterForm[data-report-type="period_transfer"] .report-company-filter,#reportFilterForm[data-report-type="transfer_history"] .report-company-filter{grid-column:span 6}
+#reportFilterForm>button.primary{width:auto;min-width:150px;padding-inline:24px}
+#reportFilterForm .hidden{display:none!important}
+.p5-report-extra{display:grid;gap:8px}.p5-report-extra h3{font-size:14px;color:var(--ink,#172033);margin:9px 0 1px}
+.p5-report-extra .accounting-table th{background:#edf1f7!important;color:#334155}
+.p5-report-extra #p4TransferTable th:nth-child(2){width:34%}.p5-report-extra #p4TransferTable th:nth-child(1){width:19%}.p5-report-extra #p4TransferTable th:nth-child(3){width:23%}
+.p5-settlement-summary{width:min(100%,600px);margin:4px auto 16px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;background:#fff}
+#p4FinalTable{width:100%;border-collapse:collapse;table-layout:fixed}
+#p4FinalTable th,#p4FinalTable td{font-size:12px;text-align:right;padding:9px 12px;border:0;border-bottom:1px solid #e2e8f0}
+#p4FinalTable th{background:#f1f5f9;color:#475569;font-weight:700}#p4FinalTable th:last-child,#p4FinalTable td:last-child{text-align:left;direction:ltr;font-variant-numeric:tabular-nums}
+#p4FinalTable .p5-final-result{background:#f8fafc}#p4FinalTable .p5-final-result td{border-bottom:0;padding-block:12px}
+#p4FinalTable .p5-final-result small,#p4FinalTable .p5-final-result strong{display:block}#p4FinalTable .p5-final-result small{font-size:10px;color:#64748b;margin-bottom:3px}
+#p4FinalTable .p5-final-result b{font-size:clamp(13px,2.6vw,19px);overflow-wrap:anywhere}#p4FinalTable .p5-final-result.positive strong{color:#15803d}#p4FinalTable .p5-final-result.negative strong{color:#b91c1c}
+.company-box .p5-company-head{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:start!important;gap:10px!important}
+.p5-company-info{min-width:0}.p5-company-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;align-items:center}
+.company-box .p5-company-actions button{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;min-height:36px!important;width:auto!important;min-width:0!important;padding:5px 9px!important;border-radius:8px!important;font-size:11px!important;line-height:1.2!important;white-space:nowrap!important;box-shadow:none!important}
+.company-box .p5-company-actions button svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.company-box .p5-company-actions .svo-company-edit-button::before{display:none!important}
+.company-box .p5-company-actions .svo-company-edit-button{color:#334155!important;background:#f1f5f9!important;border:1px solid #dbe3ee!important}
+.company-box .p5-company-actions .company-remove-button{color:#b91c1c!important;background:#fff7f7!important;border:1px solid #fecaca!important}
+@media(max-width:700px){
+ .transfer-history .transfer-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.transfer-history .transfer-filter-grid>label:first-child,.p5-history-month{grid-column:1/-1}
+ .p5-history-month button,.p5-report-month button{min-height:38px}.p5-transfer-totals>div{padding:9px}.p5-report-totals{grid-template-columns:repeat(2,minmax(0,1fr))}.p5-report-totals>div:last-child{grid-column:1/-1}
+ #reportFilterForm .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ #reportFilterForm .form-grid>label,#reportFilterForm[data-report-type] .form-grid>label:first-child,#reportFilterForm[data-report-type] .report-company-filter{grid-column:span 1}
+ #reportFilterForm .date-mode-field,#reportFilterForm .p5-report-month,#reportFilterForm .filter-customer-combo,#reportFilterForm .p5-transfer-filters{grid-column:1/-1}
+ #reportFilterForm .p5-transfer-filters{grid-template-columns:repeat(2,minmax(0,1fr))}#reportFilterForm .p5-transfer-filters>label:last-child{grid-column:1/-1}
+ #reportFilterForm>button.primary{width:100%}
+ .company-box .p5-company-head{grid-template-columns:minmax(0,1fr)!important;gap:6px!important}.p5-company-actions{justify-content:flex-start;border-top:1px solid #edf1f5;padding-top:6px}
+ .company-box .p5-company-actions button{min-height:38px!important}.p5-company-info .chips{justify-content:flex-start!important}
+ #p4FinalTable td,#p4FinalTable th{padding:8px;font-size:11px}
+}

@@ -10,10 +10,11 @@ final class ReportingService {
     }
 
     public static function normalizeFilters(array $f): array {
-        $f['type']=in_array(($f['type']??'cumulative'),['cumulative','daily','monthly','multi','detail','customer_detail','period_transfer','transfer_history'],true)?$f['type']:'daily';
+        $f['type']=$f['type']??'cumulative';$f['type']=in_array($f['type'],['cumulative','daily','monthly','multi','detail','customer_detail','period_transfer','transfer_history'],true)?$f['type']:'daily';
         $f['company_id']=(int)($f['company_id']??0);$f['panel_id']=(int)($f['panel_id']??0);$f['customer_id']=(int)($f['customer_id']??0);if($f['type']!=='customer_detail')$f['customer_id']=0;if($f['type']==='customer_detail'&&$f['customer_id']>0){$f['company_id']=0;$f['panel_id']=0;}
         $f['from']=trim((string)($f['from']??''));$f['to']=trim((string)($f['to']??''));
         $f['date_mode']=($f['date_mode']??'single')==='range'?'range':'single';
+        if(in_array($f['type'],['period_transfer','transfer_history'],true))$f['date_mode']='range';
         $f['date']=trim((string)($f['date']??''));
         if($f['date_mode']==='single'){$f['from']=$f['date'];$f['to']=$f['date'];}
         else $f['date']='';
