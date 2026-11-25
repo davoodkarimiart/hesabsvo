@@ -12,7 +12,7 @@ $checks=[
  'archive restore available'=>str_contains($service,'SET archived_at=NULL,active=1'),
  'csrf forms'=>str_contains($index,'name="confirm_company_name"') && str_contains($index,'remove_company'),
  'date separate in report image'=>str_contains($index,'REPORT_IMAGE_PERIOD||subtitle'),
- 'date heading caption present'=>str_contains($index,'ReportHeading626::period($reportData)'),
+ 'date heading caption present'=>str_contains($index,'ReportingService::periodLabel($reportData)'),
  'no accounting formulas modified'=>is_file($root.'/app/Services/AccountingService.php'),
 ];
 foreach($checks as $label=>$ok){echo ($ok?'[OK] ':'[FAIL] ').$label."\n";if(!$ok)exit(1);}echo "Smoke checks passed\n";
