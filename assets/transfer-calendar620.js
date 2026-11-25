@@ -83,14 +83,15 @@ function init(){
   if(field.dataset.dualBound)return;field.dataset.dualBound='1';
   if(!field.id)field.id='reportDualDate'+i;
   const wrap=el('div','tc-report-input');field.parentNode.insertBefore(wrap,field);wrap.append(field);
-  // Keep an editable text input for accessibility and no-JS fallback.
-  const b=el('button','tc-date-open');b.type='button';b.dataset.transferDate=field.id;b.dataset.mode='report';b.append(el('strong','tc-date-main','انتخاب تاریخ'),el('small','tc-date-secondary','شمسی / میلادی'),el('span','tc-date-icon','▦'));wrap.append(b);
+  // Preserve the original value and no-JS fallback; use the same dual-date button as transfers.
+  const b=el('button','tc-date-open');b.type='button';b.dataset.transferDate=field.id;b.dataset.mode='report';b.append(el('strong','tc-date-main','انتخاب تاریخ'),el('small','tc-date-secondary','شمسی / میلادی'),el('span','tc-date-icon','▦'));wrap.append(b);field.type='hidden';
+  if(!field.required){const clear=el('button','ghost tc-clear-date','پاک‌کردن تاریخ');clear.type='button';clear.addEventListener('click',()=>{field.value='';field.dispatchEvent(new Event('input',{bubbles:true}));field.dispatchEvent(new Event('change',{bubbles:true}));refresh()});wrap.append(clear);}
  });
  document.querySelectorAll('[data-transfer-date]').forEach(button=>{if(button.dataset.tcBound)return;button.dataset.tcBound='1';button.addEventListener('click',()=>open(button))});
  document.querySelectorAll('[data-transfer-iso],[data-report-calendar]').forEach(field=>{if(field.dataset.tcRefreshBound)return;field.dataset.tcRefreshBound='1';field.addEventListener('change',refresh);field.addEventListener('input',refresh)});
  document.querySelectorAll('[data-month-shortcut]').forEach(b=>{if(b.dataset.tcBound)return;b.dataset.tcBound='1';b.addEventListener('click',()=>{
  const form=b.closest('form');const from=form?.querySelector('[name="from"]'),to=form?.querySelector('[name="to"]');if(!from||!to)return;
- const first=startOfMonth(add(new Date(),-1),'jalali');const begin=b.dataset.monthShortcut==='previous'?nextMonth(first,'jalali',-1):first;
+ const first=startOfMonth(new Date(),'jalali');const begin=b.dataset.monthShortcut==='previous'?nextMonth(first,'jalali',-1):first;
  const end=add(nextMonth(begin,'jalali',1),-1);const radio=form.querySelector('[name="date_mode"][value="range"]');if(radio){radio.checked=true;radio.dispatchEvent(new Event('change',{bubbles:true}))}
  writeDate(from,begin);writeDate(to,end);
  })});

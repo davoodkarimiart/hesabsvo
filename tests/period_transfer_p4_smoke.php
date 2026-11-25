@@ -48,3 +48,48 @@ $db->exec("UPDATE daily_report_rows SET received=999 WHERE id=2");
 $blocked=false;try{ReportingService::report($filters);}catch(RuntimeException $e){$blocked=str_contains($e->getMessage(),'اختلاف جمع');}
 p4check($blocked,'inconsistent multi-panel data fails closed');
 echo "[OK] P4 period/transfer fixtures complete.".PHP_EOL;
+
+// Render the actual analytics PHP template rather than a second copy of its HTML.
+function e(mixed $v):string{return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
+$root=dirname(__DIR__);$src=file_get_contents($root.'/index.php');
+$start=strpos($src,'<section class="section-title"><div><h1>گزارش‌ها و آرشیو</h1>');
+$end=strpos($src,"<?php elseif(\$page==='settings')",$start);
+p4check($start!==false&&$end!==false,'actual analytics template located');
+$template=substr($src,$start,$end-$start);
+$rf=$d['filters'];$_GET=$filters;$reportData=$d;$reportError='';$qs=http_build_query($rf);$selectedCustomerName='';
+$reportFilters=['companies'=>[['id'=>1,'name'=>'Fixture']],'panels'=>[['id'=>1,'company_id'=>1,'name'=>'Panel A','company_name'=>'Fixture'],['id'=>4,'company_id'=>1,'name'=>'Panel B','company_name'=>'Fixture']],'customers'=>[]];
+$uiSettings=SettingsService::defaults();$uiSettings['digit_mode']='en';
+ob_start();eval('?>'.$template);$html=ob_get_clean();
+p4check(str_contains($html,'id="p4TransferTable"')&&str_contains($html,'TR-1')&&str_contains($html,'TR-2')&&str_contains($html,'180.125'),'actual period template renders exact final and documents');
+p4check(!str_contains($html,'TR-3')&&!str_contains($html,'TR-4'),'render excludes outside and void documents');
+preg_match_all('~<script\b[^>]*>(.*?)</script>~s',$html,$scripts);
+foreach($scripts[1] as $i=>$js){if(trim($js)==='')continue;$file=tempnam(sys_get_temp_dir(),'p4js');file_put_contents($file,$js);exec('node --check '.escapeshellarg($file).' 2>&1',$lines,$status);unlink($file);p4check($status===0,'rendered inline JS '.$i);}
+$chrome=trim((string)shell_exec('command -v google-chrome || command -v chromium || true'));
+if($chrome!==''){
+ $file=tempnam(sys_get_temp_dir(),'p4html').'.html';
+ $head='<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><base href="file://'.$root.'/"><link rel="stylesheet" href="assets/app.css"><link rel="stylesheet" href="assets/transfer619.css"><script src="assets/svo-image617.js" defer></script><script src="assets/transfer-calendar620.js" defer></script><script>window.appAlert=msg=>{throw Error(msg)};</script></head><body>';
+ $tail=<<<'HTML'
+<script>
+window.addEventListener('load',async()=>{
+ try{
+  const input=document.querySelector('[name="from"]'),b=document.querySelector('[data-transfer-date="'+input.id+'"]');
+  if(!b||b.innerText.indexOf('2026-10-23')<0)throw Error('dual date');
+  b.click();const dialog=document.getElementById('transferCalendar620');
+  if(!dialog.open||dialog.querySelectorAll('.tc-day.tc-plain').length!==42)throw Error('report calendar');
+  dialog.querySelector('[data-mode="gregorian"]').click();dialog.close();
+  const rows=reportCollectRows(false,'p4TransferTable');
+  if(rows.length!==4||rows[1][1].text!=='TR-1')throw Error('transfer table');
+  const result=await makeReportImage();
+  if(!result||result.size<1000)throw Error('PNG missing');
+  document.body.setAttribute('data-p4-browser','PASS');
+ }catch(err){document.body.setAttribute('data-p4-browser','FAIL '+String(err));}
+});
+</script></body></html>
+HTML;
+ file_put_contents($file,$head.$html.$tail);
+ $cmd=escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --allow-file-access-from-files --window-size=390,844 --virtual-time-budget=12000 --dump-dom '.escapeshellarg('file://'.$file).' 2>/dev/null';
+ exec($cmd,$dom,$status);unlink($file);
+ $result=implode("\n",$dom);
+ if(!str_contains($result,'data-p4-browser="PASS"')){preg_match('/data-p4-browser="[^"]*"/',$result,$m);echo 'Browser marker: '.($m[0]??'missing').PHP_EOL;}
+ p4check($status===0&&str_contains($result,'data-p4-browser="PASS"'),'Chromium mobile-sized actual template and PNG smoke');
+}else{echo "[SKIP] Chromium not available".PHP_EOL;}

@@ -138,7 +138,7 @@ window.TRANSFER_SETUP619=<?=json_encode(['companies'=>$companiesForJs,'defaultSt
  <div class="transfer-receipt-line"><span>درصد سهم</span><b><?=e($viewTransfer['transfer_percent'])?>٪</b></div>
  <div class="transfer-receipt-line"><span>سهم دلاری</span><b dir="ltr"><?=e($transferFmtUsd($viewTransfer['usd_share']))?> $</b></div>
  <div class="transfer-receipt-line"><span>نرخ تسویه (تومان)</span><b dir="ltr"><?=e($transferFmtToman($viewTransfer['usd_rate_toman']))?></b></div>
- <div class="transfer-receipt-line transfer-receipt-total"><span>مبلغ نهایی (تومان)</span><b dir="ltr"><?=e($transferFmtToman($viewTransfer['total_toman']))?></b></div>
+ <div class="transfer-receipt-line transfer-receipt-total <?=e(TransferService::directionClass($viewTransfer['direction']))?>"><span>مبلغ نهایی (تومان)</span><b dir="ltr"><?=e($transferFmtToman($viewTransfer['total_toman']))?></b></div>
  <div class="transfer-receipt-line"><span>تاریخ تسویه</span><b><?=e(AccountingService::displayBusinessDate($viewTransfer['period_end']))?> | <?=e($viewTransfer['period_end'])?></b></div>
  <div class="transfer-receipt-line transfer-settlement-direction"><span>نوع تسویه</span><b class="transfer-direction <?=e(TransferService::directionClass($viewTransfer['direction']))?>"><?=e(TransferService::directionLabel($viewTransfer['direction']))?></b></div>
  <div class="transfer-receipt-line"><span>شماره گزارش‌های منبع</span><b><?=e(implode('، ',array_column($viewTransfer['reports'],'daily_report_id')))?></b></div>

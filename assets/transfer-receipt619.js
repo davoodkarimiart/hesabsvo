@@ -49,11 +49,11 @@ function buildReceipt(){
   });
   y+=bodyH+4;
   if(total){
-    const outgoing=rows.some(r=>r.label==='نوع تسویه'&&r.value==='پرداخت به مشتری');
-    rect(pad,y,width-2*pad,totalH-11,11,outgoing?'#fee2e2':'#e5f4ed');
-    rect(width-pad-5,y+12,3,totalH-35,2,outgoing?'#b91c1c':'#2a9371');
-    txt(total.label,width-pad-17,y+19,width-2*pad-34,12,'#3f7964',800);
-    txt(total.value.replace(/^\s*[-−]/,''),width-pad-17,y+44,width-2*pad-34,22,outgoing?'#991b1b':'#145d46',900);
+    const outgoing=rows.some(r=>r.label==='نوع تسویه'&&r.value==='پرداخت به مشتری');const incoming=rows.some(r=>r.label==='نوع تسویه'&&r.value==='دریافت از مشتری');const accent=outgoing?'#b91c1c':incoming?'#15803d':'#64748b';
+    rect(pad,y,width-2*pad,totalH-11,11,outgoing?'#fee2e2':incoming?'#e5f4ed':'#f1f5f9');
+    rect(width-pad-5,y+12,3,totalH-35,2,accent);
+    txt(total.label,width-pad-17,y+19,width-2*pad-34,12,accent,800);
+    txt(total.value.replace(/^\s*[-−]/,''),width-pad-17,y+44,width-2*pad-34,22,accent,900);
   }
   y+=totalH;
   if(details.length){
