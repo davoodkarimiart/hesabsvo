@@ -60,7 +60,7 @@ $rf=$d['filters'];$_GET=$filters;$reportData=$d;$reportError='';$qs=http_build_q
 $reportFilters=['companies'=>[['id'=>1,'name'=>'Fixture']],'panels'=>[['id'=>1,'company_id'=>1,'name'=>'Panel A','company_name'=>'Fixture'],['id'=>4,'company_id'=>1,'name'=>'Panel B','company_name'=>'Fixture']],'customers'=>[]];
 $uiSettings=SettingsService::defaults();$uiSettings['digit_mode']='en';
 ob_start();eval('?>'.$template);$html=ob_get_clean();
-p4check(str_contains($html,'id="p4TransferTable"')&&str_contains($html,'TR-1')&&str_contains($html,'TR-2')&&str_contains($html,'>180</b>'),'actual period template renders rounded final and documents');
+p4check(str_contains($html,'id="p4TransferTable"')&&str_contains($html,'TR-1')&&str_contains($html,'TR-2')&&str_contains($html,'>180</b>')&&str_contains($html,'نتیجه نهایی: برد سایت'),'actual period template renders rounded final and documents');
 p4check(!str_contains($html,'TR-3')&&!str_contains($html,'TR-4'),'render excludes outside and void documents');
 preg_match_all('~<script\b[^>]*>(.*?)</script>~s',$html,$scripts);
 foreach($scripts[1] as $i=>$js){if(trim($js)==='')continue;$file=tempnam(sys_get_temp_dir(),'p4js');file_put_contents($file,$js);exec('node --check '.escapeshellarg($file).' 2>&1',$lines,$status);unlink($file);p4check($status===0,'rendered inline JS '.$i);}
@@ -79,6 +79,15 @@ window.addEventListener('load',async()=>{
   dialog.querySelector('[data-mode="gregorian"]').click();dialog.close();
   const rows=reportCollectRows(false,'p4TransferTable');
   if(rows.length!==4||rows[1][1].text!=='TR-1')throw Error('transfer table');
+  const summary=document.querySelector('#p4FinalTable');if(summary.rows.length!==2||summary.rows[0].cells.length!==3||summary.rows[1].cells.length!==3)throw Error('three-column summary');
+  const form=document.getElementById('reportFilterForm'),type=document.getElementById('reportTypeSelect');
+  for(const value of ['cumulative','daily','monthly','detail','customer_detail','period_transfer','transfer_history']){
+    type.value=value;type.dispatchEvent(new Event('change',{bubbles:true}));
+    const grid=form.querySelector('.p6-primary-grid'),dateGrid=form.querySelector('.p6-date-grid');
+    if(!grid||!dateGrid||getComputedStyle(grid).display!=='grid'||getComputedStyle(dateGrid).display!=='grid')throw Error('grid '+value);
+    if(form.scrollWidth>form.clientWidth+2)throw Error('horizontal overflow '+value);
+  }
+  type.value='period_transfer';type.dispatchEvent(new Event('change',{bubbles:true}));
   const result=await makeReportImage();
   if(!result||result.size<1000)throw Error('PNG missing');
   document.body.setAttribute('data-p4-browser','PASS');
@@ -88,14 +97,15 @@ window.addEventListener('load',async()=>{
 HTML;
  file_put_contents($file,$head.$html.$tail);
  $cmd=escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --allow-file-access-from-files --window-size=390,844 --virtual-time-budget=12000 --dump-dom '.escapeshellarg('file://'.$file).' 2>/dev/null';
- exec($cmd,$dom,$status);unlink($file);
+ exec($cmd,$dom,$status);
  $result=implode("\n",$dom);
  if(!str_contains($result,'data-p4-browser="PASS"')){preg_match('/data-p4-browser="[^"]*"/',$result,$m);echo 'Browser marker: '.($m[0]??'missing').PHP_EOL;}
  p4check($status===0&&str_contains($result,'data-p4-browser="PASS"'),'Chromium mobile-sized actual template and PNG smoke');
+ $desktop=[];exec(str_replace('--window-size=390,844','--window-size=1440,900',$cmd),$desktop,$status);unlink($file);$desktop=implode("\n",$desktop);if(!str_contains($desktop,'data-p4-browser="PASS"')){preg_match('/data-p4-browser="[^"]*"/',$desktop,$m);echo 'Desktop marker: '.($m[0]??'missing').PHP_EOL;}p4check($status===0&&str_contains($desktop,'data-p4-browser="PASS"'),'p6 desktop all seven report types and PNG');
 }else{echo "[SKIP] Chromium not available".PHP_EOL;}
 
 $manifest=json_decode(file_get_contents($root.'/updates/channel.json'),true,512,JSON_THROW_ON_ERROR);
-if(in_array($manifest['release'],['0.6.53-p4','0.6.53-p5'],true)){
+if(in_array($manifest['release'],['0.6.53-p4','0.6.53-p5','0.6.53-p6'],true)){
  p4check(count($manifest['files'])===10,'release manifest has ten deployment files');
  foreach($manifest['files'] as $f)p4check(hash_file('sha256',$root.'/'.$f['path'])===$f['sha256'],'release SHA256 '.$f['path']);
 }

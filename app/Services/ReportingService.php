@@ -192,7 +192,7 @@ final class ReportingService {
         $from=(string)($f['from']??'');$to=(string)($f['to']??'');
         if($from==='')$from=(string)($c['from']??'');
         if($to==='')$to=(string)($c['to']??'');
-        if(($data['type']??'')==='transfer_history'&&$data['rows']){
+        if(($data['type']??'')==='transfer_history'&&!empty($data['rows'])){
             $dates=array_column($data['rows'],'period_end');sort($dates,SORT_STRING);
             if($from==='')$from=$dates[0]??'';if($to==='')$to=end($dates)?:'';
         }

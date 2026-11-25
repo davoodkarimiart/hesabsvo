@@ -411,3 +411,16 @@ dialog.transfer-actions-modal::backdrop,dialog.transfer-saved-dialog::backdrop{b
  .p6-settlement-summary #p4FinalTable th,.p6-settlement-summary #p4FinalTable td{padding:7px 3px!important;font-size:10px!important}
  .p6-settlement-summary #p4FinalTable td b{font-size:clamp(9px,2.9vw,14px)}
 }
+
+#reportFilterForm .p6-date-grid>.p6-build-report{justify-self:start}
+#reportFilterForm:not(.svo-range-active) .p6-date-grid>.p6-build-report{justify-self:stretch}
+#reportFilterForm .p6-date-grid .tc-clear-date{inset-inline-start:5px;inset-inline-end:auto}
+#reportFilterForm .p6-date-grid .tc-date-open{padding-inline-start:36px!important;padding-inline-end:32px!important}
+#reportFilterForm .p6-date-grid .tc-date-icon{top:50%;transform:translateY(-50%)}
+#reportFilterForm .p6-pending-note{margin:0;color:#73510d;background:#fff8e8;border-radius:8px;padding:6px 10px;font-size:12px}
+#reportFilterForm .p6-pending-note[hidden]{display:none!important}
+@media(min-width:701px){
+ #reportFilterForm .p6-date-grid>.p5-report-month{grid-column:span 3!important}
+ #reportFilterForm.p6-forced-range .p6-date-grid>.p5-report-month{grid-column:span 4!important}
+}
+@media(max-width:700px){#reportFilterForm .p6-date-grid>.p6-build-report{justify-self:stretch}}
