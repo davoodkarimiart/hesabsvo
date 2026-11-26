@@ -124,9 +124,9 @@ ob_start();eval('?>'.substr($src,$popupStart,$popupEnd-$popupStart));$popupHtml=
 $probe=<<<'HTML'
 <script>
 const button=document.getElementById('p20Acknowledge'),dialog=document.getElementById('maintenanceAnnouncement');
-const rect=dialog.getBoundingClientRect(),scroll=dialog.querySelector('.p20-popup-scroll'),top=dialog.querySelector('.p22-timer');
-const details=[button.disabled,dialog.open,rect.width,innerWidth,rect.height,innerHeight,dialog.scrollWidth,dialog.clientWidth];const initial=button.disabled&&dialog.open&&rect.width<=innerWidth&&rect.height<=innerHeight&&dialog.scrollWidth<=dialog.clientWidth+2&&scroll.scrollHeight>scroll.clientHeight&&getComputedStyle(scroll).outlineStyle==='none'&&top.textContent.includes('10');
-setTimeout(()=>{document.body.dataset.p21=initial&&!button.disabled&&button.querySelector('.p21-count').hidden&&top.textContent.includes('فعال')?'PASS':'FAIL '+details.join(',')+' end:'+button.disabled+','+button.querySelector('.p21-count').hidden},11000);
+const rect=dialog.getBoundingClientRect(),scroll=dialog.querySelector('.p20-popup-scroll'),timerLabel=dialog.querySelector('.p22-timer');
+const details=[button.disabled,dialog.open,rect.width,innerWidth,rect.height,innerHeight,dialog.scrollWidth,dialog.clientWidth];const initial=button.disabled&&dialog.open&&rect.width<=innerWidth&&rect.height<=innerHeight&&dialog.scrollWidth<=dialog.clientWidth+2&&scroll.scrollHeight>scroll.clientHeight&&getComputedStyle(scroll).outlineStyle==='none'&&timerLabel.textContent.includes('10');
+setTimeout(()=>{document.body.dataset.p21=initial&&!button.disabled&&button.querySelector('.p21-count').hidden&&timerLabel.textContent.includes('فعال')?'PASS':'FAIL '+details.join(',')+' end:'+button.disabled+','+button.querySelector('.p21-count').hidden},11000);
 </script>
 HTML;
 foreach(['390,844','1440,900'] as $view){
