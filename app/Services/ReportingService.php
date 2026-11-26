@@ -306,7 +306,7 @@ final class ExpenseService {
             if(!$c||(!$before&&(!(int)$c['active']||$c['archived_at']!==null)))throw new RuntimeException('شرکت فعال انتخاب کن.');
             if($before){$pdo->prepare('UPDATE operating_expenses SET expense_date=?,amount_toman=?,subject=?,updated_by=?,revision_no=revision_no+1,updated_at=CURRENT_TIMESTAMP WHERE id=?')->execute([$date,$amount,$subject,$uid,$id]);}
             else{$pdo->prepare('INSERT INTO operating_expenses(company_id,company_name_snapshot,expense_date,amount_toman,subject,created_by,updated_by) VALUES(?,?,?,?,?,?,?)')->execute([$company,$c['name'],$date,$amount,$subject,$uid,$uid]);$id=(int)$pdo->lastInsertId();}
-            self::revision($pdo,$id,$before?'updated':'created',$before,$uid);$pdo->commit();return $id;
+            self::revision($pdo,$id,$before?'updated':'created',$before,$uid);$pdo->commit();if(class_exists('Logger'))Logger::audit($before?'expense.updated':'expense.created',['expense_id'=>$id,'company_id'=>$company,'user_id'=>$uid]);return $id;
         }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
     }
     public static function void(int $id,int $revision,int $uid): void {
@@ -315,7 +315,7 @@ final class ExpenseService {
         try{$st=$pdo->prepare('SELECT * FROM operating_expenses WHERE id=?'.$lock);$st->execute([$id]);$before=$st->fetch(PDO::FETCH_ASSOC);
             if(!$before||$before['status']!=='final'||(int)$before['revision_no']!==$revision)throw new RuntimeException('سند تغییر کرده یا ابطال شده است.');
             $pdo->prepare("UPDATE operating_expenses SET status='void',revision_no=revision_no+1,updated_by=?,updated_at=CURRENT_TIMESTAMP WHERE id=?")->execute([$uid,$id]);
-            self::revision($pdo,$id,'voided',$before,$uid);$pdo->commit();
+            self::revision($pdo,$id,'voided',$before,$uid);$pdo->commit();if(class_exists('Logger'))Logger::audit('expense.voided',['expense_id'=>$id,'company_id'=>(int)$before['company_id'],'user_id'=>$uid]);
         }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
     }
     private static function revision(PDO $pdo,int $id,string $action,?array $before,int $uid): void {
@@ -354,11 +354,11 @@ final class MaintenanceP13 {
           :'INSERT INTO settings(setting_key,setting_value) VALUES(?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)';
         $pdo->prepare($sql)->execute([$key,$value]);
     }
-    public static function start(int $minutes,string $title,string $raw,int $uid,?int $now=null): array {
+    public static function start(int $minutes,string $title,string $raw,int $uid,?int $now=null,?int $exactUntil=null,int $showCount=1): array {
         if($uid<=0||$minutes<1||$minutes>10080)throw new RuntimeException('مدت تعمیرات باید بین ۱ دقیقه و ۷ روز باشد.');
         $title=trim($title);if($title===''||mb_strlen($title)>100)throw new RuntimeException('عنوان اعلان حداکثر ۱۰۰ نویسه باشد.');
-        $items=self::parseNotes($raw);$now=$now??time();$until=$now+$minutes*60;
-        $a=['id'=>bin2hex(random_bytes(12)),'title'=>$title,'items'=>$items,'created_at'=>$now];
+        $items=self::parseNotes($raw);$now=$now??time();$until=$exactUntil??($now+$minutes*60);if($until<=$now||$until>$now+604800||$showCount<1||$showCount>5)throw new RuntimeException('زمان پایان یا تعداد نمایش نامعتبر است.');
+        $a=['id'=>bin2hex(random_bytes(12)),'title'=>$title,'items'=>$items,'created_at'=>$now,'show_count'=>$showCount];
         $pdo=Database::connection();$pdo->beginTransaction();
         try{
             self::write($pdo,self::ANNOUNCEMENT,json_encode($a,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));
@@ -372,12 +372,28 @@ final class MaintenanceP13 {
         $state=self::read();$a=$state['announcement'];
         if(self::active($state)||empty($a['id'])||empty($a['items'])||!is_array($a['items']))return null;
         $st=Database::connection()->prepare('SELECT setting_value FROM settings WHERE setting_key=?');$st->execute([self::seenKey($uid)]);
-        return $st->fetchColumn()===$a['id']?null:$a;
+        $raw=$st->fetchColumn();$seen=json_decode((string)$raw,true);$count=$raw===$a['id']?1:(is_array($seen)&&($seen['id']??'')===$a['id']?(int)($seen['count']??0):0);return $count>=max(1,min(5,(int)($a['show_count']??1)))?null:$a;
     }
     public static function acknowledge(int $uid,string $id): void {
         $a=self::pending($uid);
         if(!$a||!hash_equals((string)$a['id'],$id))return;
-        self::write(Database::connection(),self::seenKey($uid),$id);
+        $pdo=Database::connection();$pdo->beginTransaction();try{$key=self::seenKey($uid);$lock=$pdo->getAttribute(PDO::ATTR_DRIVER_NAME)==='mysql'?' FOR UPDATE':'';self::writeSeenDefault($pdo,$key);$st=$pdo->prepare('SELECT setting_value FROM settings WHERE setting_key=?'.$lock);$st->execute([$key]);$raw=$st->fetchColumn();$seen=json_decode((string)$raw,true);$count=$raw===$id?1:(is_array($seen)&&($seen['id']??'')===$id?(int)($seen['count']??0):0);if($count<(int)($a['show_count']??1))self::write($pdo,$key,json_encode(['id'=>$id,'count'=>$count+1],JSON_THROW_ON_ERROR));$pdo->commit();}catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}if(class_exists('Logger'))Logger::audit('developer.announcement_acknowledged',['user_id'=>$uid,'announcement_id'=>$id]);
+    }
+    private static function writeSeenDefault(PDO $pdo,string $key):void {
+        $sql=$pdo->getAttribute(PDO::ATTR_DRIVER_NAME)==='sqlite'?'INSERT OR IGNORE INTO settings(setting_key,setting_value) VALUES(?,?)':'INSERT IGNORE INTO settings(setting_key,setting_value) VALUES(?,?)';
+        $pdo->prepare($sql)->execute([$key,'']);
+    }
+    public static function exactDeadline(string $date,string $clock,?int $now=null):int {
+        if(!preg_match('/^\d{4}-\d{2}-\d{2}$/D',$date)||!preg_match('/^\d{2}:\d{2}$/D',$clock))throw new RuntimeException('روز و ساعت پایان را مشخص کن.');
+        $tz=new DateTimeZone('Asia/Tehran');$d=DateTimeImmutable::createFromFormat('!Y-m-d H:i',$date.' '.$clock,$tz);
+        if(!$d||$d->format('Y-m-d H:i')!==$date.' '.$clock)throw new RuntimeException('تاریخ یا ساعت پایان معتبر نیست.');
+        $n=$now??time();$end=$d->getTimestamp();if($end<=$n||$end>$n+604800)throw new RuntimeException('زمان پایان باید در هفت روز آینده باشد.');return $end;
+    }
+    public static function pageHtml(int $until,bool $preview=false):string {
+        $remaining=max(0,$until-time());$local=(new DateTimeImmutable('@'.$until))->setTimezone(new DateTimeZone('Asia/Tehran'));$end=e($local->format('H:i'));$day=e($local->format('Y-m-d'));
+        $previewFlag=$preview?'true':'false';
+        return '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>سلطان حساب | در حال به‌روزرسانی</title><style>
+*{box-sizing:border-box}html{color-scheme:dark}body{margin:0;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:28px 18px;font-family:Tahoma,Arial,sans-serif;color:#fff;background:#160f2e;overflow-x:hidden}.art{position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 50% 5%,#513378 0%,transparent 48%),radial-gradient(ellipse at 95% 100%,#33244e,transparent 52%),linear-gradient(145deg,#161027,#100d20)}.art svg{width:100%;height:100%;opacity:.48}main{width:min(100%,540px);text-align:center;padding:30px 8px}.mark{width:74px;height:74px;display:block;margin:0 auto 23px;filter:drop-shadow(0 8px 20px #d6b36744)}.brand{font-size:12px;letter-spacing:.08em;color:#e8c77d;font-weight:bold}h1{font-size:clamp(25px,6vw,38px);line-height:1.55;margin:15px 0 12px}p{font-size:14px;line-height:1.95;color:#d8d0e9;margin:0 auto;max-width:440px}.timer{direction:ltr;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:34px auto 23px;max-width:410px}.timer>div{padding:18px 3px 13px;background:#ffffff09;border:1px solid #e8c77d55;border-radius:16px;box-shadow:0 12px 25px #0002}.timer b{display:block;font:700 clamp(30px,8vw,49px) Tahoma;color:#f1d28c;font-variant-numeric:tabular-nums}.timer small{font-size:12px;color:#ddd4ec;display:block;margin-top:9px}.end{color:#f1d28c;font-size:17px;font-weight:bold;margin-top:8px}.date{font-size:12px;color:#c1b5d4;margin:9px 0 25px}.line{width:54px;height:1px;background:#e8c77d;margin:24px auto}.retry{border:1px solid #e8c77d66;background:transparent;color:#f1d28c;border-radius:12px;padding:11px 20px;font:inherit;cursor:pointer}footer{font-size:11px;color:#b9abc9;margin-top:27px}.preview{position:fixed;top:10px;right:10px;background:#fff;color:#4a207c;padding:6px 10px;border-radius:9px;font-size:11px}@media(max-width:360px){.timer{gap:5px}.timer>div{padding:12px 2px}main{padding:15px 0}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}</style></head><body><div class="art" aria-hidden="true"><svg viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="#e8c77d" stroke-width="1"><ellipse cx="600" cy="450" rx="520" ry="390" opacity=".16"/><ellipse cx="600" cy="450" rx="575" ry="435" opacity=".10"/><path d="M-50 740Q330 180 1240 115M-80 790Q400 200 1240 170" opacity=".16"/><path d="M50 40h90M50 40v90M1150 860h-90M1150 860v-90" opacity=".5"/></g></svg></div>'.($preview?'<span class="preview">پیش‌نمایش · سایت فعال است</span>':'').'<main><img class="mark" src="assets/brand/pwa-192.png" alt="سلطان حساب"><span class="brand">سلطان حساب</span><h1>در حال به‌روزرسانی هستیم</h1><p>در حال آماده‌سازی تجربه‌ای بهتر برای شما هستیم. پس از پایان به‌روزرسانی، ورود دوباره امکان‌پذیر خواهد بود.</p><div class="timer" aria-label="زمان باقی‌مانده"><div><b id="hh">00</b><small>ساعت</small></div><div><b id="mm">00</b><small>دقیقه</small></div><div><b id="ss">00</b><small>ثانیه</small></div></div><div class="line"></div><p>زمان تقریبی بازگشایی</p><div class="end">ساعت <b dir="ltr">'.$end.'</b> به وقت تهران</div><div class="date" dir="ltr">'.$day.'</div><button class="retry" id="retry" type="button">بررسی دوباره</button><footer>از همراهی و شکیبایی شما سپاسگزاریم.</footer></main><script>const preview='.$previewFlag.',initial='.$remaining.',started=performance.now(),pad=n=>String(n).padStart(2,"0");function tick(){const n=Math.max(0,initial-Math.floor((performance.now()-started)/1000));document.getElementById("hh").textContent=pad(Math.floor(n/3600));document.getElementById("mm").textContent=pad(Math.floor(n/60)%60);document.getElementById("ss").textContent=pad(n%60);if(n===0&&!preview)location.replace("index.php?page=login");}document.getElementById("retry").onclick=()=>{if(!preview)location.replace("index.php?page=login")};tick();setInterval(tick,250);</script></body></html>';
     }
     public static function gate(): void {
         $script=basename((string)($_SERVER['SCRIPT_FILENAME']??$_SERVER['SCRIPT_NAME']??''));
@@ -394,9 +410,7 @@ final class MaintenanceP13 {
             echo json_encode($script==='mcp.php'?['jsonrpc'=>'2.0','id'=>null,'error'=>['code'=>-32000,'message'=>'Maintenance','data'=>['retry_after'=>$remaining]]]:['error'=>'temporarily_unavailable','retry_after'=>$remaining]);exit;
         }
         header('Content-Type: text/html; charset=utf-8');
-        $end=e(date('Y-m-d H:i:s',$state['until']));
-        echo '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>سلطان حساب | در حال به‌روزرسانی</title><style>
-@font-face{font-family:Vazir;src:url("assets/fonts/vazirmatn-400.woff2") format("woff2");font-display:swap}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at top,#e9e2ff,#f5f7fc 55%,#eef2f9);font-family:Vazir,Tahoma,sans-serif;color:#172033}main{width:min(100%,490px);padding:34px 24px;background:#fff;border:1px solid #dce3ef;border-radius:25px;box-shadow:0 20px 65px #35236a18;text-align:center}img{width:68px;height:68px}h1{font-size:23px;margin:15px 0 8px}p{color:#52627a;line-height:1.9;font-size:14px}.tag{display:inline-block;color:#5b21b6;background:#f2edff;border-radius:20px;padding:5px 14px;font-weight:700;font-size:12px}.timer{direction:ltr;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:24px 0}.timer>div{background:#f4f1ff;border:1px solid #e5ddff;border-radius:14px;padding:14px 4px}.timer b{display:block;font:700 clamp(23px,7vw,36px) Tahoma;color:#4318b8;font-variant-numeric:tabular-nums}.timer small{font-size:12px;color:#566078}button{border:0;border-radius:12px;background:#4318b8;color:#fff;font:700 14px Vazir,Tahoma;padding:12px 20px;cursor:pointer}footer{margin-top:22px;font-size:11px;color:#64748b}</style></head><body><main><img src="assets/brand/pwa-192.png" alt="سلطان حساب"><br><span class="tag">به‌روزرسانی سیستم</span><h1>سلطان حساب در حال به‌روزرسانی است</h1><p>برای بهبود امکانات، ورود موقتاً متوقف شده است. پس از پایان زمان، دوباره می‌توانید وارد شوید.</p><div class="timer" aria-label="زمان باقی‌مانده"><div><b id="hh">00</b><small>ساعت</small></div><div><b id="mm">00</b><small>دقیقه</small></div><div><b id="ss">00</b><small>ثانیه</small></div></div><p>پایان برنامه‌ریزی‌شده: <b dir="ltr">'.$end.'</b></p><button type="button" id="retry">بررسی دوباره</button><footer>ممنون از شکیبایی شما · سلطان حساب</footer></main><script>const initial='.$remaining.',started=performance.now(),pad=n=>String(n).padStart(2,"0");function tick(){const n=Math.max(0,initial-Math.floor((performance.now()-started)/1000));document.getElementById("hh").textContent=pad(Math.floor(n/3600));document.getElementById("mm").textContent=pad(Math.floor(n/60)%60);document.getElementById("ss").textContent=pad(n%60);if(n===0)location.replace("index.php?page=login");}document.getElementById("retry").onclick=()=>location.replace("index.php?page=login");tick();setInterval(tick,250);</script></body></html>';exit;
+        echo self::pageHtml($state['until']);exit;
     }
 }
 // Every application HTTP entry point includes app/bootstrap.php, which loads this file.
