@@ -47,6 +47,7 @@ final class CompanyService {
                 'panel_rows'=>'SELECT COUNT(*) FROM daily_report_rows rr JOIN panels p ON p.id=rr.panel_id WHERE p.company_id=?',
             ];
             foreach ($queries as $key=>$sql) {$st=$pdo->prepare($sql);$st->execute([$id]);$counts[$key]=(int)$st->fetchColumn();}
+            if(class_exists('ExpenseService')&&ExpenseService::ready()){$st=$pdo->prepare('SELECT COUNT(*) FROM operating_expenses WHERE company_id=?');$st->execute([$id]);$counts['expenses']=(int)$st->fetchColumn();}
             $hasFinancialHistory=array_sum($counts)>0;
             if ($hasFinancialHistory) {
                 // Do not mutate report rows, historical transfers, customer ledgers or archived source files.
@@ -106,8 +107,9 @@ final class CompanyService {
                 $check=$pdo->prepare($sql);$check->execute($args);
                 $n=(int)$check->fetchColumn();if($n>0)$blocking[$type]=$n;
             }
+            if(class_exists('ExpenseService')&&ExpenseService::ready()){$st=$pdo->prepare('SELECT COUNT(*) FROM operating_expenses WHERE company_id=?');$st->execute([$id]);$n=(int)$st->fetchColumn();if($n>0)$blocking['expenses']=$n;}
             if ($blocking) {
-                $labels=['active_reports'=>'گزارش حذف‌نشده','active_transfers'=>'ترانسفر ابطال‌نشده','foreign_report_rows'=>'ارجاع حساب در گزارش شرکت دیگر','foreign_report_panels'=>'ارجاع پنل در گزارش شرکت دیگر','foreign_transfer_items'=>'ارتباط ترانسفر با گزارش شرکت دیگر'];
+                $labels=['expenses'=>'سوابق هزینه (حتی ابطال‌شده)','active_reports'=>'گزارش حذف‌نشده','active_transfers'=>'ترانسفر ابطال‌نشده','foreign_report_rows'=>'ارجاع حساب در گزارش شرکت دیگر','foreign_report_panels'=>'ارجاع پنل در گزارش شرکت دیگر','foreign_transfer_items'=>'ارتباط ترانسفر با گزارش شرکت دیگر'];
                 $pieces=[];foreach($blocking as $type=>$count)$pieces[]=($labels[$type]??$type).': '.$count;
                 throw new RuntimeException('حذف دائمی مجاز نیست؛ ابتدا وابستگی‌ها را برطرف کن. '.implode('، ',$pieces));
             }

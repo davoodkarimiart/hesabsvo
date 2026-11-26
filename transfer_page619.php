@@ -1,7 +1,8 @@
 <?php
 /** Included only from authenticated index.php?page=transfers */
 $transferTab=(string)($_GET['tab']??'new');
-$transferTab=in_array($transferTab,['new','list'],true)?$transferTab:'new';
+$transferTab=in_array($transferTab,['new','list','expense_new','expense_list'],true)?$transferTab:'new';
+if(in_array($transferTab,['expense_new','expense_list'],true)){require __DIR__.'/expense_page.php';return;}
 $transferQ=trim((string)($_GET['q']??''));
 $transferCompanyFilter=(int)($_GET['company']??0);
 $transferStatusFilter=(string)($_GET['status']??'');
@@ -30,10 +31,12 @@ if($viewTransfer){
 }
 $companiesForJs=array_map(fn($c)=>['id'=>(int)$c['id'],'name'=>(string)$c['name'],'role'=>(string)($c['company_role']??''),'percent'=>(string)($c['transfer_percent']??'')],$companies);
 ?>
-<section class="section-title transfer-top-title"><div><h1>ترانسفر</h1><p>تسویه دلاری با سایت مادر، مستقل از نرخ حساب مشتری‌ها</p></div></section>
-<div class="transfer-tabs" role="navigation" aria-label="بخش‌های ترانسفر">
+<section class="section-title transfer-top-title"><div><h1>ترانسفر و هزینه‌ها</h1><p>تسویه با سایت مادر و مدیریت هزینه‌های شرکت</p></div></section>
+<div class="transfer-tabs expense-tabs" role="navigation" aria-label="بخش‌های ترانسفر">
  <a class="<?=($transferTab==='new'?'active':'')?>" href="index.php?page=transfers&tab=new">＋ ثبت ترانسفر</a>
  <a class="<?=($transferTab==='list'?'active':'')?>" href="index.php?page=transfers&tab=list">سوابق و مدیریت ترانسفرها</a>
+ <a href="index.php?page=transfers&tab=expense_new">＋ ثبت هزینه</a>
+ <a href="index.php?page=transfers&tab=expense_list">سوابق و مدیریت هزینه‌ها</a>
 </div>
 <?php if($transferTab==='new'): ?>
 <section class="card transfer-wizard" id="transferWizard">

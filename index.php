@@ -34,6 +34,17 @@ if (Auth::check() && is_post() && $page !== 'login') {
     try {
         csrf_verify();
         $action=(string)($_POST['action']??''); $uid=(int)(Auth::user()['id']??0);
+        if(in_array($action,['expense_save','expense_void'],true)){
+            if($page!=='transfers')throw new RuntimeException('مسیر عملیات هزینه نامعتبر است.');
+            if($action==='expense_save'){
+                $id=ExpenseService::save($_POST,$uid);
+                flash_set('ok','هزینه با موفقیت ثبت شد؛ سابقه مالی محفوظ است.');
+                redirect('index.php?page=transfers&tab=expense_list&saved='.$id);
+            }
+            ExpenseService::void((int)($_POST['expense_id']??0),(int)($_POST['revision_no']??0),$uid);
+            flash_set('ok','هزینه ابطال شد و از جمع مالی خارج شد.');
+            redirect('index.php?page=transfers&tab=expense_list');
+        }
         if($action==='transfer_save'){
             $editing=(int)($_POST['transfer_id']??0);$editing=$editing>0?$editing:null;
             $id=TransferService::save($_POST,$uid,$editing);
