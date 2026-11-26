@@ -110,3 +110,25 @@ $a=AnnouncementP20::publish('P21','عنوان | توضیح','update',1,3,0,1,$me
 mc($a['presentation']===$meta&&AnnouncementP20::pending(1)['presentation']===$meta,'P21 structured data persists');
 mc(str_contains(MaintenanceP13::pageHtml(time()+60,true),'Vazirmatn,IRANSansLocal')&&str_contains(MaintenanceP13::pageHtml(time()+60,true),'color-scheme:light'),'P21 maintenance typography and light theme');
 $bad=false;try{PopupP21::meta(['delay_seconds'=>5]);}catch(RuntimeException){$bad=true;}mc($bad,'P21 reject early dismiss duration');
+
+$maintenanceHtml=MaintenanceP13::pageHtml(time()+60,true);
+mc(str_contains($maintenanceHtml,'<span>به‌روزرسانی</span>')&&!str_contains($maintenanceHtml,'id="retry"')&&str_contains($maintenanceHtml,'زمان تقریبی بازگشایی:'),'P21 reference maintenance content');
+$popupStart=strpos($src,'<dialog id="maintenanceAnnouncement"');
+$popupEnd=strpos($src,'</dialog><script data-p20-page>',$popupStart);
+$popupEnd=strpos($src,'</script>',$popupEnd)+9;
+mc($popupStart!==false&&$popupEnd>9,'P21 actual popup fixture');
+$announcement=['id'=>str_repeat('b',24),'title'=>'سلطان حساب به‌روز شد','items'=>array_fill(0,5,'عنوان | توضیح')];$p20Kind='update';$p20Label='به‌روزرسانی بزرگ سلطان حساب';$p20Action='maintenance_ack';$p21=PopupP21::meta(['version'=>'0.6.53-P21','hours'=>'۹ ساعت','patches'=>'۱۷ پچ','range'=>'P5 تا P21','delay_seconds'=>10]);
+ob_start();eval('?>'.substr($src,$popupStart,$popupEnd-$popupStart));$popupHtml=ob_get_clean();
+$probe=<<<'HTML'
+<script>
+const button=document.getElementById('p20Acknowledge'),dialog=document.getElementById('maintenanceAnnouncement');
+const rect=dialog.getBoundingClientRect();
+const initial=button.disabled&&dialog.open&&rect.width<=innerWidth&&rect.height<=innerHeight&&dialog.scrollWidth<=dialog.clientWidth+2;
+setTimeout(()=>{document.body.dataset.p21=initial&&!button.disabled&&button.querySelector('.p21-count').hidden?'PASS':'FAIL'},11000);
+</script>
+HTML;
+foreach(['390,844','1440,900'] as $view){
+ foreach(['popup'=>'<!doctype html><html dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'.$app.$css.'</style></head><body>'.$popupHtml.$probe.'</body></html>','maintenance'=>str_replace('</body>','<script>const r=document.querySelector("main").getBoundingClientRect();document.body.dataset.p21=r.width<=innerWidth&&document.documentElement.scrollWidth<=innerWidth+2&&Number(document.getElementById("ss").textContent)>=0?"PASS":"FAIL";</script></body>',$maintenanceHtml)] as $kind=>$fixture){
+  $file=tempnam(sys_get_temp_dir(),'p21');file_put_contents($file,$fixture);$out=[];exec(escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --window-size='.$view.' --virtual-time-budget=12500 --dump-dom '.escapeshellarg('file://'.$file).' 2>/dev/null',$out,$status);unlink($file);mc($status===0&&str_contains(implode("\n",$out),'data-p21="PASS"'),'P21 '.$kind.' browser '.$view);
+ }
+}

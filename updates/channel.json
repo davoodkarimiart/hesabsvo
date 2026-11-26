@@ -1,11 +1,11 @@
 {
   "product": "soltanhesab",
   "release": "0.6.53-p21",
-  "notes": "بازطراحی مینیمال پاپ‌آپ بر اساس طرح تأییدشده، عنوان و توضیح مستقل، اطلاعات نسخه و پچ، انتخاب متن یا فهرست، زمان مطالعه ۱۰ تا ۳۰ ثانیه، صفحه مستقل مدیریت پاپ‌آپ، طراحی روشن و فونت صفحه انتظار؛ بدون تغییر محاسبات، توقف فعلی یا دیتابیس.",
+  "notes": "تکمیل P21: طراحی سفید و بنفش، پاپ‌آپ تک‌دکمه با شمارش معکوس، صفحه انتظار عریض دسکتاپ و عمودی موبایل، اصلاح PHP، تنظیمات مستقل و MCP؛ بدون تغییر محاسبات یا توقف فعلی.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
-      "sha256": "e834ab44617c9d06b49e8730482bf25471dae30917f9b5e8cbb01cc18b767772"
+      "sha256": "abf4a9dc7092e4910e10c613b1b4c8d42c8948f2998d0f2d3e6dbe9195c439b2"
     },
     {
       "path": "app/Services/TransferService.php",
@@ -13,7 +13,7 @@
     },
     {
       "path": "index.php",
-      "sha256": "1faa8709436451343878cb952c478b8517af9607ac3446aa446e0334bfdc769e"
+      "sha256": "4570fe861d6fb6d5226f7f91b5e82ad0280511edd82e6789acb87fded4f79c54"
     },
     {
       "path": "assets/transfer-calendar620.js",
@@ -33,7 +33,7 @@
     },
     {
       "path": "assets/transfer619.css",
-      "sha256": "a0b9c1d0e8071738504533d525f691ff48e978279920add4ca657510b521a994"
+      "sha256": "3ec851baa523e2a1a7db9fd781091330695ee52a9f8d19cba983a1227fc6387f"
     },
     {
       "path": "export.php",
