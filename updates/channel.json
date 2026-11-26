@@ -1,7 +1,7 @@
 {
   "product": "soltanhesab",
   "release": "0.6.53-p19",
-  "notes": "تمام اصلاحات P18؛ شش ابزار Developer برای وضعیت، پیش‌نمایش، شروع و توقف نگهداری و بررسی و نصب به‌روزرسانی؛ دو مجوز مستقل OAuth؛ بکاپ دیتابیس و فایل، کنترل هش، نصب مشترک با وب؛ بدون تغییر فرمول مالی.",
+  "notes": "تمام اصلاحات P18؛ شش ابزار Developer برای وضعیت، پیش‌نمایش، شروع و توقف نگهداری و بررسی و نصب به‌روزرسانی؛ دو مجوز مستقل OAuth؛ بکاپ دیتابیس و فایل، کنترل هش، نصب مشترک با وب؛ بدون تغییر فرمول مالی. یکسان‌سازی آیکون شرکت‌ها با ساختمان اداری چندطبقه در داشبورد و تمام منوها.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
@@ -13,7 +13,7 @@
     },
     {
       "path": "index.php",
-      "sha256": "12526c94a33125c30656a7c8071ecda8000ec2db366751aab7f9844c4cef5384"
+      "sha256": "7121d8aa0216c962358c264fe64f94c7231f5fe6549c20a5d32267901c0007be"
     },
     {
       "path": "assets/transfer-calendar620.js",
@@ -49,7 +49,7 @@
     },
     {
       "path": "update_center.php",
-      "sha256": "2531e6b254d27f3b832a6271d0599b7f4ba317166571a7eff82bd36a793d8baf"
+      "sha256": "811f3bc4299f4080142c6f415b983ff9efa0eba61a7109b67b7d9936ac4be6e5"
     },
     {
       "path": "app/Services/CompanyService.php",
@@ -65,19 +65,19 @@
     },
     {
       "path": "developer_diagnostics.php",
-      "sha256": "d7e9dac8b068090bfe7d730c178ea8f5dbca4e43df70a10ec8a723cba0456837"
+      "sha256": "124296e6321a648ce4cd19d5b0d991ce296b213587e3073e1a36b170eb53404c"
     },
     {
       "path": "developer_backups.php",
-      "sha256": "fbea5d0b83471985dedb0d569dbcf4c0713742250dfe67f7580bdbc56565b3be"
+      "sha256": "021b87385296f35af7c151d42f3e7c8e6293e72cd3b60d94d18e3d661f300822"
     },
     {
       "path": "mcp_connections.php",
-      "sha256": "55f6446a586bcef4387465ebba7788b419d9922c0b363a9828524e3044a76b91"
+      "sha256": "527b5b918032f30fb4a57a33bb49cad987f1a707d25b9628be67ee84c093bb8a"
     },
     {
       "path": "mcp_permissions.php",
-      "sha256": "1c25ffab0c2a686911687b52ee2341654a1dd2363822dfd643f748fe5b417017"
+      "sha256": "8c3076835dc5475bd53931d6b31ee56e3af596af9ad4263df79146ec6f779191"
     },
     {
       "path": "mcp.php",
