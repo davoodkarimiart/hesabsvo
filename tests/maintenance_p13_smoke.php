@@ -26,3 +26,57 @@ foreach([0,-1,10081] as $m){$ok=false;try{MaintenanceP13::start($m,'x','x',1);}c
 mc(str_contains(file_get_contents($root.'/app/bootstrap.php'),"'/Services/ReportingService.php'"),'shared bootstrap gate');
 $src=file_get_contents($root.'/index.php');mc(str_contains($src,"if(\$action==='maintenance_start')")&&str_contains($src,'Auth::requireDeveloper();if($page'), 'developer-only start');
 mc(str_contains($src,'csrf_verify();')&&str_contains($src,'maintenance_confirm'),'CSRF and explicit confirmation');
+
+
+$tz=new DateTimeZone('Asia/Tehran');$target=(new DateTimeImmutable('@'.($now+7200)))->setTimezone($tz);
+$deadline=MaintenanceP13::exactDeadline($target->format('Y-m-d'),$target->format('H:i'),$now);
+mc($deadline>=($now+7140)&&$deadline<=($now+7200),'P14 exact Tehran time');
+foreach([['2026-02-30','12:00'],[$target->format('Y-m-d'),'25:00']] as $bad){$ok=false;try{MaintenanceP13::exactDeadline($bad[0],$bad[1],$now);}catch(RuntimeException){$ok=true;}mc($ok,'P14 invalid deadline');}
+$s=MaintenanceP13::start(1,'سه نمایش',"مورد اول\nمورد دوم",1,$now,$deadline,3);
+mc($s['until']===$deadline,'P14 absolute server deadline');
+$before=MaintenanceP13::read();
+$html=MaintenanceP13::pageHtml($deadline,true);
+mc(str_contains($html,'پیش‌نمایش')&&str_contains($html,'preview=true')&&str_contains($html,'به وقت تهران'),'P14 same public page preview');
+mc(MaintenanceP13::read()===$before,'P14 preview does not mutate lock');
+Database::$pdo->exec("UPDATE settings SET setting_value='0' WHERE setting_key='maintenance_until_p13'");
+$a=MaintenanceP13::pending(1);
+for($i=1;$i<=3;$i++){mc(MaintenanceP13::pending(1)!==null,'P14 pending notice '.$i);MaintenanceP13::acknowledge(1,$a['id']);}
+mc(MaintenanceP13::pending(1)===null&&MaintenanceP13::pending(2)!==null,'P14 per-user display count');
+$start=strpos($src,'<section class="dev14"');$end=strpos($src,'<?php else: ?><section class="empty-state">',$start);
+mc($start!==false&&$end!==false,'P14 actual developer markup located');
+function csrf_field():string{return '<input type="hidden" name="csrf" value="fixture">';}
+$h=['db_ok'=>true,'migration'=>'017_operating_expenses','paths'=>['storage/logs'=>true],'accounting'=>['expense ledger'=>true],'extensions'=>['ZipArchive'=>true],'fonts'=>['Vazirmatn 400'=>false],'counts'=>['companies'=>18,'operating_expenses'=>1],'db_error'=>null];
+ob_start();eval('?>'.substr($src,$start,$end-$start));$body=ob_get_clean();
+$chrome=trim((string)shell_exec('command -v google-chrome || command -v chromium || true'));
+if($chrome==='')throw new RuntimeException('Browser required for P14');
+$css=file_get_contents($root.'/assets/transfer619.css');$app=file_get_contents($root.'/assets/app.css');
+$tail=<<<'HTML'
+<script>
+window.addEventListener('load',()=>{
+ try{
+ const f=document.getElementById('dev14Form'),items=document.getElementById('dev14Items');
+ if(items.children.length!==3)throw Error('initial rows');
+ document.getElementById('dev14Suggested').click();
+ if(items.children.length!==8)throw Error('suggested rows');
+ document.getElementById('dev14Add').click();
+ if(items.children.length!==9)throw Error('add row');
+ items.lastElementChild.querySelector('button').click();
+ if(items.children.length!==8)throw Error('remove row');
+ const c=f.elements.maintenance_confirm,r=c.getBoundingClientRect();
+ if(r.width<16||r.width>20||r.height>20)throw Error('checkbox size '+r.width);
+ if(f.scrollWidth>f.clientWidth+2)throw Error('form overflow');
+ f.elements.maintenance_mode[1].click();
+ if(document.getElementById('dev14Exact').hidden)throw Error('exact mode hidden');
+ document.getElementById('dev14PreviewPopup').click();
+ if(!document.getElementById('dev14PopupDialog').open||document.getElementById('dev14PopupList').children.length!==8)throw Error('popup preview');
+ document.querySelector('#dev14PopupDialog [data-close-preview]').click();
+ if(document.getElementById('dev14PopupDialog').open)throw Error('close popup');
+ document.body.dataset.dev14='PASS';
+ }catch(e){document.body.dataset.dev14='FAIL '+String(e);}
+});
+</script>
+HTML;
+foreach(['390,844','1440,900'] as $view){
+ $file=tempnam(sys_get_temp_dir(),'dev14').'.html';file_put_contents($file,'<!doctype html><html dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'.$app.$css.'</style></head><body>'.$body.$tail.'</body></html>');
+ $out=[];exec(escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --window-size='.$view.' --virtual-time-budget=4000 --dump-dom '.escapeshellarg('file://'.$file).' 2>/dev/null',$out,$status);$dom=implode("\n",$out);preg_match('/data-dev14="[^"]*"/',$dom,$marker);echo ($marker[0]??'no marker').PHP_EOL;unlink($file);mc($status===0&&str_contains($dom,'data-dev14="PASS"'),'P14 developer browser '.$view);
+}
