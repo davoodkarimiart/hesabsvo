@@ -382,6 +382,7 @@ final class PopupP21 {
 final class MaintenanceP13 {
     public const UNTIL='maintenance_until_p13';
     public const ANNOUNCEMENT='maintenance_announcement_p13';
+    private const MCP_OWNER='maintenance_mcp_owner_p24';
     public static function read(): array {
         $st=Database::connection()->prepare('SELECT setting_key,setting_value FROM settings WHERE setting_key IN (?,?)');
         $st->execute([self::UNTIL,self::ANNOUNCEMENT]);$r=$st->fetchAll(PDO::FETCH_KEY_PAIR);
@@ -402,7 +403,7 @@ final class MaintenanceP13 {
           :'INSERT INTO settings(setting_key,setting_value) VALUES(?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)';
         $pdo->prepare($sql)->execute([$key,$value]);
     }
-    public static function start(int $minutes,string $title,string $raw,int $uid,?int $now=null,?int $exactUntil=null,int $showCount=1,array $meta=[]): array {
+    public static function start(int $minutes,string $title,string $raw,int $uid,?int $now=null,?int $exactUntil=null,int $showCount=1,array $meta=[],?int $mcpSecurityVersion=null): array {
         if($uid<=0||$minutes<1||$minutes>10080)throw new RuntimeException('مدت تعمیرات باید بین ۱ دقیقه و ۷ روز باشد.');
         $title=trim($title);if($title===''||mb_strlen($title)>100)throw new RuntimeException('عنوان اعلان حداکثر ۱۰۰ نویسه باشد.');
         $items=self::parseNotes($raw);$now=$now??time();$until=$exactUntil??($now+$minutes*60);if($until<=$now||$until>$now+604800||$showCount<1||$showCount>5)throw new RuntimeException('زمان پایان یا تعداد نمایش نامعتبر است.');
@@ -410,6 +411,14 @@ final class MaintenanceP13 {
         $pdo=Database::connection();$pdo->beginTransaction();
         try{
             self::lockUntil($pdo);if(self::active(self::read(),$now))throw new RuntimeException('به‌روزرسانی دیگری فعال است.');
+            // Snapshot only the initiating MCP account's last validated browser session.
+            // Never include its fingerprint in the public announcement or MCP response.
+            $owner=[];
+            if($mcpSecurityVersion!==null){
+                $candidate=self::privateSetting(self::browserKey($uid));
+                if(self::validBrowserBinding($candidate,$uid,$mcpSecurityVersion))$owner=$candidate+['announcement_id'=>$a['id']];
+            }
+            self::write($pdo,self::MCP_OWNER,json_encode($owner,JSON_THROW_ON_ERROR));
             self::write($pdo,self::ANNOUNCEMENT,json_encode($a,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));
             self::write($pdo,self::UNTIL,(string)$until);$pdo->commit();
         }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
@@ -511,23 +520,67 @@ p{font-size:clamp(17px,2vw,23px);font-weight:500;color:#51475e;line-height:1.9}
             &&is_string($marker['id']??null)&&is_string($a['id']??null)
             &&preg_match('/^[a-f0-9]{24}$/D',$a['id'])===1&&hash_equals($a['id'],$marker['id']);
     }
+    private static function browserKey(int $uid):string {return 'maintenance_browser_p24_'.$uid;}
+    private static function privateSetting(string $key):array {
+        $st=Database::connection()->prepare('SELECT setting_value FROM settings WHERE setting_key=?');
+        $st->execute([$key]);$v=json_decode((string)$st->fetchColumn(),true);
+        return is_array($v)?$v:[];
+    }
+    private static function validBrowserBinding(array $binding,int $uid,int $securityVersion):bool {
+        return $uid>0&&$securityVersion>=0&&($binding['uid']??null)===$uid
+            &&($binding['security_version']??null)===$securityVersion
+            &&is_string($binding['fingerprint']??null)&&preg_match('/^[a-f0-9]{64}$/D',$binding['fingerprint'])===1;
+    }
+    public static function browserFingerprint(string $sid):string {
+        return $sid===''?'':hash('sha256','soltan-maintenance-browser-p24:'.$sid);
+    }
+    public static function rememberBrowser(array $user,array $session,string $sid):void {
+        if(($user['role']??'')!=='developer'||(int)($user['id']??0)<=0||!is_int($session['_security_version']??null)||$sid==='')return;
+        $uid=(int)$user['id'];$binding=['uid'=>$uid,'security_version'=>$session['_security_version'],'fingerprint'=>self::browserFingerprint($sid)];
+        // Last authenticated browser wins. Session IDs themselves are never persisted here.
+        if(self::privateSetting(self::browserKey($uid))!==$binding)
+            self::write(Database::connection(),self::browserKey($uid),json_encode($binding,JSON_THROW_ON_ERROR));
+    }
+    public static function mcpOwnerMatches(array $state,array $binding,array $session,?array $user,string $sid,?int $now=null):bool {
+        $a=$state['announcement']??[];$uid=(int)($user['id']??0);$sv=$session['_security_version']??null;
+        return self::active($state,$now)&&is_array($user)&&($user['role']??'')==='developer'
+            &&$uid===(int)($a['initiator_uid']??0)&&is_int($sv)&&self::validBrowserBinding($binding,$uid,$sv)
+            &&is_string($a['id']??null)&&preg_match('/^[a-f0-9]{24}$/D',$a['id'])===1
+            &&is_string($binding['announcement_id']??null)&&hash_equals($a['id'],$binding['announcement_id'])
+            &&$sid!==''&&hash_equals($binding['fingerprint'],self::browserFingerprint($sid));
+    }
     public static function currentOwnerSession(array $state):bool {
-        if(!isset($_SESSION['maintenance_owner_p23'])||!class_exists('Auth'))return false;
-        return self::ownerSessionMatches($state,$_SESSION,Auth::user());
+        if(!class_exists('Auth')||($_SESSION['user']['role']??'')!=='developer')return false;
+        $user=Auth::user();
+        if(self::ownerSessionMatches($state,$_SESSION,$user))return true;
+        return self::mcpOwnerMatches($state,self::privateSetting(self::MCP_OWNER),$_SESSION,$user,session_id());
+    }
+    public static function publicOAuthDiscovery(string $script,string $method,string $endpoint):bool {
+        return $script==='oauth.php'&&$method==='GET'&&in_array($endpoint,['resource','metadata'],true);
     }
     public static function gate(): void {
         $script=basename((string)($_SERVER['SCRIPT_FILENAME']??$_SERVER['SCRIPT_NAME']??''));
         // Installer/CLI are not public application sessions. Cron is paused with the other HTTP endpoints.
         if(PHP_SAPI==='cli'||PHP_SAPI==='phpdbg'||str_contains((string)($_SERVER['SCRIPT_NAME']??''),'/install/'))return;
-        $state=self::read();if(!self::active($state)){unset($_SESSION['maintenance_owner_p23']);if($state['until']>0){$st=Database::connection()->prepare('UPDATE settings SET setting_value=? WHERE setting_key=? AND setting_value=?');$st->execute(['0',self::UNTIL,(string)$state['until']]);if($st->rowCount()&&class_exists('Logger'))Logger::system('developer.maintenance_finished',['until'=>$state['until']]);}return;}
+        $state=self::read();if(!self::active($state)){unset($_SESSION['maintenance_owner_p23']);if($state['until']>0){$st=Database::connection()->prepare('UPDATE settings SET setting_value=? WHERE setting_key=? AND setting_value=?');$st->execute(['0',self::UNTIL,(string)$state['until']]);if($st->rowCount()&&class_exists('Logger'))Logger::system('developer.maintenance_finished',['until'=>$state['until']]);}
+            // Track only a validated developer browser, never MCP, OAuth, cron or logout requests.
+            if($script==='index.php'&&($_SERVER['REQUEST_METHOD']??'')==='GET'&&($_GET['page']??'')!=='logout'&&($_SESSION['user']['role']??'')==='developer'){
+                $user=Auth::user();
+                if($user!==null)self::rememberBrowser($user,$_SESSION,session_id());
+            }
+            return;
+        }
+        // Public discovery is read-only and must remain available; registration and consent stay blocked.
+        if(self::publicOAuthDiscovery($script,(string)($_SERVER['REQUEST_METHOD']??''),(string)($_GET['endpoint']??'')))return;
         // Maintenance exception is only transport-level: MCP enforces bearer, role, scope and an operation allowlist below.
         if($script==='mcp.php')return;
         // Existing OAuth refresh tokens must be renewable during longer maintenance; interactive authorization remains blocked.
         if($script==='oauth.php'&&($_SERVER['REQUEST_METHOD']??'')==='POST'&&($_GET['endpoint']??'')==='token'&&($_POST['grant_type']??'')==='refresh_token')return;
-        if(!in_array($script,['oauth.php','mcp.php','cron_soltan_backup.php'],true)&&self::currentOwnerSession($state))return;
+        $owner=self::currentOwnerSession($state);
+        if(!in_array($script,['oauth.php','mcp.php','cron_soltan_backup.php'],true)&&$owner)return;
         $now=time();$remaining=max(1,$state['until']-$now);
         // Clear application authentication on the next request, not the stored user record.
-        unset($_SESSION['user'],$_SESSION['_security_version'],$_SESSION['_csrf'],$_SESSION['maintenance_owner_p23']);
+        if(!$owner)unset($_SESSION['user'],$_SESSION['_security_version'],$_SESSION['_csrf'],$_SESSION['maintenance_owner_p23']);
         http_response_code(503);header('Cache-Control: no-store, no-cache, must-revalidate, private, max-age=0');
         header('Pragma: no-cache');header('Retry-After: '.$remaining);header('X-Robots-Tag: noindex, nofollow');
         if(in_array($script,['mcp.php','oauth.php'],true)||str_contains((string)($_SERVER['HTTP_ACCEPT']??''),'application/json')){
