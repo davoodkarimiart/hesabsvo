@@ -1,7 +1,7 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p16",
-  "notes": "بازطراحی ورود گل یا پوچ با راهنمای واضح؛ منوی شناور و داشبورد رنگی؛ ناوبری آیکون‌دار Developer و ترانسفر؛ اصلاح فرم تاریخ لاگ و فهرست بکاپ؛ بهبود تنظیمات و شرکت‌ها؛ حفظ محاسبات، امنیت و خروجی‌های مالی.",
+  "release": "0.6.53-p17",
+  "notes": "بازگشت ورود مخفی گل یا پوچ و فرم تیره؛ حفظ منوی اصلی در صفحات Developer؛ داشبورد متعادل و کارت‌های وسط‌چین؛ نمودار تعاملی تجمعی و روزانه با انتخاب شرکت؛ بدون تغییر محاسبات یا دیتابیس.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
@@ -13,7 +13,7 @@
     },
     {
       "path": "index.php",
-      "sha256": "97d1c9c60309ec7260b801270ed684074e804aae77ab4bb3d541265d29b5b0f1"
+      "sha256": "6ca2bfb394ca420325efa6a6a728bb93d8640af7f0a6e315b0710452fa3078cc"
     },
     {
       "path": "assets/transfer-calendar620.js",
@@ -33,7 +33,7 @@
     },
     {
       "path": "assets/transfer619.css",
-      "sha256": "a6d418b5ff99599d88d6eeb6aeaae9a853681e2966ef4c83537d98e9aa6afd48"
+      "sha256": "9528a66f6140bd1eed2a3975866fccff5072db671cf68825958546cbed9669d4"
     },
     {
       "path": "export.php",
@@ -49,7 +49,7 @@
     },
     {
       "path": "update_center.php",
-      "sha256": "5378c719c9f551266bfafefd5499e57bd1876107b9b34688e346928dbe74224f"
+      "sha256": "c9400210044bce10d3de6a4cc5915f2aff125cc0df4d2f7320e8f49b8ce5002c"
     },
     {
       "path": "app/Services/CompanyService.php",
@@ -65,19 +65,19 @@
     },
     {
       "path": "developer_diagnostics.php",
-      "sha256": "3b6e195e38d2bcf0ff4f36ad4f9157a2cfcc5d10989578fc80712b6d5dff50fc"
+      "sha256": "e582b60a6623ea9c029e039eadb64d5ab3b7c68a6cd73f660416586ae1a916a9"
     },
     {
       "path": "developer_backups.php",
-      "sha256": "cba72fda6ed447711a11e4d822cc2b73e2cee7c38d12f3d009068b2411e47b3a"
+      "sha256": "3b69d2c66460fbdc27b8fd2e611e1d32743ef4ba3c34b789d6b88be064df83c7"
     },
     {
       "path": "mcp_connections.php",
-      "sha256": "4e4a54cf3365b4ead42ea3637486bb946e579e04a5dd6946fd757682460bfb83"
+      "sha256": "104af991b43fe98d1e729e31ef7e08d3f9c83dfdc914301a674ecf3489c09d22"
     },
     {
       "path": "mcp_permissions.php",
-      "sha256": "3799c6a9c97c769ef3d427ba22e7a6e9e036de9c489fb7e6da55e08d958c311b"
+      "sha256": "fe28315b3180d48b1cc3a5fc41c11d3b9df66fac314ea3088f0e6ca960217beb"
     },
     {
       "path": "mcp.php",

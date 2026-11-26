@@ -48,3 +48,29 @@ HTML;
 foreach(['login'=>[$login,$loginTest,'page-login'],'dock'=>['<div class="app-shell">'.$dock.'</div>',$dockTest,'page-dashboard']] as $kind=>[$body,$js,$cls]){
 foreach(['320,800','390,844','1440,900'] as $view){$tmpBase=tempnam(sys_get_temp_dir(),'p16');$tmp=$tmpBase.'.html';rename($tmpBase,$tmp);file_put_contents($tmp,'<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'.$app.$css.'</style></head><body class="'.$cls.'">'.$body.$js.'</body></html>');$out=[];exec(escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --window-size='.$view.' --virtual-time-budget=2000 --dump-dom '.escapeshellarg('file://'.$tmp).' 2>/dev/null',$out,$status);unlink($tmp);$dom=implode("\n",$out);preg_match('/data-p16="[^"]*"/',$dom,$marker);echo ($marker[0]??'no marker').PHP_EOL;check15($status===0&&str_contains($dom,'data-p16="PASS"'),'P16 '.$kind.' '.$view);}
 }
+
+
+// P17 chart uses the actual script with synthetic dated summaries, not production data.
+$chartStart=strpos($src,"(function(){\n const svg=document.getElementById('dashboardTrendChart');if(!svg)return;");
+$chartEnd=strpos($src,"\n(function(){\n const clean=",$chartStart);
+check15($chartStart!==false&&$chartEnd!==false,'P17 chart script');
+$chart=substr($src,$chartStart,$chartEnd-$chartStart);
+$chartFixture=<<<'HTML'
+<div class="trend-periods"><button data-days="7">7</button><button data-days="30">30</button><button data-days="90">90</button></div>
+<div id="trendDirection"></div><div id="trendWinRatio"></div><div id="trendLossRatio"></div><div id="trendNet"></div><div id="dashboardTrendEmpty" class="hidden"></div>
+<select id="p17Company"></select><button id="p17ResetChart">reset</button><button data-chart-mode="cumulative">cumulative</button><button data-chart-mode="daily">daily</button>
+<div id="p17ChartReadout"></div><div class="trend-chart-wrap"><svg id="dashboardTrendChart" tabindex="0"></svg></div><div id="trendLegend"></div><div id="p17AxisNote"></div>
+<script>const date=new Date(),prev=new Date();prev.setDate(date.getDate()-1);const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');window.DASHBOARD_CHART=[{date:iso(prev),company:'Alpha',net:100},{date:iso(date),company:'Alpha',net:-40},{date:iso(date),company:'Beta',net:200}];window.DASHBOARD_META={factor:1,unit:'تومان',digits:'en'};</script>
+HTML;
+$chartAssertions=<<<'HTML'
+<script>window.addEventListener('load',()=>{try{
+const svg=document.getElementById('dashboardTrendChart'),pick=document.getElementById('p17Company'),legend=document.getElementById('trendLegend'),readout=document.getElementById('p17ChartReadout');
+if(svg.querySelectorAll('polyline').length!==1||svg.querySelectorAll('circle').length!==0||!readout.textContent.includes('260'))throw Error('initial cumulative');
+pick.value='Alpha';pick.dispatchEvent(new Event('change'));if(svg.querySelectorAll('polyline').length!==2||!legend.textContent.includes('Alpha')||!readout.textContent.includes('60'))throw Error('company compare');
+document.querySelector('[data-chart-mode=daily]').click();if(svg.querySelectorAll('rect').length!==4||!readout.textContent.includes('160')||!readout.textContent.includes('-40'))throw Error('daily bars');
+svg.dispatchEvent(new KeyboardEvent('keydown',{key:'Home',bubbles:true}));if(!readout.textContent.includes('100')||svg.querySelectorAll('#p17Cursor circle').length!==2)throw Error('date selection');
+document.getElementById('p17ResetChart').click();if(legend.textContent.includes('Alpha'))throw Error('reset');
+document.body.dataset.p17='PASS';
+}catch(e){document.body.dataset.p17='FAIL '+String(e)}});</script>
+HTML;
+foreach(['320,800','390,844','1440,900'] as $view){$tmpBase=tempnam(sys_get_temp_dir(),'p17');$tmp=$tmpBase.'.html';rename($tmpBase,$tmp);file_put_contents($tmp,'<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'.$app.$css.'</style></head><body class="page-dashboard">'.$chartFixture.'<script>'.$chart.'</script>'.$chartAssertions.'</body></html>');$out=[];exec(escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --window-size='.$view.' --virtual-time-budget=2000 --dump-dom '.escapeshellarg('file://'.$tmp).' 2>/dev/null',$out,$status);unlink($tmp);$dom=implode("\n",$out);preg_match('/data-p17="[^"]*"/',$dom,$marker);echo ($marker[0]??'no marker').PHP_EOL;check15($status===0&&str_contains($dom,'data-p17="PASS"'),'P17 chart '.$view);}
