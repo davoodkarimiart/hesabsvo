@@ -18,7 +18,6 @@ $formAmount=(string)($draft['amount_toman']??$editing['amount_toman']??'');
 $formSubject=(string)($draft['subject']??$editing['subject']??'');
 $rows=array_reverse($list['rows']);$pages=max(1,(int)ceil(count($rows)/25));$p=min($pages,max(1,(int)($_GET['p']??1)));$rows=array_slice($rows,($p-1)*25,25);
 $base=['page'=>'transfers','tab'=>'expense_list','company'=>$company,'from'=>$from,'to'=>$to,'status'=>$status,'q'=>$q];
-$reportUrl='index.php?'.http_build_query(['page'=>'analytics','type'=>'expense_history','company_id'=>$company,'from'=>$from,'to'=>$to,'date_mode'=>'range']);
 ?>
 <section class="section-title transfer-top-title"><div><h1>ترانسفر و هزینه‌ها</h1><p>تسویه با سایت مادر و مدیریت هزینه‌های شرکت</p></div></section>
 <div class="transfer-tabs expense-tabs" role="navigation" aria-label="ترانسفر و هزینه">
@@ -31,33 +30,32 @@ $reportUrl='index.php?'.http_build_query(['page'=>'analytics','type'=>'expense_h
 <?php elseif($tab==='expense_new'):?>
 <section class="card transfer-wizard expense-card">
  <div class="transfer-step-head"><div><h2><?=$editing?'ویرایش هزینه #'.e($editing['id']):'ثبت هزینه جدید'?></h2><p>مبلغ به تومان کامل؛ هزینه فقط از نتیجه خالص شرکت کسر می‌شود.</p></div></div>
- <form class="expense-form" method="post" action="index.php?page=transfers&tab=expense_new<?=$editing?'&edit='.(int)$editing['id']:''?>" autocomplete="off">
+ <form class="expense-form expense-entry-form" method="post" action="index.php?page=transfers&tab=expense_new<?=$editing?'&edit='.(int)$editing['id']:''?>" autocomplete="off">
  <?=csrf_field()?><input type="hidden" name="action" value="expense_save"><input type="hidden" name="expense_id" value="<?=e($editing['id']??0)?>"><input type="hidden" name="revision_no" value="<?=e($editing['revision_no']??0)?>">
  <div class="expense-form-grid">
  <label>شرکت<?php if($editing):?><input value="<?=e($editing['company_name_snapshot'])?>" readonly><input type="hidden" name="company_id" value="<?=$formCompany?>"><?php else:?><select name="company_id" required><option value="">انتخاب شرکت</option><?php foreach($companies as $c):?><option value="<?=e($c['id'])?>" <?=$formCompany===(int)$c['id']?'selected':''?>><?=e($c['name'])?></option><?php endforeach;?></select><?php endif;?></label>
  <label>تاریخ هزینه<input id="expenseDate" name="expense_date" data-report-calendar="1" value="<?=e($formDate)?>" required></label>
- <label>مبلغ هزینه (تومان)<input id="expenseAmount" name="amount_toman" dir="ltr" inputmode="numeric" value="<?=e($formAmount)?>" placeholder="مثلاً 1,500,000" maxlength="19" required><small id="expenseAmountHint" aria-live="polite">عدد صحیح، بدون اعشار</small></label>
- <label>موضوع هزینه<input name="subject" value="<?=e($formSubject)?>" maxlength="250" placeholder="مثلاً هزینه سرور" required></label>
- </div>
+ <label class="expense-amount-field">مبلغ هزینه (تومان)<input id="expenseAmount" name="amount_toman" dir="ltr" inputmode="numeric" value="<?=e($formAmount)?>" placeholder="1,500,000" maxlength="19" aria-describedby="expenseAmountHint" required></label>
+ <label class="expense-subject-field">موضوع هزینه<input name="subject" value="<?=e($formSubject)?>" maxlength="250" placeholder="مثلاً هزینه سرور" required></label>
+ </div><p class="expense-field-note" id="expenseAmountHint">مبلغ را به تومان، بدون اعشار وارد کن.</p>
  <?php if($editing):?><p class="transfer-hint">ویرایش با نگهداری نسخه قبلی در سابقه حسابرسی انجام می‌شود.</p><?php endif;?>
  <div class="expense-actions"><button class="primary" type="submit"><?=$editing?'ذخیره ویرایش':'ثبت نهایی هزینه'?></button><a class="btn ghost" href="index.php?page=transfers&tab=expense_list">انصراف</a></div>
  </form>
 </section>
 <?php else:?>
 <section class="card transfer-history expense-card"><div class="transfer-step-head"><div><h2>سوابق و مدیریت هزینه‌ها</h2><p>جستجو، ویرایش و ابطال اسناد هزینه</p></div><a class="btn primary" href="index.php?page=transfers&tab=expense_new">＋ هزینه</a></div>
-<form method="get" action="index.php" class="expense-form">
+<form method="get" action="index.php" class="expense-form expense-filter-form">
  <input type="hidden" name="page" value="transfers"><input type="hidden" name="tab" value="expense_list">
  <div class="expense-form-grid">
  <label>شرکت<select name="company"><option value="0">همه شرکت‌ها</option><?php foreach($companies as $c):?><option value="<?=e($c['id'])?>" <?=$company===(int)$c['id']?'selected':''?>><?=e($c['name'])?></option><?php endforeach;?></select></label>
  <label>موضوع هزینه<input type="search" name="q" value="<?=e($q)?>" placeholder="جست‌وجو در موضوع"></label>
  <label>از تاریخ<input name="from" data-report-calendar="1" value="<?=e($from)?>"></label>
  <label>تا تاریخ<input name="to" data-report-calendar="1" value="<?=e($to)?>"></label>
- <label>وضعیت<select name="status"><?php foreach(['final'=>'ثبت‌شده','void'=>'ابطال‌شده',''=>'همه'] as $key=>$label):?><option value="<?=e($key)?>" <?=$key===$status?'selected':''?>><?=e($label)?></option><?php endforeach;?></select></label>
- <div class="expense-actions"><button class="primary" type="submit">جست‌وجو</button><a class="btn ghost" href="index.php?page=transfers&tab=expense_list">پاک‌کردن</a></div>
+ <label class="expense-status-field">وضعیت<select name="status"><?php foreach(['final'=>'ثبت‌شده','void'=>'ابطال‌شده',''=>'همه'] as $key=>$label):?><option value="<?=e($key)?>" <?=$key===$status?'selected':''?>><?=e($label)?></option><?php endforeach;?></select></label>
+ <div class="expense-actions expense-filter-actions"><button class="primary" type="submit">جست‌وجو</button><a class="btn ghost" href="index.php?page=transfers&tab=expense_list">پاک‌کردن</a></div>
  </div>
 </form>
-<div class="expense-stats"><div><small>جمع هزینه‌های نهایی (تومان)</small><b dir="ltr"><?=e(TransferService::formatToman($list['total'],$uiSettings))?></b></div><div><small>تعداد اسناد نهایی</small><b><?=e($list['count'])?></b></div></div>
-<a class="btn ghost" href="<?=e($reportUrl)?>">گزارش هزینه‌ها (تصویر / Excel)</a>
+<div class="expense-stats"><div><small>جمع هزینه‌ها (تومان)</small><b dir="ltr"><?=e(TransferService::formatToman($list['total'],$uiSettings))?></b></div><div><small>تعداد هزینه‌ها</small><b><?=e($list['count'])?></b></div></div>
 <div class="expense-records">
 <?php foreach($rows as $row):?>
 <article class="expense-record <?=$row['status']==='void'?'expense-voided':''?>">

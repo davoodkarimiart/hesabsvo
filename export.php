@@ -88,14 +88,14 @@ if(isset($data)&&in_array($data['type'],['period_transfer','transfer_history','e
         $items[]=['kind'=>'section','values'=>['تاریخ تسویه','شماره سند','','نوع تسویه','','مبلغ (تومان)',''],'merge'=>[1=>2,3=>4,5=>6],'styles'=>[0=>48,1=>49,3=>22,5=>50]];
         foreach(ReportingService::transferTable($data)['rows'] as $r){$v=$r['values'];$kindStyle=$r['direction']==='positive'?40:($r['direction']==='negative'?39:22);$amountStyle=$r['direction']==='positive'?42:($r['direction']==='negative'?41:51);$items[]=['kind'=>'section','values'=>[$v[0],$v[1],'',$v[2],'',$number($v[3]),''],'merge'=>[1=>2,3=>4,5=>6],'styles'=>[0=>37,1=>38,3=>$kindStyle,5=>$amountStyle]];}
         $items[]=['kind'=>'section','values'=>['هزینه‌های دوره (تومان کامل)','','','','','',''],'merge'=>[0=>6],'styles'=>[0=>31]];
-        $items[]=['kind'=>'section','values'=>['تاریخ هزینه','','موضوع هزینه','','','مبلغ (تومان)',''],'merge'=>[0=>1,2=>4,5=>6],'styles'=>[0=>48,2=>22,5=>50]];
-        foreach(ReportingService::expenseTable($data)['rows'] as $v)$items[]=['kind'=>'section','values'=>[$v[0],'',$v[1],'','',$number($v[2]),''],'merge'=>[0=>1,2=>4,5=>6],'styles'=>[0=>37,2=>22,5=>51]];
+        $items[]=['kind'=>'section','values'=>['تاریخ هزینه','','موضوع هزینه','','مبلغ (تومان)','',''],'merge'=>[0=>1,2=>3,4=>6],'styles'=>[0=>48,2=>22,4=>50]];
+        foreach(ReportingService::expenseTable($data)['rows'] as $v)$items[]=['kind'=>'section','values'=>[$v[0],'',$v[1],'',$number($v[2]),'',''],'merge'=>[0=>1,2=>3,4=>6],'styles'=>[0=>37,2=>22,4=>51]];
         $sum=ReportingService::settlementSummary($data);
         $items[]=['kind'=>'section','values'=>['جمع‌بندی نهایی (تومان کامل)','','','','','',''],'merge'=>[0=>6],'styles'=>[0=>31]];
         $items[]=['kind'=>'section','values'=>[str_replace(' (تومان)','',$sum[0]['label']),'',str_replace(' (تومان)','',$sum[1]['label']),'',str_replace(' (تومان)','',$sum[2]['label']),'',''],'merge'=>[0=>1,2=>3,4=>6],'styles'=>[0=>32,2=>44,4=>50]];
         $items[]=['kind'=>'total','values'=>[$number($sum[0]['value']),'',$number($sum[1]['value']),'',$number($sum[2]['value']),'',''],'merge'=>[0=>1,2=>3,4=>6],'styles'=>[0=>29,2=>43,4=>51]];
         $net=ReportingService::expenseNetSummary($data);
-        $items[]=['kind'=>'total','values'=>['نتیجه نهایی','',$net['status'],'',$number($net['value']),'',''],'merge'=>[0=>1,2=>3,4=>6],'styles'=>[0=>55,2=>($net['net']>0?56:($net['net']<0?57:58)),4=>($net['net']>0?59:($net['net']<0?60:61))]];
+        $items[]=['kind'=>'net_final','values'=>['نتیجه نهایی','',$net['status'],'',$number($net['value']),'',''],'merge'=>[0=>1,2=>3,4=>6],'styles'=>[0=>55,2=>($net['net']>0?56:($net['net']<0?57:58)),4=>($net['net']>0?59:($net['net']<0?60:61))]];
     }
     $reportPeriod=ReportingService::periodLabel($data);
     $xlsxDates=['from'=>'','to'=>''];foreach(['from','to'] as $key){$raw=(string)($data['filters'][$key]??'');if($raw==='')$raw=(string)($data['context'][$key]??'');if($raw!=='')$xlsxDates[$key]=AccountingService::displayBusinessDate(AccountingService::normalizeBusinessDate($raw));}if($data['type']==='transfer_history'&&!empty($data['rows'])){$dates=array_column($data['rows'],'period_end');sort($dates,SORT_STRING);if($xlsxDates['from']==='')$xlsxDates['from']=AccountingService::displayBusinessDate($dates[0]);if($xlsxDates['to']==='')$xlsxDates['to']=AccountingService::displayBusinessDate(end($dates));}

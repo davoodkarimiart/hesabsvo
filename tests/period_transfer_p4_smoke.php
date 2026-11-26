@@ -105,8 +105,11 @@ window.addEventListener('load',async()=>{
   const pos=cells.map(c=>c.getBoundingClientRect().left);
   if(!(pos[0]>pos[1]&&pos[1]>pos[2]))throw Error('P11 wrong physical order '+pos.join(','));
   const bg=cells.map(c=>getComputedStyle(c).backgroundColor);
-  if(bg.some(x=>x!=='rgb(226, 232, 240)')||cells.some(c=>getComputedStyle(c).borderTopColor!=='rgb(0, 0, 0)'))throw Error('P11 final background/borders '+bg);
+  if(bg.some(x=>x!=='rgb(203, 213, 225)')||cells.some(c=>getComputedStyle(c).borderTopColor!=='rgb(0, 0, 0)'))throw Error('P11 final background/borders '+bg);
   if(getComputedStyle(cells[0]).color!=='rgb(8, 117, 45)'||getComputedStyle(cells[1]).color!=='rgb(20, 75, 166)')throw Error('P11 final ink');
+  const netRect=final.rows[0].getBoundingClientRect(),transferRect=document.getElementById('p4TransferTable').rows[0].getBoundingClientRect();
+  if(netRect.height<=transferRect.height||Number(getComputedStyle(cells[0]).fontWeight)<800)throw Error('P12 final emphasis');
+  const summaryCells=[...summary.rows[0].cells];if(summaryCells.some((c,i)=>Math.abs(c.getBoundingClientRect().left-pos[i])>2))throw Error('P12 shared dividers');
   const expense=document.getElementById('p11ExpenseTable');if(!expense||expense.rows.length!==2||expense.rows[1].cells[1].textContent.trim()!=='Fixture expense edited')throw Error('P11 expense table');
   const form=document.getElementById('reportFilterForm'),type=document.getElementById('reportTypeSelect');
   for(const value of ['cumulative','daily','monthly','detail','customer_detail','period_transfer','transfer_history','expense_history']){
@@ -170,7 +173,7 @@ foreach([$d,$history,$expenseReport] as $data){
     $v=$sx->xpath('//m:c[@r="A'.$lastRow.'"]/m:v');p4check((string)$v[0]==='130','P11 XLSX amount physically left');
   }
   $styleXml=$zip->getFromName('xl/styles.xml');
-  p4check(str_contains($styleXml,'FFE2E8F0')&&str_contains($styleXml,'FF000000'),'P11 gray fill and black border');
+  p4check(str_contains($styleXml,'FFCBD5E1')&&str_contains($styleXml,'FF000000'),'P11 gray fill and black border');
   p4check(str_contains($styleXml,'FF475569')&&str_contains($styleXml,'FFD7C0ED')&&str_contains($styleXml,'FFB8DDF2')&&str_contains($styleXml,'applyBorder="1"'),'p9 contrasting borders and palette');
   p4check(str_contains($styleXml,'FFE4F77C')&&str_contains($styleXml,'FFF3A7AD')&&str_contains($styleXml,'FFAFE7C1'),'p9 fixed summary colors');
   foreach(['xl/worksheets/sheet1.xml','xl/styles.xml','xl/sharedStrings.xml','xl/workbook.xml','[Content_Types].xml'] as $part)p4check(simplexml_load_string($zip->getFromName($part))!==false,'p7 valid XML '.$part);
