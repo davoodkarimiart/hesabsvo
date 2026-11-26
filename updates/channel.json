@@ -1,11 +1,11 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p22",
-  "notes": "P22: حذف کادر فوکوس مشکی، تایمر هماهنگ بالا و پایین، اسکرول بنفش داخلی، صفحه تعمیرات تمام‌صفحه ریسپانسیو، فیلدهای مستقل عنوان و توضیح، پشتیبانی داده ساختاریافته MCP.",
+  "release": "0.6.53-p23",
+  "notes": "P23: بازطراحی پاپ‌آپ و لندینگ مطابق نسبت‌های مرجع، هدر فشرده و فهرست برجسته، حذف کادر فوکوس، دکمه کوچک و شمارنده سفید، خطوط تزئینی بالا و پایین، نمونه ۱۵ مورد بدون انتشار، حفظ نشست توسعه‌دهنده فعال‌کننده توقف و بازگشایی از پنل.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
-      "sha256": "e0c2791c77b9c64812657b5ac2744b1f185fc457e2b0979649ec18ffd25198c5"
+      "sha256": "0068c47792d1c5d4f9ee370020f3f9cee30bbe05459af2a27d709fc60e366806"
     },
     {
       "path": "app/Services/TransferService.php",
@@ -13,7 +13,7 @@
     },
     {
       "path": "index.php",
-      "sha256": "4a1f0401171154c65a39eadb54f8a2179969fafc11ca45f5f05f81c98f05096f"
+      "sha256": "4f49c98e266bcc1fc9fb21c9c50cc915310ef929c5756258c61dc69282a3fbe0"
     },
     {
       "path": "assets/transfer-calendar620.js",
@@ -33,7 +33,7 @@
     },
     {
       "path": "assets/transfer619.css",
-      "sha256": "b539c967d72d43b2004b76e60c4bf73a9ed8df8793de65d2b9296fb90f4c94b5"
+      "sha256": "8b54b70aafc2e93b5783a01dd453784c9abe9bcd6e6e9b058bb8347e1730ca90"
     },
     {
       "path": "export.php",

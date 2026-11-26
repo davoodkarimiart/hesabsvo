@@ -71,6 +71,7 @@ window.addEventListener('load',()=>{
  if(!document.getElementById('dev14PopupDialog').open||document.getElementById('dev14PopupList').children.length!==8)throw Error('popup preview');const dialog=document.getElementById('dev14PopupDialog'),dr=dialog.getBoundingClientRect();if(dr.width>innerWidth||dr.height>innerHeight||dialog.scrollWidth>dialog.clientWidth+2)throw Error('popup viewport');
  document.querySelector('#dev14PopupDialog [data-close-preview]').click();
  if(document.getElementById('dev14PopupDialog').open)throw Error('close popup');
+ document.getElementById('p23Sample').click();if(document.getElementById('dev14PopupList').children.length!==15)throw Error('15 item sample');document.querySelector('#dev14PopupDialog [data-close-preview]').click();
  document.body.dataset.dev14='PASS';
  }catch(e){document.body.dataset.dev14='FAIL '+String(e);}
 });
@@ -88,6 +89,14 @@ $preview=MaintenanceP13::prepareMcp($args,$now);
 mc($preview['until']===$now+60&&MaintenanceP13::read()===$before,'P19 preview no mutation');
 $state=MaintenanceP13::start(1,$preview['title'],implode("\n",$preview['items']),1,$now,$preview['until'],2);
 mc(MaintenanceP13::describe($state,$now)['remaining_seconds']===60,'P19 status');
+$owner=['id'=>1,'role'=>'developer'];$marker=['maintenance_owner_p23'=>['id'=>$state['announcement']['id'],'uid'=>1]];
+mc(MaintenanceP13::ownerSessionMatches($state,$marker,$owner,$now),'P23 initiating developer session allowed');
+mc(!MaintenanceP13::ownerSessionMatches($state,[],$owner,$now),'P23 same account separate browser blocked');
+mc(!MaintenanceP13::ownerSessionMatches($state,$marker,['id'=>2,'role'=>'developer'],$now),'P23 other developer blocked');
+mc(!MaintenanceP13::ownerSessionMatches($state,$marker,['id'=>1,'role'=>'admin'],$now),'P23 ordinary admin blocked');
+mc(!MaintenanceP13::ownerSessionMatches($state,$marker,null,$now),'P23 invalid or revoked login blocked');
+mc(!MaintenanceP13::ownerSessionMatches($state,['maintenance_owner_p23'=>['id'=>str_repeat('a',24),'uid'=>1]],$owner,$now),'P23 stale marker blocked');
+mc(!MaintenanceP13::ownerSessionMatches($state,$marker,$owner,$now+60),'P23 marker expires with lock');
 $rejected=false;try{MaintenanceP13::start(1,'Duplicate','Item',1,$now);}catch(RuntimeException){$rejected=true;}mc($rejected,'P19 no overwrite of active maintenance');
 $rejected=false;try{MaintenanceP13::stop(str_repeat('a',24),1);}catch(RuntimeException){$rejected=true;}mc($rejected&&MaintenanceP13::active(MaintenanceP13::read()),'P19 stale stop rejected');
 mc(MaintenanceP13::stop($state['announcement']['id'],1)['stopped']&&!MaintenanceP13::active(MaintenanceP13::read()),'P19 confirmed stop');
@@ -125,12 +134,12 @@ $probe=<<<'HTML'
 <script>
 const button=document.getElementById('p20Acknowledge'),dialog=document.getElementById('maintenanceAnnouncement');
 const rect=dialog.getBoundingClientRect(),scroll=dialog.querySelector('.p20-popup-scroll'),timerLabel=dialog.querySelector('.p22-timer');
-const details=[button.disabled,dialog.open,rect.width,innerWidth,rect.height,innerHeight,dialog.scrollWidth,dialog.clientWidth];const initial=button.disabled&&dialog.open&&rect.width<=innerWidth&&rect.height<=innerHeight&&dialog.scrollWidth<=dialog.clientWidth+2&&scroll.scrollHeight>scroll.clientHeight&&getComputedStyle(scroll).outlineStyle==='none'&&timerLabel.textContent.includes('10');
-setTimeout(()=>{document.body.dataset.p21=initial&&!button.disabled&&button.querySelector('.p21-count').hidden&&timerLabel.textContent.includes('فعال')?'PASS':'FAIL '+details.join(',')+' end:'+button.disabled+','+button.querySelector('.p21-count').hidden},11000);
+const head=dialog.querySelector('.p21-popup-head'),footer=dialog.querySelector('.p20-popup-footer'),badgeStyle=getComputedStyle(button.querySelector('.p21-count')),closer=dialog.querySelector('.p23-close');scroll.focus();const focused=getComputedStyle(scroll);const details=[button.disabled,dialog.open,rect.width,innerWidth,rect.height,innerHeight,dialog.scrollWidth,dialog.clientWidth,head.offsetHeight,scroll.clientHeight,focused.boxShadow,focused.borderTopWidth,badgeStyle.backgroundColor];const initial=button.disabled&&dialog.open&&rect.width<=innerWidth&&rect.height<=innerHeight&&dialog.scrollWidth<=dialog.clientWidth+2&&scroll.scrollHeight>scroll.clientHeight&&focused.outlineStyle==='none'&&focused.boxShadow==='none'&&focused.borderTopWidth==='0px'&&badgeStyle.backgroundColor==='rgb(255, 255, 255)'&&scroll.clientHeight>head.offsetHeight&&button.getBoundingClientRect().width<rect.width*.8&&footer.getBoundingClientRect().bottom<=rect.bottom+2&&closer.disabled&&timerLabel.textContent.includes('10');
+setTimeout(()=>{document.body.dataset.p21=initial&&!button.disabled&&!closer.disabled&&button.querySelector('.p21-count').hidden&&timerLabel.textContent.includes('فعال')?'PASS':'FAIL '+details.join(',')+' end:'+button.disabled+','+button.querySelector('.p21-count').hidden},11000);
 </script>
 HTML;
 foreach(['390,844','1440,900'] as $view){
- foreach(['popup'=>'<!doctype html><html dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'.$app.$css.'</style></head><body>'.$popupHtml.$probe.'</body></html>','maintenance'=>str_replace('</body>','<script>const r=document.querySelector("main").getBoundingClientRect();document.body.dataset.p21=Math.abs(r.width-innerWidth)<=2&&Math.abs(r.left)<=2&&Math.abs(r.top)<=2&&r.height>=innerHeight-2&&document.documentElement.scrollWidth<=innerWidth+2&&Number(document.getElementById("ss").textContent)>=0?"PASS":"FAIL";</script></body>',$maintenanceHtml)] as $kind=>$fixture){
+ foreach(['popup'=>'<!doctype html><html dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'.$app.$css.'</style></head><body>'.$popupHtml.$probe.'</body></html>','maintenance'=>str_replace('</body>','<script>const r=document.querySelector("main").getBoundingClientRect();document.body.dataset.p21=Math.abs(r.width-innerWidth)<=2&&Math.abs(r.left)<=2&&Math.abs(r.top)<=2&&r.height>=innerHeight-2&&document.documentElement.scrollWidth<=innerWidth+2&&Number(document.getElementById("ss").textContent)>=0&&!!document.querySelector(".rail-bottom")&&parseFloat(getComputedStyle(document.querySelector("h1")).fontSize)>=24?"PASS":"FAIL";</script></body>',$maintenanceHtml)] as $kind=>$fixture){
   $tmp=tempnam(sys_get_temp_dir(),'p21');$file=$tmp.'.html';rename($tmp,$file);file_put_contents($file,$fixture);$out=[];exec(escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --window-size='.$view.' --virtual-time-budget=12500 --dump-dom '.escapeshellarg('file://'.$file).' 2>/dev/null',$out,$status);unlink($file);$dom=implode("\n",$out);preg_match('/data-p21="[^"]*"/',$dom,$marker);echo ($marker[0]??'no marker').PHP_EOL;mc($status===0&&str_contains($dom,'data-p21="PASS"'),'P21 '.$kind.' browser '.$view);
  }
 }
