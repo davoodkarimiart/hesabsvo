@@ -788,3 +788,36 @@ body.page-login .golpooch-panel{padding:18px!important}
 @media(max-width:350px){body.dev15-standalone .p17-dev-dock a span{font-size:8px!important}}
 @media(prefers-reduced-motion:reduce){body.page-login .golpooch-panel{animation:none!important}}
 }
+
+/* P18: one visual system for standalone and integrated developer routes. */
+@media screen {
+.page-dashboard .dashboard-quick .quick-card{display:flex!important;flex-direction:column;align-items:center!important;justify-content:center!important;text-align:center!important;gap:5px!important;min-height:94px!important;padding:11px 8px!important}
+.page-dashboard .dashboard-quick .quick-icon{flex:none;margin:0!important}.page-dashboard .dashboard-quick .quick-card b,.page-dashboard .dashboard-quick .quick-card small{text-align:center!important;align-self:center!important}
+body.dev15-standalone{margin:0!important;padding:0 0 calc(100px + env(safe-area-inset-bottom))!important;background:#f6f4fa!important;line-height:1.65!important}
+body.dev15-standalone .p18-dev-main,.page-health .app-shell .content{width:min(100%,1180px)!important;max-width:1180px!important;margin:0 auto!important;padding:14px 16px 110px!important;background:transparent!important;border:0!important;box-shadow:none!important}
+.page-health .dev14{max-width:none!important;gap:12px!important}
+body.dev15-standalone .p18-global{position:sticky!important;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;width:100%;gap:10px;background:#fffffff0;border:0;border-bottom:1px solid #ece5f5;box-shadow:0 3px 15px #39245b08;padding:9px max(14px,calc((100vw - 1180px)/2))!important;min-height:58px;backdrop-filter:blur(12px)}
+.p18-brand{display:flex;align-items:center;gap:8px;text-decoration:none!important;color:#34205c!important}.p18-brand img{width:39px;height:39px;object-fit:contain}.p18-brand b{display:block;font-size:15px;line-height:1.2}.p18-brand small{display:block;font-size:9px!important;color:#786d86!important}
+.p18-global-actions{display:flex;gap:6px}.p18-global-actions a{display:grid!important;place-items:center;width:38px;height:38px;border:1px solid #e6ddf2!important;border-radius:12px;background:#f4effa!important;color:#5422c1!important;padding:7px!important}
+.p18-global-actions svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.p18-dev-heading{display:flex!important;justify-content:space-between;align-items:center;gap:10px;min-height:67px;padding:8px 2px!important;margin:0 0 12px!important;background:transparent!important;border:0!important}
+.p18-dev-heading h1{font-size:22px!important;line-height:1.35!important;margin:4px 0 0!important;color:#34205c!important}.p18-dev-heading small{font-size:11px!important;color:#746489!important}
+.p18-dev-back{font-size:12px!important;color:#5422c1!important;text-decoration:none!important;background:#eee8fa!important;border-radius:9px;padding:9px 12px;white-space:nowrap}
+.p18-dev-main .dev15-nav,.page-health .dev15-nav{margin:0 0 14px!important;width:100%!important}
+.p18-page-title{font-size:19px!important;margin:14px 0 10px!important;color:#34205c!important}
+body.dev15-standalone .p17-dev-dock a{border:0!important;box-shadow:none!important;margin:0!important;background:transparent!important;color:#726880!important;text-align:center!important}
+body.dev15-standalone .p17-dev-dock a:hover,body.dev15-standalone .p17-dev-dock a:focus-visible{background:#f1eafa!important;color:#5422c1!important}
+body.page-login .golpooch-panel{padding:29px!important;border-radius:25px!important;width:min(430px,calc(100vw - 28px))!important;background:linear-gradient(145deg,#282538f7,#151422fa)!important;box-shadow:0 24px 80px #08061599!important}
+body.page-login .golpooch-panel form{display:grid!important;gap:15px!important}
+body.page-login .golpooch-panel label{gap:7px!important;font-size:13px!important;font-weight:600!important}
+body.page-login .golpooch-panel input{height:49px!important;min-height:49px!important;border-radius:12px!important;padding:10px 13px!important}
+body.page-login .golpooch-panel .p16-password{display:block!important;position:relative}
+body.page-login .golpooch-panel .p16-password input{padding-inline-end:49px!important}
+body.page-login .golpooch-panel #p16ShowPassword{position:absolute;inset-inline-end:5px;top:4px;width:41px;height:41px;min-height:41px!important;padding:9px!important;border:0!important;border-radius:9px!important;background:transparent!important;display:grid;place-items:center}
+#p16ShowPassword svg{width:21px;height:21px;fill:none;stroke:#d8cdeb;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#p16ShowPassword .p18-eye-slash{display:none}#p16ShowPassword[aria-pressed=true] .p18-eye-slash{display:block}
+body.page-login .golpooch-panel .primary{min-height:49px!important;border-radius:12px!important;font-size:15px!important}
+body.page-login .golpooch-panel .login-recovery-link{text-decoration:none!important;font-size:12px!important;color:#d4c5f0!important;margin-top:19px!important}
+body.page-login .golpooch-panel .golpooch-close{top:12px!important;left:12px!important}
+@media(max-width:740px){body.dev15-standalone .p18-dev-main,.page-health .app-shell .content{padding:10px 10px 100px!important}body.dev15-standalone .p18-global{padding:7px 10px!important;min-height:54px}.p18-brand img{width:34px;height:34px}.p18-brand small{display:none}.p18-global-actions a{width:34px;height:34px}.p18-dev-heading h1{font-size:18px!important}.p18-dev-heading{min-height:60px}.p18-dev-back{font-size:11px!important;padding:8px}.page-dashboard .dashboard-quick .quick-card{min-height:88px!important}body.page-login .golpooch-panel{padding:22px!important}}
+}
