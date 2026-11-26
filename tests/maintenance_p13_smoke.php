@@ -123,12 +123,12 @@ $probe=<<<'HTML'
 <script>
 const button=document.getElementById('p20Acknowledge'),dialog=document.getElementById('maintenanceAnnouncement');
 const rect=dialog.getBoundingClientRect();
-const initial=button.disabled&&dialog.open&&rect.width<=innerWidth&&rect.height<=innerHeight&&dialog.scrollWidth<=dialog.clientWidth+2;
-setTimeout(()=>{document.body.dataset.p21=initial&&!button.disabled&&button.querySelector('.p21-count').hidden?'PASS':'FAIL'},11000);
+const details=[button.disabled,dialog.open,rect.width,innerWidth,rect.height,innerHeight,dialog.scrollWidth,dialog.clientWidth];const initial=button.disabled&&dialog.open&&rect.width<=innerWidth&&rect.height<=innerHeight&&dialog.scrollWidth<=dialog.clientWidth+2;
+setTimeout(()=>{document.body.dataset.p21=initial&&!button.disabled&&button.querySelector('.p21-count').hidden?'PASS':'FAIL '+details.join(',')+' end:'+button.disabled+','+button.querySelector('.p21-count').hidden},11000);
 </script>
 HTML;
 foreach(['390,844','1440,900'] as $view){
  foreach(['popup'=>'<!doctype html><html dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'.$app.$css.'</style></head><body>'.$popupHtml.$probe.'</body></html>','maintenance'=>str_replace('</body>','<script>const r=document.querySelector("main").getBoundingClientRect();document.body.dataset.p21=r.width<=innerWidth&&document.documentElement.scrollWidth<=innerWidth+2&&Number(document.getElementById("ss").textContent)>=0?"PASS":"FAIL";</script></body>',$maintenanceHtml)] as $kind=>$fixture){
-  $file=tempnam(sys_get_temp_dir(),'p21');file_put_contents($file,$fixture);$out=[];exec(escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --window-size='.$view.' --virtual-time-budget=12500 --dump-dom '.escapeshellarg('file://'.$file).' 2>/dev/null',$out,$status);unlink($file);mc($status===0&&str_contains(implode("\n",$out),'data-p21="PASS"'),'P21 '.$kind.' browser '.$view);
+  $tmp=tempnam(sys_get_temp_dir(),'p21');$file=$tmp.'.html';rename($tmp,$file);file_put_contents($file,$fixture);$out=[];exec(escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --window-size='.$view.' --virtual-time-budget=12500 --dump-dom '.escapeshellarg('file://'.$file).' 2>/dev/null',$out,$status);unlink($file);$dom=implode("\n",$out);preg_match('/data-p21="[^"]*"/',$dom,$marker);echo ($marker[0]??'no marker').PHP_EOL;mc($status===0&&str_contains($dom,'data-p21="PASS"'),'P21 '.$kind.' browser '.$view);
  }
 }
