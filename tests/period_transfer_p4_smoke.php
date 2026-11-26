@@ -216,7 +216,7 @@ window.addEventListener('load',async()=>{
    }
   }else{
    const t=document.getElementById('reportDataTable'),cells=[...t.tBodies[0].rows[0].cells],expected=['rgb(229, 198, 168)','rgb(188, 227, 195)','rgb(215, 192, 237)','rgb(184, 221, 242)'];
-   for(let i=0;i<cells.length;i++){const st=getComputedStyle(cells[i]);if(st.backgroundColor!==expected[i]||parseFloat(st.fontSize)<11)throw Error('expense report readability '+i+' '+st.backgroundColor+' '+st.fontSize);}
+   for(let i=0;i<cells.length;i++){const st=getComputedStyle(cells[i]);if(st.backgroundColor!==expected[i]||parseFloat(st.fontSize)<11)throw Error('expense report readability '+i+' '+st.backgroundColor+' '+st.fontSize+' '+t.className+' '+cells[i].outerHTML.slice(0,220));}
    const result=await makeReportImage();if(!result||result.size<1000)throw Error('expense PNG missing');
   }
   document.body.setAttribute('data-expense-browser','PASS');
