@@ -256,6 +256,9 @@ if($method==='tools/call'){
  } elseif($name==='diagnostics_health' && $canDiag){
   $dbOk=false;try{Database::connection()->query('SELECT 1');$dbOk=true;}catch(Throwable $ignore){}
   $dir=__DIR__.'/storage/logs';$data=['version'=>trim((string)@file_get_contents(__DIR__.'/VERSION')),'php_version'=>PHP_VERSION,'database_ok'=>$dbOk,'log_directory_readable'=>is_dir($dir)&&is_readable($dir),'time'=>date(DATE_ATOM)];
+  $state=json_decode((string)@file_get_contents(__DIR__.'/storage/updates/current.json'),true);$data['installed_release']=is_array($state)?($state['release']??null):null;
+  $data['expense_tables_ready']=null;$data['maintenance_active']=null;
+  if($dbOk){try{$data['expense_tables_ready']=ExpenseService::ready();$data['maintenance_active']=MaintenanceP13::active(MaintenanceP13::read());}catch(Throwable $ignore){}}
  } elseif($name==='diagnostics_logs' && $canDiag){
   $channel=$args['channel']??'';$query=$args['query']??'';$limit=$args['limit']??15;
   if(!in_array($channel,['error','system','audit'],true)||!is_string($query)||strlen($query)>120||!is_int($limit)||$limit<1||$limit>30)$reply($id,null,['code'=>-32602,'message'=>'Invalid diagnostic filters']);
