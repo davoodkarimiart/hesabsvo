@@ -1,7 +1,7 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p11",
-  "notes": "فاز دوم: ثبت، مدیریت و گزارش هزینه‌ها، جمع‌بندی خالص پس از ترانسفر و هزینه، خروجی اکسل، تصویر و PDF دوره‌ای. شامل Migration افزایشی و بکاپ دیتابیس.",
+  "release": "0.6.53-p12",
+  "notes": "بهبود UI هزینه‌ها در موبایل و دسکتاپ، تقویم و فیلدهای هم‌تراز، حذف لینک اضافی، خوانایی گزارش و ردیف نهایی قوی‌تر؛ بدون تغییر منطق مالی یا ساختار دیتابیس.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
@@ -13,7 +13,7 @@
     },
     {
       "path": "index.php",
-      "sha256": "60de2cf6c8ad8b2922b3b0e6cafc972cd254113b900fa792036b4c11eab3425d"
+      "sha256": "b5a35c53d7751d0c0d3a834c8ba7b4ca38731224a027eb58b9a15337489cc2b4"
     },
     {
       "path": "assets/transfer-calendar620.js",
@@ -33,19 +33,19 @@
     },
     {
       "path": "assets/transfer619.css",
-      "sha256": "0bc139f6c397e667180b996095caeb07c812456fc8e2b8c7ae12e09766ff1b32"
+      "sha256": "3f42426c683671f156dc2ed43eb65ece9690e3b3445b382fe70becacb8d1ff1d"
     },
     {
       "path": "export.php",
-      "sha256": "d9cca2e7c7c71967d4cfa855db74cda0603b1dc7c58ff75db0d79bbf4f8bb8b8"
+      "sha256": "ce1d01914e2f09b480fcc516d39dbaf9cfa426b8371aaed4beb0a8c8d60af079"
     },
     {
       "path": "print.php",
-      "sha256": "0089c582c50d72b882f360c2e55611dae3a8e95b1e848fce7f2dec87430b6a32"
+      "sha256": "eec38651b763146f0d9ef0d04f0733efe7fe1bca3e834f75a3bf72cc3715c4a8"
     },
     {
       "path": "app/Support/ReportXlsx68.php",
-      "sha256": "b411f93eb23d565e43db00d6a30abb9702cc9dce7e544798e40ce13f27f15f9d"
+      "sha256": "9e836d2b13e5e73d9630fd0b05261fd923b35fea0347b55fdfa882ca45fcb468"
     },
     {
       "path": "update_center.php",
@@ -57,7 +57,7 @@
     },
     {
       "path": "expense_page.php",
-      "sha256": "5ad28a6b863833de9721278d6e6a4f5a1fc42b1a1c1461aea772613f4d03f740"
+      "sha256": "66879817164f40c52666e99b190a8df7a5937306e347bd316a2f1334d9284048"
     },
     {
       "path": "database/migrations/017_operating_expenses.sql",
