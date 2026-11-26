@@ -331,7 +331,33 @@ final class ExpenseService {
  * Kept here for the existing 1.3 updater's cumulative path allowlist.
  * Uses the existing settings table; no financial rows or new schema.
  */
-final class MaintenanceP13 {
+final 
+final class PopupP21 {
+    public static function meta(array $a=[]):array{
+        $out=[];foreach(['subtitle'=>100,'version'=>50,'hours'=>24,'patches'=>16,'range'=>50] as $key=>$max){
+            $v=$a[$key]??'';if(!is_string($v)||mb_strlen(trim($v))>$max||preg_match('/\R/u',$v))throw new RuntimeException('اطلاعات نمایشی نامعتبر است.');$out[$key]=trim($v);
+        }
+        $seconds=$a['delay_seconds']??15;if(!is_int($seconds)||$seconds<10||$seconds>30)throw new RuntimeException('زمان مطالعه بین ۱۰ تا ۳۰ ثانیه است.');
+        $mode=$a['content_mode']??'list';if(!in_array($mode,['list','text'],true))throw new RuntimeException('نوع متن نامعتبر است.');
+        return $out+['delay_seconds'=>$seconds,'content_mode'=>$mode];
+    }
+    public static function post(array $p,string $prefix):array{
+        $a=[];foreach(['subtitle','version','hours','patches','range','content_mode'] as $k)if(isset($p[$prefix.$k]))$a[$k]=(string)$p[$prefix.$k];
+        if(isset($p[$prefix.'delay_seconds']))$a['delay_seconds']=(int)$p[$prefix.'delay_seconds'];
+        return self::meta($a);
+    }
+    public static function items(array $a):array{
+        return array_map(static function($v){$p=explode(' | ',(string)$v,2);return count($p)===2?[trim($p[0]),trim($p[1])]:[trim($p[0]),''];},$a);
+    }
+    public static function fontCss():string{
+        $root=dirname(__DIR__,2).'/assets/fonts/';$css='';
+        foreach(['400','700'] as $w)if(is_file($root.'vazirmatn-'.$w.'.woff2'))$css.='@font-face{font-family:Vazirmatn;src:url("assets/fonts/vazirmatn-'.$w.'.woff2") format("woff2");font-weight:'.$w.';font-display:swap}';
+        foreach(['Iranian-Sans.ttf','Iranian Sans.ttf'] as $name)if(is_file($root.$name)){$css.='@font-face{font-family:IRANSansLocal;src:url("assets/fonts/'.rawurlencode($name).'") format("truetype");font-display:swap}';break;}
+        return $css;
+    }
+}
+
+class MaintenanceP13 {
     public const UNTIL='maintenance_until_p13';
     public const ANNOUNCEMENT='maintenance_announcement_p13';
     public static function read(): array {
@@ -354,11 +380,11 @@ final class MaintenanceP13 {
           :'INSERT INTO settings(setting_key,setting_value) VALUES(?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)';
         $pdo->prepare($sql)->execute([$key,$value]);
     }
-    public static function start(int $minutes,string $title,string $raw,int $uid,?int $now=null,?int $exactUntil=null,int $showCount=1): array {
+    public static function start(int $minutes,string $title,string $raw,int $uid,?int $now=null,?int $exactUntil=null,int $showCount=1,array $meta=[]): array {
         if($uid<=0||$minutes<1||$minutes>10080)throw new RuntimeException('مدت تعمیرات باید بین ۱ دقیقه و ۷ روز باشد.');
         $title=trim($title);if($title===''||mb_strlen($title)>100)throw new RuntimeException('عنوان اعلان حداکثر ۱۰۰ نویسه باشد.');
         $items=self::parseNotes($raw);$now=$now??time();$until=$exactUntil??($now+$minutes*60);if($until<=$now||$until>$now+604800||$showCount<1||$showCount>5)throw new RuntimeException('زمان پایان یا تعداد نمایش نامعتبر است.');
-        $a=['id'=>bin2hex(random_bytes(12)),'title'=>$title,'items'=>$items,'created_at'=>$now,'show_count'=>$showCount];
+        $a=['id'=>bin2hex(random_bytes(12)),'title'=>$title,'items'=>$items,'created_at'=>$now,'show_count'=>$showCount,'presentation'=>PopupP21::meta($meta)];
         $pdo=Database::connection();$pdo->beginTransaction();
         try{
             self::lockUntil($pdo);if(self::active(self::read(),$now))throw new RuntimeException('به‌روزرسانی دیگری فعال است.');
@@ -391,7 +417,7 @@ final class MaintenanceP13 {
         $items=self::parseNotes(implode("\n",$items));
         if($mode==='exact'){if(!is_string($args['date']??null)||!is_string($args['clock']??null))throw new RuntimeException('Exact Tehran date and time required');$until=self::exactDeadline($args['date'],$args['clock'],$now);}
         else{if(isset($args['date'])||isset($args['clock']))throw new RuntimeException('Test mode does not accept a date or clock');$until=$now+60;}
-        return ['mode'=>$mode,'until'=>$until,'title'=>trim($title),'items'=>$items,'show_count'=>$count];
+        return ['mode'=>$mode,'until'=>$until,'title'=>trim($title),'items'=>$items,'show_count'=>$count,'presentation'=>PopupP21::meta($args)];
     }
     private static function seenKey(int $uid): string {return 'maintenance_seen_p13_'.$uid;}
     public static function pending(int $uid): ?array {
@@ -419,9 +445,11 @@ final class MaintenanceP13 {
     public static function pageHtml(int $until,bool $preview=false):string {
         $remaining=max(0,$until-time());$local=(new DateTimeImmutable('@'.$until))->setTimezone(new DateTimeZone('Asia/Tehran'));$end=e($local->format('H:i'));$day=e($local->format('Y-m-d'));
         $previewFlag=$preview?'true':'false';
-        return '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>سلطان حساب | در حال به‌روزرسانی</title><style>
-*{box-sizing:border-box}html{color-scheme:dark}body{margin:0;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:28px 18px;font-family:Tahoma,Arial,sans-serif;color:#fff;background:#160f2e;overflow-x:hidden;isolation:isolate}.art{position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 50% 5%,#513378 0%,transparent 48%),radial-gradient(ellipse at 95% 100%,#33244e,transparent 52%),linear-gradient(145deg,#161027,#100d20)}.art svg{width:100%;height:100%;opacity:.48}main{width:min(100%,540px);text-align:center;padding:30px 8px}.mark{width:74px;height:74px;display:block;margin:0 auto 23px;filter:drop-shadow(0 8px 20px #d6b36744)}.brand{font-size:12px;letter-spacing:.08em;color:#e8c77d;font-weight:bold}h1{font-size:clamp(25px,6vw,38px);line-height:1.55;margin:15px 0 12px}p{font-size:14px;line-height:1.95;color:#d8d0e9;margin:0 auto;max-width:440px}.timer{direction:ltr;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:34px auto 23px;max-width:410px}.timer>div{padding:18px 3px 13px;background:#ffffff09;border:1px solid #e8c77d55;border-radius:16px;box-shadow:0 12px 25px #0002}.timer b{display:block;font:700 clamp(30px,8vw,49px) Tahoma;color:#f1d28c;font-variant-numeric:tabular-nums}.timer small{font-size:12px;color:#ddd4ec;display:block;margin-top:9px}.end{color:#f1d28c;font-size:17px;font-weight:bold;margin-top:8px}.date{font-size:12px;color:#c1b5d4;margin:9px 0 25px}.line{width:54px;height:1px;background:#e8c77d;margin:24px auto}.retry{border:1px solid #e8c77d66;background:transparent;color:#f1d28c;border-radius:12px;padding:11px 20px;font:inherit;cursor:pointer}footer{font-size:11px;color:#b9abc9;margin-top:27px}.preview{position:fixed;top:10px;right:10px;background:#fff;color:#4a207c;padding:6px 10px;border-radius:9px;font-size:11px}@media(max-width:360px){.timer{gap:5px}.timer>div{padding:12px 2px}main{padding:15px 0}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}</style></head><body><div class="art" aria-hidden="true"><svg viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="#e8c77d" stroke-width="1"><ellipse cx="600" cy="450" rx="520" ry="390" opacity=".16"/><ellipse cx="600" cy="450" rx="575" ry="435" opacity=".10"/><path d="M-50 740Q330 180 1240 115M-80 790Q400 200 1240 170" opacity=".16"/><path d="M50 40h90M50 40v90M1150 860h-90M1150 860v-90" opacity=".5"/></g></svg></div>'.($preview?'<span class="preview">پیش‌نمایش · سایت فعال است</span>':'').'<main><img class="mark" src="assets/brand/pwa-192.png" alt="سلطان حساب"><span class="brand">سلطان حساب</span><h1>در حال به‌روزرسانی هستیم</h1><p>در حال آماده‌سازی تجربه‌ای بهتر برای شما هستیم. پس از پایان به‌روزرسانی، ورود دوباره امکان‌پذیر خواهد بود.</p><div class="timer" aria-label="زمان باقی‌مانده"><div><b id="hh">00</b><small>ساعت</small></div><div><b id="mm">00</b><small>دقیقه</small></div><div><b id="ss">00</b><small>ثانیه</small></div></div><div class="line"></div><p>زمان تقریبی بازگشایی</p><div class="end">ساعت <b dir="ltr">'.$end.'</b> به وقت تهران</div><div class="date" dir="ltr">'.$day.'</div><button class="retry" id="retry" type="button">بررسی دوباره</button><footer>از همراهی و شکیبایی شما سپاسگزاریم.</footer></main><script>const preview='.$previewFlag.',initial='.$remaining.',started=performance.now(),pad=n=>String(n).padStart(2,"0");function tick(){const n=Math.max(0,initial-Math.floor((performance.now()-started)/1000));document.getElementById("hh").textContent=pad(Math.floor(n/3600));document.getElementById("mm").textContent=pad(Math.floor(n/60)%60);document.getElementById("ss").textContent=pad(n%60);if(n===0&&!preview)location.replace("index.php?page=login");}document.getElementById("retry").onclick=()=>{if(!preview)location.replace("index.php?page=login")};tick();setInterval(tick,250);</script></body></html>';
+        $fonts=PopupP21::fontCss();
+        return '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>سلطان حساب | در حال به‌روزرسانی</title><style>'.$fonts.'
+*{box-sizing:border-box}html{color-scheme:light}body{margin:0;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:18px;font-family:Vazirmatn,IRANSansLocal,Tahoma,Arial,sans-serif;color:#262038;background:#f8f5fc;isolation:isolate}.art{position:fixed;inset:0;z-index:-1;overflow:hidden;background:radial-gradient(circle at 100% 100%,#e9dafa 0 12%,transparent 12.1%),radial-gradient(circle at 0 0,#f0e6fb 0 15%,transparent 15.1%),#faf8fd}.art:before,.art:after{content:"";position:absolute;width:240px;height:240px;border:1px solid #ded0f1;border-radius:50%;box-shadow:0 0 0 17px #f3edf9,0 0 0 18px #e6d9f3}.art:before{top:-170px;right:-100px}.art:after{bottom:-170px;left:-100px}main{width:min(100%,500px);padding:clamp(22px,5vw,38px);border:1px solid #e9e0f2;border-radius:26px;background:#fff;box-shadow:0 18px 65px #3820640d;text-align:center}.mark{width:58px;height:58px;object-fit:contain;display:block;margin:0 auto 9px;border-radius:14px}.brand{font-size:13px;font-weight:700;color:#632db9}.tag{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:#f3edfb;color:#6533b4;font-size:11px;border-radius:50px;margin-top:14px}.tag:before{content:"";width:7px;height:7px;border-radius:50%;background:#9060d7}h1{font-size:clamp(22px,5.4vw,30px);line-height:1.55;margin:14px 0 8px;color:#392065}p{font-size:13px;line-height:2;color:#6c6379;margin:0 auto}.timer{direction:ltr;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:25px auto 20px}.timer>div{padding:13px 3px;border:1px solid #eee5f8;background:#f7f2fc;border-radius:13px}.timer b{display:block;font-size:clamp(26px,8vw,40px);font-weight:700;color:#622bbf;font-variant-numeric:tabular-nums;line-height:1.3}.timer small{font-size:11px;color:#766489;display:block;margin-top:6px}.end{color:#50269a;font-size:17px;font-weight:700;margin-top:5px}.date{font-size:11px;color:#84788e;margin:5px 0 16px}.line{height:1px;background:#eee7f6;margin:18px auto}.retry{border:0;background:#6732c6;color:white;border-radius:11px;padding:11px 20px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;width:100%}footer{font-size:11px;color:#80758b;margin-top:17px;line-height:1.7}.preview{position:fixed;top:8px;right:8px;background:#f1e8fc;color:#4a207c;padding:5px 9px;border-radius:8px;font-size:11px}@media(max-width:360px){body{padding:10px}main{padding:20px 13px;border-radius:20px}.timer{gap:5px}.timer>div{padding:10px 2px}}@media(max-height:650px){body{place-items:start center}main{margin:auto 0}.mark{width:44px;height:44px}.timer{margin:16px auto}.line{margin:12px auto}}</style></head><body><div class="art" aria-hidden="true"></div>'.($preview?'<span class="preview">پیش‌نمایش · سایت فعال است</span>':'').'<main><img class="mark" src="assets/brand/pwa-192.png" alt=""><span class="brand">سلطان حساب</span><br><span class="tag">به‌روزرسانی سامانه</span><h1>در حال به‌روزرسانی هستیم</h1><p>برای تجربه‌ای بهتر، در حال آماده‌سازی نسخه جدید سلطان حساب هستیم.</p><div class="timer" aria-label="زمان باقی‌مانده"><div><b id="hh">۰۰</b><small>ساعت</small></div><div><b id="mm">۰۰</b><small>دقیقه</small></div><div><b id="ss">۰۰</b><small>ثانیه</small></div></div><div class="line"></div><p>زمان بازگشایی سامانه</p><div class="end">ساعت <b dir="ltr">'.$end.'</b> به وقت تهران</div><div class="date" dir="ltr">'.$day.'</div><button class="retry" id="retry" type="button">بررسی دوباره</button><footer>از همراهی و شکیبایی شما سپاسگزاریم.</footer></main><script>const preview='.$previewFlag.',initial='.$remaining.',started=performance.now(),pad=n=>String(n).padStart(2,"0").replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);function tick(){const n=Math.max(0,initial-Math.floor((performance.now()-started)/1000));document.getElementById("hh").textContent=pad(Math.floor(n/3600));document.getElementById("mm").textContent=pad(Math.floor(n/60)%60);document.getElementById("ss").textContent=pad(n%60);if(n===0&&!preview)location.replace("index.php?page=login");}document.getElementById("retry").onclick=()=>{if(!preview)location.replace("index.php?page=login")};tick();setInterval(tick,250);</script></body></html>';
     }
+
     public static function gate(): void {
         $script=basename((string)($_SERVER['SCRIPT_FILENAME']??$_SERVER['SCRIPT_NAME']??''));
         // Installer/CLI are not public application sessions. Cron is paused with the other HTTP endpoints.
@@ -455,12 +483,12 @@ final class AnnouncementP20 {
     public static function status():array{
         $s=Database::connection()->prepare('SELECT setting_value FROM settings WHERE setting_key=?');$s->execute([self::KEY]);$a=json_decode((string)$s->fetchColumn(),true);return is_array($a)?$a:[];
     }
-    public static function publish(string $title,string $raw,string $kind,int $count,int $days,int $target,int $uid):array{
+    public static function publish(string $title,string $raw,string $kind,int $count,int $days,int $target,int $uid,array $meta=[]):array{
         $title=trim($title);
         if($uid<1||$title===''||mb_strlen($title)>100||!in_array($kind,['notice','suggestion','update'],true)||$count<1||$count>5||$days<1||$days>30||$target<0)throw new RuntimeException('تنظیمات اطلاعیه نامعتبر است.');
         $items=MaintenanceP13::parseNotes($raw);$pdo=Database::connection();
         if($target>0){$s=$pdo->prepare('SELECT COUNT(*) FROM users WHERE id=? AND active=1');$s->execute([$target]);if((int)$s->fetchColumn()!==1)throw new RuntimeException('کاربر فعال پیدا نشد.');}
-        $now=time();$a=['id'=>bin2hex(random_bytes(12)),'title'=>$title,'items'=>$items,'kind'=>$kind,'show_count'=>$count,'target_user_id'=>$target,'created_at'=>$now,'expires_at'=>$now+$days*86400,'enabled'=>true];
+        $now=time();$a=['id'=>bin2hex(random_bytes(12)),'title'=>$title,'items'=>$items,'kind'=>$kind,'show_count'=>$count,'target_user_id'=>$target,'created_at'=>$now,'expires_at'=>$now+$days*86400,'enabled'=>true,'presentation'=>PopupP21::meta($meta)];
         self::put($pdo,self::KEY,json_encode($a,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));
         if(class_exists('Logger'))Logger::audit('developer.announcement_published',['user_id'=>$uid,'announcement_id'=>$a['id'],'target_user_id'=>$target]);
         return $a;

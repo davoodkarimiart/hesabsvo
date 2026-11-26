@@ -1,11 +1,11 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p20",
-  "notes": "پاپ‌آپ سفید و بنفش واکنش‌گرا با مرور متن؛ اطلاعیه مستقل مدیریتی بدون توقف سایت؛ PJAX محدود به ناوبری سازگار و اسکلت بارگذاری واقعی؛ حفظ ارسال فرم‌ها و دانلودها و مسیر بازگشت به PHP؛ بدون تغییر فرمول مالی.",
+  "release": "0.6.53-p21",
+  "notes": "بازطراحی مینیمال پاپ‌آپ بر اساس طرح تأییدشده، عنوان و توضیح مستقل، اطلاعات نسخه و پچ، انتخاب متن یا فهرست، زمان مطالعه ۱۰ تا ۳۰ ثانیه، صفحه مستقل مدیریت پاپ‌آپ، طراحی روشن و فونت صفحه انتظار؛ بدون تغییر محاسبات، توقف فعلی یا دیتابیس.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
-      "sha256": "3f0d720b695a964fc4cde2753c4f21027440467c898b36f05b28c18590a5c9d5"
+      "sha256": "e834ab44617c9d06b49e8730482bf25471dae30917f9b5e8cbb01cc18b767772"
     },
     {
       "path": "app/Services/TransferService.php",
@@ -13,7 +13,7 @@
     },
     {
       "path": "index.php",
-      "sha256": "d58d05fdff6117bc491046e53dbdd426c4fb98e26267ff6d3b003de528c89cf9"
+      "sha256": "1faa8709436451343878cb952c478b8517af9607ac3446aa446e0334bfdc769e"
     },
     {
       "path": "assets/transfer-calendar620.js",
@@ -33,7 +33,7 @@
     },
     {
       "path": "assets/transfer619.css",
-      "sha256": "70d5e820de7a854d1119deb500190759ffb49ebd436c5e623b8d573a4750892c"
+      "sha256": "a0b9c1d0e8071738504533d525f691ff48e978279920add4ca657510b521a994"
     },
     {
       "path": "export.php",
@@ -49,7 +49,7 @@
     },
     {
       "path": "update_center.php",
-      "sha256": "811f3bc4299f4080142c6f415b983ff9efa0eba61a7109b67b7d9936ac4be6e5"
+      "sha256": "3af0eb8f77e487a0928a6851a3029722ec641f3d2948c7b36d5c8f403b6a00db"
     },
     {
       "path": "app/Services/CompanyService.php",
@@ -65,23 +65,23 @@
     },
     {
       "path": "developer_diagnostics.php",
-      "sha256": "124296e6321a648ce4cd19d5b0d991ce296b213587e3073e1a36b170eb53404c"
+      "sha256": "9548a32863c7a6582ba584f5b08acaf132094fee119950a3e4d4563589aeb58f"
     },
     {
       "path": "developer_backups.php",
-      "sha256": "021b87385296f35af7c151d42f3e7c8e6293e72cd3b60d94d18e3d661f300822"
+      "sha256": "09650030c2d3cead4273ca22bac17d3078cf86364eefa1775e036625b8e96a70"
     },
     {
       "path": "mcp_connections.php",
-      "sha256": "0028d12d8673134dc849ddf5a859575dd2132070dc7d1cc35b911b7bf6206672"
+      "sha256": "fdd09a6182696e9b1f6372635fde356a5362f245b5d24edce6e9315eb09a7bf5"
     },
     {
       "path": "mcp_permissions.php",
-      "sha256": "e97e8d461dc5c3868a549c97806ff2e01fbc36962590f4c6247baa413c0eb7fb"
+      "sha256": "4731ab9411c60797ad3fe50fbeabeb953bc64e9eacf4133f788b80470d02cf59"
     },
     {
       "path": "mcp.php",
-      "sha256": "7788aab4b669a6f161bf1fd4fa5b413d94d7c40e2535e4799914de80c5e42057"
+      "sha256": "4a457698623a8fa1292e97f4a4a56ecd33fbff1735c07554911f5b44c977a1eb"
     },
     {
       "path": "oauth.php",

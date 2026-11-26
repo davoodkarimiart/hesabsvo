@@ -68,7 +68,7 @@ window.addEventListener('load',()=>{
  f.elements.maintenance_mode[1].click();
  if(document.getElementById('dev14Exact').hidden)throw Error('exact mode hidden');
  document.getElementById('dev14PreviewPopup').click();
- if(!document.getElementById('dev14PopupDialog').open||document.getElementById('dev14PopupList').children.length!==8)throw Error('popup preview');
+ if(!document.getElementById('dev14PopupDialog').open||document.getElementById('dev14PopupList').children.length!==8)throw Error('popup preview');const dialog=document.getElementById('dev14PopupDialog'),dr=dialog.getBoundingClientRect();if(dr.width>innerWidth||dr.height>innerHeight||dialog.scrollWidth>dialog.clientWidth+2)throw Error('popup viewport');
  document.querySelector('#dev14PopupDialog [data-close-preview]').click();
  if(document.getElementById('dev14PopupDialog').open)throw Error('close popup');
  document.body.dataset.dev14='PASS';
@@ -76,7 +76,7 @@ window.addEventListener('load',()=>{
 });
 </script>
 HTML;
-foreach(['390,844','1440,900'] as $view){
+foreach(['320,700','390,844','1440,900'] as $view){
  $file=tempnam(sys_get_temp_dir(),'dev14').'.html';file_put_contents($file,'<!doctype html><html dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'.$app.$css.'</style></head><body>'.$body.$tail.'</body></html>');
  $out=[];exec(escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --window-size='.$view.' --virtual-time-budget=4000 --dump-dom '.escapeshellarg('file://'.$file).' 2>/dev/null',$out,$status);$dom=implode("\n",$out);preg_match('/data-dev14="[^"]*"/',$dom,$marker);echo ($marker[0]??'no marker').PHP_EOL;unlink($file);mc($status===0&&str_contains($dom,'data-dev14="PASS"'),'P14 developer browser '.$view);
 }
@@ -103,3 +103,10 @@ mc(AnnouncementP20::pending(1)['id']===$a20['id'],'P20 notice pending');
 AnnouncementP20::acknowledge(1,$a20['id']);mc(AnnouncementP20::pending(1)!==null,'P20 first acknowledgement');
 AnnouncementP20::acknowledge(1,$a20['id']);mc(AnnouncementP20::pending(1)===null&&AnnouncementP20::pending(2)!==null,'P20 independent per-user counts');
 AnnouncementP20::cancel($a20['id'],1);mc(AnnouncementP20::pending(2)===null,'P20 cancellation');
+
+$meta=PopupP21::meta(['subtitle'=>'به‌روزرسانی','version'=>'P21','hours'=>'۹ ساعت','patches'=>'۱۷ پچ','range'=>'P5 تا P21','delay_seconds'=>15]);
+mc($meta['delay_seconds']===15&&PopupP21::items(['عنوان | توضیح','ساده'])===[['عنوان','توضیح'],['ساده','']],'P21 structured announcement');
+$a=AnnouncementP20::publish('P21','عنوان | توضیح','update',1,3,0,1,$meta);
+mc($a['presentation']===$meta&&AnnouncementP20::pending(1)['presentation']===$meta,'P21 structured data persists');
+mc(str_contains(MaintenanceP13::pageHtml(time()+60,true),'Vazirmatn,IRANSansLocal')&&str_contains(MaintenanceP13::pageHtml(time()+60,true),'color-scheme:light'),'P21 maintenance typography and light theme');
+$bad=false;try{PopupP21::meta(['delay_seconds'=>5]);}catch(RuntimeException){$bad=true;}mc($bad,'P21 reject early dismiss duration');

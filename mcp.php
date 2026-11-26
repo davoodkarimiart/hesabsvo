@@ -123,6 +123,8 @@ if($canDiag){
 
 if($canMaintenance){
  $props=['mode'=>['type'=>'string','enum'=>['test','exact']],'date'=>['type'=>'string','pattern'=>'^[0-9]{4}-[0-9]{2}-[0-9]{2}$','description'=>'Gregorian Tehran date, required for exact mode'],'clock'=>['type'=>'string','pattern'=>'^[0-9]{2}:[0-9]{2}$','description'=>'24-hour Tehran time, required for exact mode'],'title'=>['type'=>'string','minLength'=>1,'maxLength'=>100],'items'=>['type'=>'array','minItems'=>1,'maxItems'=>12,'items'=>['type'=>'string','minLength'=>1,'maxLength'=>200]],'show_count'=>['type'=>'integer','minimum'=>1,'maximum'=>5]];
+ $p21Props=['subtitle'=>['type'=>'string','maxLength'=>100],'version'=>['type'=>'string','maxLength'=>50],'hours'=>['type'=>'string','maxLength'=>24],'patches'=>['type'=>'string','maxLength'=>16],'range'=>['type'=>'string','maxLength'=>50],'delay_seconds'=>['type'=>'integer','minimum'=>10,'maximum'=>30],'content_mode'=>['type'=>'string','enum'=>['list','text']]];
+ $props+=$p21Props;
  $required=['mode','title','items','show_count'];
  $toolDefs[]=['name'=>'maintenance_status','title'=>'Maintenance status','description'=>'Developer only. Read current lock, Tehran end time and announcement. Available during maintenance.','inputSchema'=>['type'=>'object','properties'=>new stdClass(),'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>true,'destructiveHint'=>false]];
  $toolDefs[]=['name'=>'maintenance_preview','title'=>'Preview maintenance','description'=>'Validate exact Tehran deadline or one-minute test and announcement without any change.','inputSchema'=>['type'=>'object','properties'=>$props,'required'=>$required,'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>true,'destructiveHint'=>false]];
@@ -131,7 +133,7 @@ if($canMaintenance){
 }
 if($canMaintenance){
  $toolDefs[]=['name'=>'announcement_status','title'=>'Independent announcement status','description'=>'Read current standalone announcement without changing website availability. Developer only.','inputSchema'=>['type'=>'object','properties'=>new StdClass(),'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>true,'destructiveHint'=>false]];
- $toolDefs[]=['name'=>'announcement_publish','title'=>'Publish independent announcement','description'=>'Publish a message for all users (target_user_id 0) or one active user without site downtime. Replaces previous independent announcement. Requires explicit approval.','inputSchema'=>['type'=>'object','properties'=>['title'=>['type'=>'string','minLength'=>1,'maxLength'=>100],'items'=>['type'=>'array','minItems'=>1,'maxItems'=>12,'items'=>['type'=>'string','minLength'=>1,'maxLength'=>200]],'kind'=>['type'=>'string','enum'=>['notice','suggestion','update']],'show_count'=>['type'=>'integer','minimum'=>1,'maximum'=>5],'days'=>['type'=>'integer','minimum'=>1,'maximum'=>30],'target_user_id'=>['type'=>'integer','minimum'=>0],'confirmation'=>['type'=>'string','enum'=>['انتشار اطلاعیه سلطان حساب']]],'required'=>['title','items','kind','show_count','days','target_user_id','confirmation'],'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>false,'destructiveHint'=>true]];
+ $toolDefs[]=['name'=>'announcement_publish','title'=>'Publish independent announcement','description'=>'Publish a message for all users (target_user_id 0) or one active user without site downtime. Replaces previous independent announcement. Requires explicit approval.','inputSchema'=>['type'=>'object','properties'=>['title'=>['type'=>'string','minLength'=>1,'maxLength'=>100],'items'=>['type'=>'array','minItems'=>1,'maxItems'=>12,'items'=>['type'=>'string','minLength'=>1,'maxLength'=>200]],'kind'=>['type'=>'string','enum'=>['notice','suggestion','update']],'show_count'=>['type'=>'integer','minimum'=>1,'maximum'=>5],'days'=>['type'=>'integer','minimum'=>1,'maximum'=>30],'target_user_id'=>['type'=>'integer','minimum'=>0],'confirmation'=>['type'=>'string','enum'=>['انتشار اطلاعیه سلطان حساب']]]+$p21Props,'required'=>['title','items','kind','show_count','days','target_user_id','confirmation'],'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>false,'destructiveHint'=>true]];
  $toolDefs[]=['name'=>'announcement_cancel','title'=>'Cancel independent announcement','description'=>'Cancel exactly the independent announcement ID with approval. Does not affect maintenance.','inputSchema'=>['type'=>'object','properties'=>['announcement_id'=>['type'=>'string','pattern'=>'^[a-f0-9]{24}$'],'confirmation'=>['type'=>'string','enum'=>['لغو اطلاعیه سلطان حساب']]],'required'=>['announcement_id','confirmation'],'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>false,'destructiveHint'=>true]];
 }
 if($canUpdate){
@@ -154,7 +156,7 @@ if($method==='tools/call'){
    }else{
     if(($args['confirmation']??null)!=='انتشار اطلاعیه سلطان حساب'||!is_string($args['title']??null)||!is_string($args['kind']??null)||!is_array($args['items']??null)||!array_is_list($args['items'])||!is_int($args['show_count']??null)||!is_int($args['days']??null)||!is_int($args['target_user_id']??null))throw new RuntimeException('Invalid announcement');
     foreach($args['items'] as $v)if(!is_string($v)||trim($v)===''||mb_strlen($v)>200||preg_match('/\R/u',$v))throw new RuntimeException('Invalid item');
-    $data=AnnouncementP20::publish($args['title'],implode("\n",$args['items']),$args['kind'],$args['show_count'],$args['days'],$args['target_user_id'],(int)$user['id']);
+    $data=AnnouncementP20::publish($args['title'],implode("\n",$args['items']),$args['kind'],$args['show_count'],$args['days'],$args['target_user_id'],(int)$user['id'],PopupP21::meta($args));
    }
   }catch(Throwable $e){$reply($id,['content'=>[['type'=>'text','text'=>'Announcement rejected; check parameters and scope']],'isError'=>true]);}
  }else
@@ -163,10 +165,10 @@ if($method==='tools/call'){
    if($name==='maintenance_status')$data=MaintenanceP13::describe(MaintenanceP13::read());
    elseif($name==='maintenance_preview'||$name==='maintenance_start'){
     $now=time();$preview=MaintenanceP13::prepareMcp($args,$now);
-    if($name==='maintenance_preview')$data=['preview'=>true,'active'=>MaintenanceP13::active(MaintenanceP13::read()),'end_tehran'=>(new DateTimeImmutable('@'.$preview['until']))->setTimezone(new DateTimeZone('Asia/Tehran'))->format(DATE_ATOM),'remaining_seconds'=>$preview['until']-$now,'title'=>$preview['title'],'items'=>$preview['items'],'show_count'=>$preview['show_count']];
+    if($name==='maintenance_preview')$data=['preview'=>true,'active'=>MaintenanceP13::active(MaintenanceP13::read()),'end_tehran'=>(new DateTimeImmutable('@'.$preview['until']))->setTimezone(new DateTimeZone('Asia/Tehran'))->format(DATE_ATOM),'remaining_seconds'=>$preview['until']-$now,'title'=>$preview['title'],'items'=>$preview['items'],'show_count'=>$preview['show_count'],'presentation'=>$preview['presentation']];
     else{
      if(($args['confirmation']??null)!=='فعال‌سازی به‌روزرسانی سلطان حساب')throw new RuntimeException('Explicit maintenance confirmation required');
-     $state=MaintenanceP13::start(1,$preview['title'],implode("\n",$preview['items']),(int)$user['id'],$now,$preview['until'],$preview['show_count']);
+     $state=MaintenanceP13::start(1,$preview['title'],implode("\n",$preview['items']),(int)$user['id'],$now,$preview['until'],$preview['show_count'],$preview['presentation']);
      Logger::audit('developer.maintenance_started',['user_id'=>(int)$user['id'],'until'=>$state['until'],'mode'=>$preview['mode'],'announcement_count'=>$preview['show_count'],'source'=>'mcp']);
      $data=MaintenanceP13::describe($state,$now);
     }
