@@ -10,7 +10,8 @@ $stateDir=__DIR__.'/storage/updates';
 $stateFile=$stateDir.'/current.json';
 $state=['release'=>'0.6.53-p2'];
 if(is_file($stateFile)){$stored=json_decode((string)file_get_contents($stateFile),true);if(is_array($stored)&&isset($stored['release']))$state=$stored;}
-const UPDATE_CLIENT='1.3';
+const UPDATE_CLIENT='1.4';
+const UPDATE_MAX_FILES=40;
 const UPDATE_EXPENSE_MIGRATION='database/migrations/017_operating_expenses.sql';
 const UPDATE_RECOVERY_COMMIT='afb9c7b8662ab1727a31e6a65661d2c7d3cee602';
 function updateFetch(string $url):string {
@@ -27,6 +28,8 @@ function updatePriority(string $s):int {
  return (int)$m[1]*100000+(int)$m[2];
 }
 function updateAllowedPath(string $p):bool {
+ if(in_array($p,['oauth.php','cron_soltan_backup.php'],true))return false;
+ if(in_array($p,['mcp.php','app/Logger.php','app/bootstrap.php'],true))return true;
  return $p===UPDATE_EXPENSE_MIGRATION||preg_match('~^(?:assets/[a-zA-Z0-9_.-]+\.(?:js|css)|[a-zA-Z0-9_]+\.php|app/Services/[a-zA-Z0-9_]+\.php|app/Support/ReportXlsx68\.php)$~D',$p)===1;
 }
 function updateMayCreate(string $p):bool {
@@ -72,11 +75,11 @@ function updateRunExpenseMigration(string $bytes,string $hash):string {
 function updateManifestAt(string $sha):array {
  if(!preg_match('/^[a-f0-9]{40}$/D',$sha))throw new RuntimeException('Invalid commit SHA');
  $m=json_decode(updateFetch('https://raw.githubusercontent.com/davoodkarimiart/hesabsvo/'.$sha.'/updates/channel.json'),true,16,JSON_THROW_ON_ERROR);
- if(!is_array($m)||($m['product']??'')!=='soltanhesab'||!isset($m['files'])||!is_array($m['files'])||count($m['files'])<1||count($m['files'])>15||updatePriority((string)($m['release']??''))===0)throw new RuntimeException('Invalid release manifest');
+ if(!is_array($m)||($m['product']??'')!=='soltanhesab'||!isset($m['files'])||!is_array($m['files'])||count($m['files'])<1||count($m['files'])>UPDATE_MAX_FILES||updatePriority((string)($m['release']??''))===0)throw new RuntimeException('Invalid release manifest');
  $seen=[];
  foreach($m['files'] as $f){
   $p=$f['path']??null;$h=$f['sha256']??null;
-  if(!is_string($p)||!updateAllowedPath($p)||!is_string($h)||!preg_match('/^[a-f0-9]{64}$/D',$h)||isset($seen[$p])||in_array($p,['mcp.php','oauth.php','cron_soltan_backup.php'],true))throw new RuntimeException('Invalid update file');
+  if(!is_string($p)||!updateAllowedPath($p)||!is_string($h)||!preg_match('/^[a-f0-9]{64}$/D',$h)||isset($seen[$p]))throw new RuntimeException('Invalid update file');
   $seen[$p]=true;
  }
  if(isset($m['min_client'])&&(!is_string($m['min_client'])||version_compare(UPDATE_CLIENT,$m['min_client'],'<')))throw new RuntimeException('ابتدا خود آپدیتر را ارتقا بده.');
@@ -125,13 +128,13 @@ try{
     foreach($staged as $p=>$b){$to=__DIR__.'/'.$p;$tmp=$to.'.pending_'.bin2hex(random_bytes(5));if(file_put_contents($tmp,$b,LOCK_EX)!==strlen($b))throw new RuntimeException('Write failed');chmod($tmp,isset($newFiles[$p])?0644:(fileperms($to)&0777));if(!rename($tmp,$to))throw new RuntimeException('Rename failed');$changed[]=$p;if(function_exists('opcache_invalidate'))@opcache_invalidate($to,true);}
     $state=['release'=>$m['release'],'updated_at'=>date(DATE_ATOM),'rollback_dir'=>basename($dir)];
     $stateTmp=$stateFile.'.pending_'.bin2hex(random_bytes(5));$stateBytes=json_encode($state,JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT|JSON_THROW_ON_ERROR);if(file_put_contents($stateTmp,$stateBytes,LOCK_EX)!==strlen($stateBytes)||!rename($stateTmp,$stateFile))throw new RuntimeException('State write failed');$stateTmp=null;
-    Logger::audit('developer.update_installed',['release'=>$m['release'],'files'=>array_keys($staged)]);
+    Logger::audit('developer.update_installed',['release'=>$m['release'],'files'=>array_keys($staged),'commit'=>$m['_commit']]);
     $msg='به‌روزرسانی با موفقیت نصب شد.';
    }catch(Throwable $e){if($stateTmp!==null)@unlink($stateTmp);foreach($changed as $p){if(isset($newFiles[$p]))@unlink(__DIR__.'/'.$p);else @copy($dir.'/'.$p,__DIR__.'/'.$p);if(function_exists('opcache_invalidate'))@opcache_invalidate(__DIR__.'/'.$p,true);}if(is_string($oldState))@file_put_contents($stateFile,$oldState,LOCK_EX);elseif($oldState===null)@unlink($stateFile);throw $e;}
    }
   }finally{flock($lock,LOCK_UN);fclose($lock);}
  }
-}catch(Throwable $e){$err=$e->getMessage();}
+}catch(Throwable $e){$err=$e->getMessage();Logger::error('developer.update_failed',['release'=>$m['release']??null,'error'=>$err]);}
 $current=(string)$state['release'];$latest=(string)($m['release']??'');$available=$m&&updatePriority($latest)>updatePriority($current);$migrationEntry=updateMigrationEntry($m);$migrationDone=false;$migrationError='';if($migrationEntry){try{$migrationDone=updateMigrationApplied();}catch(Throwable $e){$migrationError=$e->getMessage();}}
 ?><!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>مرکز به‌روزرسانی سلطان حساب</title><style>
 *{box-sizing:border-box}body{font:14px Tahoma,Arial,sans-serif;background:#f2f3fa;color:#172033;margin:0;padding:20px;line-height:1.9}.box{max-width:680px;margin:7vh auto;background:#fff;padding:24px;border-radius:18px;box-shadow:0 8px 30px #17203312}h1{font-size:20px;margin:0 0 8px}.muted{font-size:12px;color:#64748b}.info{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.info>div{border:1px solid #e4e7ef;background:#f8f9fc;border-radius:10px;padding:10px;min-width:0}.info b{display:block;font-size:16px;direction:ltr;text-align:right;color:#172033}.note{border:1px solid #e4e7ef;border-radius:10px;padding:12px;margin:12px 0}.good{color:#166534;background:#ecfdf3}.warn{color:#854d0e;background:#fff7df}.err{color:#991b1b;background:#fff1f2}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:16px 0}button,a.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 17px;min-height:42px;border-radius:9px;border:0;font:inherit;text-decoration:none;cursor:pointer}button,.primary{background:#4515c9;color:#fff}.secondary{background:#eef0f6;color:#172033}form{margin:0}.meta{font-size:11px;color:#64748b;overflow-wrap:anywhere}code{direction:ltr;unicode-bidi:isolate}small{display:block;margin-top:14px;color:#64748b}@media(max-width:480px){body{padding:10px}.box{margin:2vh auto;padding:15px}.info{gap:6px}.info b{font-size:14px}.actions>*{flex:1}.actions form button{width:100%}}

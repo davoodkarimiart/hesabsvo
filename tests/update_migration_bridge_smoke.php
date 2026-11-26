@@ -5,8 +5,10 @@ $start=strpos($src,'const UPDATE_CLIENT=');$end=strpos($src,'$err=', $start);
 if($start===false||$end===false)throw new RuntimeException('update functions not found');
 eval(substr($src,$start,$end-$start));
 function bridgeCheck($value,string $label):void{if(!$value)throw new RuntimeException('FAIL '.$label);echo '[OK] '.$label.PHP_EOL;}
-bridgeCheck(UPDATE_CLIENT==='1.3','updater 1.3');
+bridgeCheck(UPDATE_CLIENT==='1.4'&&UPDATE_MAX_FILES===40,'updater 1.4 capacity');
 bridgeCheck(updateAllowedPath(UPDATE_EXPENSE_MIGRATION)&&!updateAllowedPath('database/migrations/evil.sql')&&!updateAllowedPath('../config/config.php'),'migration allowlist');
+bridgeCheck(updateAllowedPath('mcp.php')&&updateAllowedPath('developer_diagnostics.php')&&updateAllowedPath('developer_backups.php')&&updateAllowedPath('app/Logger.php')&&updateAllowedPath('app/bootstrap.php')&&!updateAllowedPath('oauth.php')&&!updateAllowedPath('cron_soltan_backup.php')&&!updateAllowedPath('config/config.php'),'P14 controlled developer paths');
+bridgeCheck(!updateMayCreate('mcp.php')&&!updateMayCreate('app/bootstrap.php'),'existing security-sensitive files only');
 bridgeCheck(updateMayCreate(UPDATE_EXPENSE_MIGRATION)&&!updateMayCreate('index.php')&&!updateMayCreate('oauth.php'),'new file allowlist');
 bridgeCheck(count(updateMigrationStatements('CREATE TABLE IF NOT EXISTS operating_expenses (id INT);CREATE TABLE IF NOT EXISTS operating_expense_revisions (id INT);'))===2,'approved additive statements');
 foreach(['DROP TABLE users;','CREATE TABLE IF NOT EXISTS operating_expenses (id INT);DELETE FROM users;','CREATE TABLE IF NOT EXISTS operating_expenses (id INT);CREATE TABLE IF NOT EXISTS operating_expense_revisions (id INT);DROP TABLE users;'] as $bad){$rejected=false;try{updateMigrationStatements($bad);}catch(RuntimeException){$rejected=true;}bridgeCheck($rejected,'reject unexpected SQL');}
