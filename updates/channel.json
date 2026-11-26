@@ -13,7 +13,7 @@
     },
     {
       "path": "index.php",
-      "sha256": "5c69b34e1036ab43824782336b88219ec1d24eccfea582491fb5b0e60ebc2576"
+      "sha256": "d58d05fdff6117bc491046e53dbdd426c4fb98e26267ff6d3b003de528c89cf9"
     },
     {
       "path": "assets/transfer-calendar620.js",
@@ -93,7 +93,7 @@
     },
     {
       "path": "assets/app.js",
-      "sha256": "8a7e8f7d22e1735f4291ec32851ea2f9a7f2ea1374a6930ec821eb2d66189188"
+      "sha256": "fed3220e5b3e8d8413c7104ddd0f3789919581bbea151198c58003e73d911bcd"
     },
     {
       "path": "assets/svo-patch059.js",

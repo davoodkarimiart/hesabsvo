@@ -140,14 +140,18 @@
     document.getElementById('transferCalendar620')?.close();window.TransferCalendar620?.resetCache();
     for(const cls of [...document.body.classList])if(cls.startsWith('page-'))document.body.classList.remove(cls);
     document.body.classList.add('page-'+page);
-    old.replaceWith(document.importNode(next,true));
+    old.replaceWith(document.importNode(next,true));shell.classList.remove('p20-loading');
     dock.querySelectorAll('a').forEach(a=>{const selected=[...nextDock.querySelectorAll('a')].find(n=>n.getAttribute('href')===a.getAttribute('href'))?.classList.contains('active');a.classList.toggle('active',!!selected);if(selected)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
     if(push)history.pushState({p20:true},'',url.href);
     activeUrl=url.href;document.title=doc.title;dirty=false;
     // Inline scripts run in document order, followed by the original deferred local libraries.
-    for(const sc of scripts.filter(sc=>!sc.hasAttribute('src')))await executeScript(sc);
-    for(const sc of scripts.filter(sc=>sc.hasAttribute('src')))await executeScript(sc);
-    window.p20InitControls?.();window.p20InitKeyboard?.();window.TransferCalendar620?.init();window.p20InitPageEnd?.();
+    let initFailed=false;const onError=()=>{initFailed=true};window.addEventListener('error',onError);
+    try{
+     for(const sc of scripts.filter(sc=>!sc.hasAttribute('src')))await executeScript(sc);
+     for(const sc of scripts.filter(sc=>sc.hasAttribute('src')))await executeScript(sc);
+     window.p20InitControls?.();window.p20InitKeyboard?.();window.TransferCalendar620?.init();window.p20InitPageEnd?.();
+     if(initFailed)throw Error('page initialization failed');
+    }finally{window.removeEventListener('error',onError)}
     if(token!==seq)return;busy(false,page);window.scrollTo(0,0);
     content()?.dispatchEvent(new CustomEvent('soltan:page-ready',{bubbles:true,detail:{page}}));
    }catch(e){if(token===seq)native(url);}
@@ -165,5 +169,5 @@
  document.addEventListener('change',e=>{if(e.target.closest?.('main.content form[method=post],main.content form:not([method])'))dirty=true});
  document.addEventListener('submit',()=>{if(flight){++seq;flight.abort();flight=null;busy(false,'')}},true);
  history.replaceState({...history.state,p20:true},'',location.href);
- window.addEventListener('popstate',()=>{const url=new URL(location.href);if(url.href!==activeUrl){if(flight){++seq;flight.abort();flight=null;busy(false,'')}navigate(url,false)}});
+ window.addEventListener('popstate',e=>{const url=new URL(location.href);if(url.href!==activeUrl){if(!e.state?.p20){native(url);return}if(flight){++seq;flight.abort();flight=null;busy(false,'')}navigate(url,false)}});
 })();

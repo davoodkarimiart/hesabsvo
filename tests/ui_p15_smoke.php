@@ -74,3 +74,32 @@ document.body.dataset.p17='PASS';
 }catch(e){document.body.dataset.p17='FAIL '+String(e)}});</script>
 HTML;
 foreach(['320,800','390,844','1440,900'] as $view){$tmpBase=tempnam(sys_get_temp_dir(),'p17');$tmp=$tmpBase.'.html';rename($tmpBase,$tmp);file_put_contents($tmp,'<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'.$app.$css.'</style></head><body class="page-dashboard">'.$chartFixture.'<script>'.$chart.'</script>'.$chartAssertions.'</body></html>');$out=[];exec(escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --window-size='.$view.' --virtual-time-budget=2000 --dump-dom '.escapeshellarg('file://'.$tmp).' 2>/dev/null',$out,$status);unlink($tmp);$dom=implode("\n",$out);preg_match('/data-p17="[^"]*"/',$dom,$marker);echo ($marker[0]??'no marker').PHP_EOL;check15($status===0&&str_contains($dom,'data-p17="PASS"'),'P17 chart '.$view);}
+
+
+// P20: actual navigation controller, same-origin fetch and history with a synthetic HTTP fixture.
+$dir=sys_get_temp_dir().'/p20_'.bin2hex(random_bytes(5));mkdir($dir,0700,true);mkdir($dir.'/assets');copy($root.'/assets/app.js',$dir.'/assets/app.js');
+$fixture=<<<'PHP'
+<?php $page=$_GET['page']??'dashboard';if(!in_array($page,['dashboard','companies','customers'],true))http_response_code(404);header('Content-Type: text/html; charset=utf-8');?>
+<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>fixture</title><style>.p20-loading main{display:none} .p20-skeleton{min-height:40px}</style><script defer src="assets/app.js"></script></head><body class="page-<?=htmlspecialchars($page)?>"><div class="app-shell"><header id="persistent">fixed</header><main class="content" data-p20-view="<?=htmlspecialchars($page)?>"><p id="value"><?=htmlspecialchars($page)?></p><script>window.fixtureRuns=(window.fixtureRuns||0)+1;</script></main><nav class="p16-dock"><a href="index.php?page=dashboard" class="<?=$page==='dashboard'?'active':''?>">home</a><a href="index.php?page=companies" class="<?=$page==='companies'?'active':''?>">companies</a><a href="index.php?page=customers" class="<?=$page==='customers'?'active':''?>">customers</a></nav></div><script>
+if(!window.__fixtureHarness){window.__fixtureHarness=true;window.addEventListener('load',()=>{
+ const fixed=document.getElementById('persistent'),nav=document.querySelector('.p16-dock'),identity=String(Math.random());fixed.dataset.identity=identity;
+ const fail=e=>document.body.dataset.p20='FAIL '+String(e);
+ let stage=0;
+ document.addEventListener('soltan:page-ready',e=>{try{
+  if(document.getElementById('persistent')!==fixed||document.querySelector('.p16-dock')!==nav)throw Error('shell replaced');
+  if(document.querySelector('#p20Skeleton')||document.querySelector('main').inert)throw Error('loading not cleared');
+  if(stage===0){if(e.detail.page!=='companies'||document.querySelector('#value').textContent!=='companies'||window.fixtureRuns!==2)throw Error('companies fetch or script');stage++;nav.querySelector('a[href$=customers]').click();}
+  else if(stage===1){if(e.detail.page!=='customers'||window.fixtureRuns!==3)throw Error('customers fetch');stage++;history.back();}
+  else if(stage===2){if(e.detail.page!=='companies'||window.fixtureRuns!==4||!location.search.includes('companies'))throw Error('history back');document.body.dataset.p20='PASS';}
+ }catch(e){fail(e)}});
+ nav.querySelector('a[href$=companies]').click();if(!document.querySelector('#p20Skeleton'))fail('no request-bound skeleton');
+ setTimeout(()=>{if(!document.body.dataset.p20)fail('timeout')},7000);
+})}
+</script></body></html>
+PHP;
+file_put_contents($dir.'/index.php',$fixture);
+$sock=stream_socket_server('tcp://127.0.0.1:0',$eno,$estr);check15(is_resource($sock),'P20 free fixture port');$port=(int)substr(strrchr(stream_socket_get_name($sock,false),':'),1);fclose($sock);
+$proc=proc_open([PHP_BINARY,'-S','127.0.0.1:'.$port,'-t',$dir],[0=>['pipe','r'],1=>['file',$dir.'/server.log','a'],2=>['file',$dir.'/server.log','a']],$pipes);check15(is_resource($proc),'P20 fixture server');fclose($pipes[0]);
+try{for($i=0;$i<30;$i++){if($fp=@fsockopen('127.0.0.1',$port,$eno,$estr,.1)){fclose($fp);break;}usleep(100000);}
+ $out=[];exec(escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --window-size=390,844 --virtual-time-budget=8500 --dump-dom '.escapeshellarg('http://127.0.0.1:'.$port.'/index.php?page=dashboard').' 2>/dev/null',$out,$status);$dom=implode("\n",$out);preg_match('/data-p20="[^"]*"/',$dom,$marker);echo ($marker[0]??'missing marker').PHP_EOL;check15($status===0&&str_contains($dom,'data-p20="PASS"'),'P20 persistent shell, real fetch, skeleton, script replay, back navigation');
+}finally{proc_terminate($proc);proc_close($proc);@unlink($dir.'/assets/app.js');@rmdir($dir.'/assets');@unlink($dir.'/index.php');@unlink($dir.'/server.log');@rmdir($dir);}
