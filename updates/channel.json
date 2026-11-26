@@ -1,7 +1,7 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p15",
-  "notes": "یکپارچه‌سازی رابط Developer، لاگ‌ها، بکاپ و MCP؛ بهبود مرکز به‌روزرسانی و نمایش موبایل؛ داشبورد و نمودار خواناتر؛ کارت‌های شرکت و پنل؛ پیش‌نمایش زنده فونت و رنگ؛ اطلاعات نسخه و سلامت در MCP؛ بدون تغییر محاسبات مالی.",
+  "release": "0.6.53-p16",
+  "notes": "بازطراحی ورود گل یا پوچ با راهنمای واضح؛ منوی شناور و داشبورد رنگی؛ ناوبری آیکون‌دار Developer و ترانسفر؛ اصلاح فرم تاریخ لاگ و فهرست بکاپ؛ بهبود تنظیمات و شرکت‌ها؛ حفظ محاسبات، امنیت و خروجی‌های مالی.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
@@ -13,7 +13,7 @@
     },
     {
       "path": "index.php",
-      "sha256": "a06e0153779e2f596f934ce07d3009bea8965aa8f0fa1604cb1d9db241f1d5ce"
+      "sha256": "97d1c9c60309ec7260b801270ed684074e804aae77ab4bb3d541265d29b5b0f1"
     },
     {
       "path": "assets/transfer-calendar620.js",
@@ -25,7 +25,7 @@
     },
     {
       "path": "transfer_page619.php",
-      "sha256": "1caf60c0b02a7f4c39853f22c33f6f0b4cf32243c28afda137c14c50ed887017"
+      "sha256": "c4652a79e50d10482f59afbcdc3e3028fa502ac49ba297a0c367e1b43ce5da1d"
     },
     {
       "path": "assets/transfer-receipt619.js",
@@ -33,7 +33,7 @@
     },
     {
       "path": "assets/transfer619.css",
-      "sha256": "345e685311ae9a4765b98f22ece9f987a889553a87ac34f98a9b200b0842e1af"
+      "sha256": "a6d418b5ff99599d88d6eeb6aeaae9a853681e2966ef4c83537d98e9aa6afd48"
     },
     {
       "path": "export.php",
@@ -49,7 +49,7 @@
     },
     {
       "path": "update_center.php",
-      "sha256": "2c2f7dc9eaa9602590642efa8f7d10e402f60a2c168f78fd2a4cfc3233c5a694"
+      "sha256": "5378c719c9f551266bfafefd5499e57bd1876107b9b34688e346928dbe74224f"
     },
     {
       "path": "app/Services/CompanyService.php",
@@ -57,7 +57,7 @@
     },
     {
       "path": "expense_page.php",
-      "sha256": "029d0346fde061a5bca257dc9f21d248a079828383eabbeaca8334efb6f28dff"
+      "sha256": "72e9ff88e1c19418914e7d98e0d9dc43ebfee84b9b7b89bc3b1b7e02a50e9126"
     },
     {
       "path": "database/migrations/017_operating_expenses.sql",
@@ -65,19 +65,19 @@
     },
     {
       "path": "developer_diagnostics.php",
-      "sha256": "4bc4f7005bf5a10665dedf9283e3b47ab75d7b23152f456ee658a90a8ef6a788"
+      "sha256": "3b6e195e38d2bcf0ff4f36ad4f9157a2cfcc5d10989578fc80712b6d5dff50fc"
     },
     {
       "path": "developer_backups.php",
-      "sha256": "b7079cca1692eb54977527ae58a8af7afbe6f08358294bd3af05fb7f38b5af8b"
+      "sha256": "cba72fda6ed447711a11e4d822cc2b73e2cee7c38d12f3d009068b2411e47b3a"
     },
     {
       "path": "mcp_connections.php",
-      "sha256": "c9b05cd6a9930edcfed00728fcd193f1f7f8eef23dc96e26bd87b99a98357c22"
+      "sha256": "4e4a54cf3365b4ead42ea3637486bb946e579e04a5dd6946fd757682460bfb83"
     },
     {
       "path": "mcp_permissions.php",
-      "sha256": "431bfbffff372b7e7d324bb1c6cabcd06a591830611fe22fa1e3073174c3876f"
+      "sha256": "3799c6a9c97c769ef3d427ba22e7a6e9e036de9c489fb7e6da55e08d958c311b"
     },
     {
       "path": "mcp.php",

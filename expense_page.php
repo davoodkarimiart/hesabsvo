@@ -21,10 +21,10 @@ $base=['page'=>'transfers','tab'=>'expense_list','company'=>$company,'from'=>$fr
 ?>
 <section class="section-title transfer-top-title"><div><h1>ترانسفر و هزینه‌ها</h1><p>تسویه با سایت مادر و مدیریت هزینه‌های شرکت</p></div></section>
 <div class="transfer-tabs expense-tabs" role="navigation" aria-label="ترانسفر و هزینه">
- <a href="index.php?page=transfers&tab=new">＋ ثبت ترانسفر</a>
- <a href="index.php?page=transfers&tab=list">سوابق و مدیریت ترانسفرها</a>
- <a class="<?=$tab==='expense_new'?'active':''?>" href="index.php?page=transfers&tab=expense_new">＋ ثبت هزینه</a>
- <a class="<?=$tab==='expense_list'?'active':''?>" href="index.php?page=transfers&tab=expense_list">سوابق و مدیریت هزینه‌ها</a>
+ <a href="index.php?page=transfers&tab=new"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h15m0 0-4-4m4 4-4 4M20 17H5m0 0 4-4m-4 4 4 4"/></svg><span>ثبت ترانسفر</span></a>
+ <a href="index.php?page=transfers&tab=list"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zM8 8h8M8 12h8M8 16h5"/></svg><span>سوابق ترانسفر</span></a>
+ <a class="<?=$tab==='expense_new'?'active':''?>" href="index.php?page=transfers&tab=expense_new"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>ثبت هزینه</span></a>
+ <a class="<?=$tab==='expense_list'?'active':''?>" href="index.php?page=transfers&tab=expense_list"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v6H4zM4 13h16v6H4zM7 8h1m-1 8h1"/></svg><span>سوابق هزینه</span></a>
 </div>
 <?php if($expenseError!==''):?><div class="notice bad"><?=e($expenseError)?></div>
 <?php elseif($tab==='expense_new'):?>
