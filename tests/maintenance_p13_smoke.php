@@ -111,24 +111,26 @@ mc($a['presentation']===$meta&&AnnouncementP20::pending(1)['presentation']===$me
 mc(str_contains(MaintenanceP13::pageHtml(time()+60,true),'Vazirmatn,IRANSansLocal')&&str_contains(MaintenanceP13::pageHtml(time()+60,true),'color-scheme:light'),'P21 maintenance typography and light theme');
 $bad=false;try{PopupP21::meta(['delay_seconds'=>5]);}catch(RuntimeException){$bad=true;}mc($bad,'P21 reject early dismiss duration');
 
+$structured=PopupP21::mcpItems([['title'=>'عنوان','description'=>'توضیح'],'قدیمی']);mc($structured===['عنوان | توضیح','قدیمی'],'P22 MCP structured and legacy items');
+$preview=MaintenanceP13::prepareMcp(['mode'=>'test','title'=>'P22','items'=>array_fill(0,24,['title'=>'عنوان','description'=>'توضیح']),'show_count'=>1]);mc(count($preview['item_details'])===24&&$preview['item_details'][0]['description']==='توضیح','P22 long structured preview');
 $maintenanceHtml=MaintenanceP13::pageHtml(time()+60,true);
 mc(str_contains($maintenanceHtml,'<span>به‌روزرسانی</span>')&&!str_contains($maintenanceHtml,'id="retry"')&&str_contains($maintenanceHtml,'زمان تقریبی بازگشایی:'),'P21 reference maintenance content');
 $popupStart=strpos($src,'<dialog id="maintenanceAnnouncement"');
 $popupEnd=strpos($src,'</dialog><script data-p20-page>',$popupStart);
 $popupEnd=strpos($src,'</script>',$popupEnd)+9;
 mc($popupStart!==false&&$popupEnd>9,'P21 actual popup fixture');
-$announcement=['id'=>str_repeat('b',24),'title'=>'سلطان حساب به‌روز شد','items'=>array_fill(0,5,'عنوان | توضیح')];$p20Kind='update';$p20Label='به‌روزرسانی بزرگ سلطان حساب';$p20Action='maintenance_ack';$p21=PopupP21::meta(['version'=>'0.6.53-P21','hours'=>'۹ ساعت','patches'=>'۱۷ پچ','range'=>'P5 تا P21','delay_seconds'=>10]);
+$announcement=['id'=>str_repeat('b',24),'title'=>'سلطان حساب به‌روز شد','items'=>array_fill(0,24,'عنوان | توضیح برای آزمون اسکرول داخلی')];$p20Kind='update';$p20Label='به‌روزرسانی بزرگ سلطان حساب';$p20Action='maintenance_ack';$p21=PopupP21::meta(['version'=>'0.6.53-P21','hours'=>'۹ ساعت','patches'=>'۱۷ پچ','range'=>'P5 تا P21','delay_seconds'=>10]);
 ob_start();eval('?>'.substr($src,$popupStart,$popupEnd-$popupStart));$popupHtml=ob_get_clean();
 $probe=<<<'HTML'
 <script>
 const button=document.getElementById('p20Acknowledge'),dialog=document.getElementById('maintenanceAnnouncement');
-const rect=dialog.getBoundingClientRect();
-const details=[button.disabled,dialog.open,rect.width,innerWidth,rect.height,innerHeight,dialog.scrollWidth,dialog.clientWidth];const initial=button.disabled&&dialog.open&&rect.width<=innerWidth&&rect.height<=innerHeight&&dialog.scrollWidth<=dialog.clientWidth+2;
-setTimeout(()=>{document.body.dataset.p21=initial&&!button.disabled&&button.querySelector('.p21-count').hidden?'PASS':'FAIL '+details.join(',')+' end:'+button.disabled+','+button.querySelector('.p21-count').hidden},11000);
+const rect=dialog.getBoundingClientRect(),scroll=dialog.querySelector('.p20-popup-scroll'),top=dialog.querySelector('.p22-timer');
+const details=[button.disabled,dialog.open,rect.width,innerWidth,rect.height,innerHeight,dialog.scrollWidth,dialog.clientWidth];const initial=button.disabled&&dialog.open&&rect.width<=innerWidth&&rect.height<=innerHeight&&dialog.scrollWidth<=dialog.clientWidth+2&&scroll.scrollHeight>scroll.clientHeight&&getComputedStyle(scroll).outlineStyle==='none'&&top.textContent.includes('10');
+setTimeout(()=>{document.body.dataset.p21=initial&&!button.disabled&&button.querySelector('.p21-count').hidden&&top.textContent.includes('فعال')?'PASS':'FAIL '+details.join(',')+' end:'+button.disabled+','+button.querySelector('.p21-count').hidden},11000);
 </script>
 HTML;
 foreach(['390,844','1440,900'] as $view){
- foreach(['popup'=>'<!doctype html><html dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'.$app.$css.'</style></head><body>'.$popupHtml.$probe.'</body></html>','maintenance'=>str_replace('</body>','<script>const r=document.querySelector("main").getBoundingClientRect();document.body.dataset.p21=r.width<=innerWidth&&document.documentElement.scrollWidth<=innerWidth+2&&Number(document.getElementById("ss").textContent)>=0?"PASS":"FAIL";</script></body>',$maintenanceHtml)] as $kind=>$fixture){
+ foreach(['popup'=>'<!doctype html><html dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'.$app.$css.'</style></head><body>'.$popupHtml.$probe.'</body></html>','maintenance'=>str_replace('</body>','<script>const r=document.querySelector("main").getBoundingClientRect();document.body.dataset.p21=Math.abs(r.width-innerWidth)<=2&&Math.abs(r.left)<=2&&Math.abs(r.top)<=2&&r.height>=innerHeight-2&&document.documentElement.scrollWidth<=innerWidth+2&&Number(document.getElementById("ss").textContent)>=0?"PASS":"FAIL";</script></body>',$maintenanceHtml)] as $kind=>$fixture){
   $tmp=tempnam(sys_get_temp_dir(),'p21');$file=$tmp.'.html';rename($tmp,$file);file_put_contents($file,$fixture);$out=[];exec(escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --window-size='.$view.' --virtual-time-budget=12500 --dump-dom '.escapeshellarg('file://'.$file).' 2>/dev/null',$out,$status);unlink($file);$dom=implode("\n",$out);preg_match('/data-p21="[^"]*"/',$dom,$marker);echo ($marker[0]??'no marker').PHP_EOL;mc($status===0&&str_contains($dom,'data-p21="PASS"'),'P21 '.$kind.' browser '.$view);
  }
 }

@@ -1,11 +1,11 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p21",
-  "notes": "تکمیل P21: طراحی سفید و بنفش، پاپ‌آپ تک‌دکمه با شمارش معکوس، صفحه انتظار عریض دسکتاپ و عمودی موبایل، اصلاح PHP، تنظیمات مستقل و MCP؛ بدون تغییر محاسبات یا توقف فعلی.",
+  "release": "0.6.53-p22",
+  "notes": "P22: حذف کادر فوکوس مشکی، تایمر هماهنگ بالا و پایین، اسکرول بنفش داخلی، صفحه تعمیرات تمام‌صفحه ریسپانسیو، فیلدهای مستقل عنوان و توضیح، پشتیبانی داده ساختاریافته MCP.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
-      "sha256": "abf4a9dc7092e4910e10c613b1b4c8d42c8948f2998d0f2d3e6dbe9195c439b2"
+      "sha256": "e0c2791c77b9c64812657b5ac2744b1f185fc457e2b0979649ec18ffd25198c5"
     },
     {
       "path": "app/Services/TransferService.php",
@@ -13,7 +13,7 @@
     },
     {
       "path": "index.php",
-      "sha256": "4570fe861d6fb6d5226f7f91b5e82ad0280511edd82e6789acb87fded4f79c54"
+      "sha256": "4a1f0401171154c65a39eadb54f8a2179969fafc11ca45f5f05f81c98f05096f"
     },
     {
       "path": "assets/transfer-calendar620.js",
@@ -33,7 +33,7 @@
     },
     {
       "path": "assets/transfer619.css",
-      "sha256": "3ec851baa523e2a1a7db9fd781091330695ee52a9f8d19cba983a1227fc6387f"
+      "sha256": "b539c967d72d43b2004b76e60c4bf73a9ed8df8793de65d2b9296fb90f4c94b5"
     },
     {
       "path": "export.php",
@@ -81,7 +81,7 @@
     },
     {
       "path": "mcp.php",
-      "sha256": "4a457698623a8fa1292e97f4a4a56ecd33fbff1735c07554911f5b44c977a1eb"
+      "sha256": "3618cf8f888945812a8e674dfa4767e2f7f2bff6876d07ee59912be0158a842e"
     },
     {
       "path": "oauth.php",
