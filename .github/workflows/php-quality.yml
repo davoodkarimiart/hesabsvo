@@ -41,3 +41,4 @@ jobs:
 
           php tests/period_transfer_p4_smoke.php
           php tests/update_migration_bridge_smoke.php
+          php tests/maintenance_p13_smoke.php

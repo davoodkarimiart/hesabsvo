@@ -105,7 +105,7 @@ window.addEventListener('load',async()=>{
   const pos=cells.map(c=>c.getBoundingClientRect().left);
   if(!(pos[0]>pos[1]&&pos[1]>pos[2]))throw Error('P11 wrong physical order '+pos.join(','));
   const bg=cells.map(c=>getComputedStyle(c).backgroundColor);
-  if(bg.some(x=>x!=='rgb(203, 213, 225)')||cells.some(c=>getComputedStyle(c).borderTopColor!=='rgb(0, 0, 0)'))throw Error('P11 final background/borders '+bg);
+  if(bg.some(x=>x!=='rgb(248, 250, 252)')||getComputedStyle(final).borderTopColor!=='rgb(185, 28, 28)'||parseFloat(getComputedStyle(final).borderTopWidth)<3)throw Error('P13 final background/red border '+bg);
   if(getComputedStyle(cells[0]).color!=='rgb(8, 117, 45)'||getComputedStyle(cells[1]).color!=='rgb(20, 75, 166)')throw Error('P11 final ink');
   const netRect=final.rows[0].getBoundingClientRect(),transferRect=document.getElementById('p4TransferTable').rows[0].getBoundingClientRect();
   if(netRect.height<=transferRect.height||Number(getComputedStyle(cells[0]).fontWeight)<800)throw Error('P12 final emphasis');
@@ -173,7 +173,7 @@ foreach([$d,$history,$expenseReport] as $data){
     $v=$sx->xpath('//m:c[@r="A'.$lastRow.'"]/m:v');p4check((string)$v[0]==='130','P11 XLSX amount physically left');
   }
   $styleXml=$zip->getFromName('xl/styles.xml');
-  p4check(str_contains($styleXml,'FFCBD5E1')&&str_contains($styleXml,'FF000000'),'P11 gray fill and black border');
+  p4check(str_contains($styleXml,'FFF8FAFC')&&str_contains($styleXml,'FFB91C1C'),'P11 gray fill and black border');
   p4check(str_contains($styleXml,'FF475569')&&str_contains($styleXml,'FFD7C0ED')&&str_contains($styleXml,'FFB8DDF2')&&str_contains($styleXml,'applyBorder="1"'),'p9 contrasting borders and palette');
   p4check(str_contains($styleXml,'FFE4F77C')&&str_contains($styleXml,'FFF3A7AD')&&str_contains($styleXml,'FFAFE7C1'),'p9 fixed summary colors');
   foreach(['xl/worksheets/sheet1.xml','xl/styles.xml','xl/sharedStrings.xml','xl/workbook.xml','[Content_Types].xml'] as $part)p4check(simplexml_load_string($zip->getFromName($part))!==false,'p7 valid XML '.$part);
@@ -207,7 +207,7 @@ window.addEventListener('load',async()=>{
    const a=controls[0].getBoundingClientRect(),b=controls[1].getBoundingClientRect();
    if(Math.abs(a.top-b.top)>2||Math.abs(a.height-b.height)>2)throw Error('expense form misaligned '+[a.top,b.top,a.height,b.height]);
    for(const icon of f.querySelectorAll('.tc-date-icon svg'))if(icon.getBoundingClientRect().width!==19)throw Error('expense calendar icon');
-   for(const c of f.querySelectorAll('.tc-clear-date'))if(!c.hidden||getComputedStyle(c).display!=='none')throw Error('empty clear button');
+   for(const c of f.querySelectorAll('.tc-clear-date')){if(!c.hidden||getComputedStyle(c).display!=='none')throw Error('empty clear button');const field=c.parentElement.querySelector('input');field.value='2026-11-21';field.dispatchEvent(new Event('change',{bubbles:true}));if(c.hidden||getComputedStyle(c).display==='none'||c.getBoundingClientRect().width>26)throw Error('selected clear icon');c.click();if(field.value!==''||!c.hidden)throw Error('clear action');}
    if(f.scrollWidth>f.clientWidth+2)throw Error('expense form overflow');
    if(document.querySelector('.expense-card a[href*="type=expense_history"]'))throw Error('redundant report link');
    if(innerWidth<=700&&f.classList.contains('expense-entry-form')){
