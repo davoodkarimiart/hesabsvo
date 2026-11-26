@@ -61,5 +61,5 @@ window.svoShowNativeSummary=async ids=>{const dialog=q('svoCumulativeDialog'),ro
    sync();
   });
  }
- document.addEventListener('DOMContentLoaded',()=>{init();initDate()});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{init();initDate()});else{init();initDate()}
 })();

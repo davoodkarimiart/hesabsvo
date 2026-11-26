@@ -1,11 +1,11 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p19",
-  "notes": "تمام اصلاحات P18؛ شش ابزار Developer برای وضعیت، پیش‌نمایش، شروع و توقف نگهداری و بررسی و نصب به‌روزرسانی؛ دو مجوز مستقل OAuth؛ بکاپ دیتابیس و فایل، کنترل هش، نصب مشترک با وب؛ بدون تغییر فرمول مالی. یکسان‌سازی آیکون شرکت‌ها با ساختمان اداری چندطبقه در داشبورد و تمام منوها.",
+  "release": "0.6.53-p20",
+  "notes": "پاپ‌آپ سفید و بنفش واکنش‌گرا با مرور متن؛ اطلاعیه مستقل مدیریتی بدون توقف سایت؛ PJAX محدود به ناوبری سازگار و اسکلت بارگذاری واقعی؛ حفظ ارسال فرم‌ها و دانلودها و مسیر بازگشت به PHP؛ بدون تغییر فرمول مالی.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
-      "sha256": "a6f76af71d61a3d3e7b04611787d07f128e205596f89c7937ec5d2dc747b5502"
+      "sha256": "3f0d720b695a964fc4cde2753c4f21027440467c898b36f05b28c18590a5c9d5"
     },
     {
       "path": "app/Services/TransferService.php",
@@ -13,7 +13,7 @@
     },
     {
       "path": "index.php",
-      "sha256": "7121d8aa0216c962358c264fe64f94c7231f5fe6549c20a5d32267901c0007be"
+      "sha256": "5c69b34e1036ab43824782336b88219ec1d24eccfea582491fb5b0e60ebc2576"
     },
     {
       "path": "assets/transfer-calendar620.js",
@@ -33,7 +33,7 @@
     },
     {
       "path": "assets/transfer619.css",
-      "sha256": "599014faa3cb0c14b119c28a4d2e3bcba2df81e3f3441bcd5be3ad4b7e97cbc8"
+      "sha256": "70d5e820de7a854d1119deb500190759ffb49ebd436c5e623b8d573a4750892c"
     },
     {
       "path": "export.php",
@@ -73,15 +73,15 @@
     },
     {
       "path": "mcp_connections.php",
-      "sha256": "527b5b918032f30fb4a57a33bb49cad987f1a707d25b9628be67ee84c093bb8a"
+      "sha256": "0028d12d8673134dc849ddf5a859575dd2132070dc7d1cc35b911b7bf6206672"
     },
     {
       "path": "mcp_permissions.php",
-      "sha256": "8c3076835dc5475bd53931d6b31ee56e3af596af9ad4263df79146ec6f779191"
+      "sha256": "e97e8d461dc5c3868a549c97806ff2e01fbc36962590f4c6247baa413c0eb7fb"
     },
     {
       "path": "mcp.php",
-      "sha256": "b4214c6bfb36626c9a1bb2104dc9779e5c0a55cacdedb6c6ce2e9598c09b9824"
+      "sha256": "7788aab4b669a6f161bf1fd4fa5b413d94d7c40e2535e4799914de80c5e42057"
     },
     {
       "path": "oauth.php",
@@ -90,6 +90,14 @@
     {
       "path": "mcp_oauth_lib.php",
       "sha256": "bb59b1b3c0c42612c6bf39effcaf1b20766fadaec2fa36a22ecee4606baadfe5"
+    },
+    {
+      "path": "assets/app.js",
+      "sha256": "8a7e8f7d22e1735f4291ec32851ea2f9a7f2ea1374a6930ec821eb2d66189188"
+    },
+    {
+      "path": "assets/svo-patch059.js",
+      "sha256": "1d5302d511a0a8b72602531e440d1130648cd106b7e301263d11bcdd0d0a141a"
     }
   ],
   "min_client": "1.5"

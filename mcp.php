@@ -129,6 +129,11 @@ if($canMaintenance){
  $toolDefs[]=['name'=>'maintenance_start','title'=>'Start maintenance','description'=>'Locks all website users immediately; only restricted developer MCP control remains. Call only with explicit user approval of deadline and announcement.','inputSchema'=>['type'=>'object','properties'=>$props+['confirmation'=>['type'=>'string','enum'=>['فعال‌سازی به‌روزرسانی سلطان حساب']]],'required'=>array_merge($required,['confirmation']),'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>false,'destructiveHint'=>true,'idempotentHint'=>false]];
  $toolDefs[]=['name'=>'maintenance_stop','title'=>'Stop maintenance','description'=>'Emergency reopen. Use exact announcement ID from maintenance_status and explicit user approval. Announcement remains available after reopening.','inputSchema'=>['type'=>'object','properties'=>['announcement_id'=>['type'=>'string','pattern'=>'^[a-f0-9]{24}$'],'confirmation'=>['type'=>'string','enum'=>['بازگشایی سلطان حساب']]],'required'=>['announcement_id','confirmation'],'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>false,'destructiveHint'=>true,'idempotentHint'=>true]];
 }
+if($canMaintenance){
+ $toolDefs[]=['name'=>'announcement_status','title'=>'Independent announcement status','description'=>'Read current standalone announcement without changing website availability. Developer only.','inputSchema'=>['type'=>'object','properties'=>new StdClass(),'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>true,'destructiveHint'=>false]];
+ $toolDefs[]=['name'=>'announcement_publish','title'=>'Publish independent announcement','description'=>'Publish a message for all users (target_user_id 0) or one active user without site downtime. Replaces previous independent announcement. Requires explicit approval.','inputSchema'=>['type'=>'object','properties'=>['title'=>['type'=>'string','minLength'=>1,'maxLength'=>100],'items'=>['type'=>'array','minItems'=>1,'maxItems'=>12,'items'=>['type'=>'string','minLength'=>1,'maxLength'=>200]],'kind'=>['type'=>'string','enum'=>['notice','suggestion','update']],'show_count'=>['type'=>'integer','minimum'=>1,'maximum'=>5],'days'=>['type'=>'integer','minimum'=>1,'maximum'=>30],'target_user_id'=>['type'=>'integer','minimum'=>0],'confirmation'=>['type'=>'string','enum'=>['انتشار اطلاعیه سلطان حساب']]],'required'=>['title','items','kind','show_count','days','target_user_id','confirmation'],'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>false,'destructiveHint'=>true]];
+ $toolDefs[]=['name'=>'announcement_cancel','title'=>'Cancel independent announcement','description'=>'Cancel exactly the independent announcement ID with approval. Does not affect maintenance.','inputSchema'=>['type'=>'object','properties'=>['announcement_id'=>['type'=>'string','pattern'=>'^[a-f0-9]{24}$'],'confirmation'=>['type'=>'string','enum'=>['لغو اطلاعیه سلطان حساب']]],'required'=>['announcement_id','confirmation'],'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>false,'destructiveHint'=>true]];
+}
 if($canUpdate){
  $toolDefs[]=['name'=>'update_check','title'=>'Check GitHub update','description'=>'Read installed and latest verified GitHub release, pinned commit, notes and file count.','inputSchema'=>['type'=>'object','properties'=>new StdClass(),'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>true,'destructiveHint'=>false]];
  $toolDefs[]=['name'=>'update_install','title'=>'Install verified GitHub update','description'=>'Developer only. Install exactly the release and commit confirmed after update_check; backup database and files, verify hashes, use shared web updater and rollback on failure. Never call without explicit user approval of release.','inputSchema'=>['type'=>'object','properties'=>['release'=>['type'=>'string','maxLength'=>30],'commit'=>['type'=>'string','pattern'=>'^[a-f0-9]{40}$'],'confirmation'=>['type'=>'string','enum'=>['نصب به‌روزرسانی سلطان حساب']]],'required'=>['release','commit','confirmation'],'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>false,'destructiveHint'=>true,'idempotentHint'=>false]];
@@ -140,6 +145,19 @@ if($method==='tools/call'){
  // Re-read just before dispatch; an old token never gains the new scopes.
  $maintenanceActive=MaintenanceP13::active(MaintenanceP13::read());
  if($maintenanceActive&&!(($canMaintenance&&in_array($name,['maintenance_status','maintenance_stop'],true))||($canUpdate&&in_array($name,['update_check','update_install'],true))))$reply($id,['content'=>[['type'=>'text','text'=>'Maintenance: operational tools are disabled']],'isError'=>true]);
+ if($canMaintenance&&in_array($name,['announcement_status','announcement_publish','announcement_cancel'],true)){
+  try{
+   if($name==='announcement_status')$data=['announcement'=>AnnouncementP20::status()];
+   elseif($name==='announcement_cancel'){
+    if(($args['confirmation']??null)!=='لغو اطلاعیه سلطان حساب'||!is_string($args['announcement_id']??null))throw new RuntimeException('Invalid cancellation');
+    $data=AnnouncementP20::cancel($args['announcement_id'],(int)$user['id']);
+   }else{
+    if(($args['confirmation']??null)!=='انتشار اطلاعیه سلطان حساب'||!is_string($args['title']??null)||!is_string($args['kind']??null)||!is_array($args['items']??null)||!array_is_list($args['items'])||!is_int($args['show_count']??null)||!is_int($args['days']??null)||!is_int($args['target_user_id']??null))throw new RuntimeException('Invalid announcement');
+    foreach($args['items'] as $v)if(!is_string($v)||trim($v)===''||mb_strlen($v)>200||preg_match('/\R/u',$v))throw new RuntimeException('Invalid item');
+    $data=AnnouncementP20::publish($args['title'],implode("\n",$args['items']),$args['kind'],$args['show_count'],$args['days'],$args['target_user_id'],(int)$user['id']);
+   }
+  }catch(Throwable $e){$reply($id,['content'=>[['type'=>'text','text'=>'Announcement rejected; check parameters and scope']],'isError'=>true]);}
+ }else
  if(($canMaintenance&&in_array($name,['maintenance_status','maintenance_preview','maintenance_start','maintenance_stop'],true))||($canUpdate&&in_array($name,['update_check','update_install'],true))){
   try{
    if($name==='maintenance_status')$data=MaintenanceP13::describe(MaintenanceP13::read());

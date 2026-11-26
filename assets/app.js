@@ -19,7 +19,7 @@
   function selectCal(y,m,d){if(calTarget){calTarget.value=fmtJ(y,m,d);calTarget.dispatchEvent(new Event('input',{bubbles:true}));calTarget.dispatchEvent(new Event('change',{bubbles:true}))}document.getElementById('jalaliCalendarDialog')?.close();}
   function initCalendars(){document.querySelectorAll('input.jalali-date').forEach(inp=>{if(inp.dataset.calBound)return;inp.dataset.calBound='1';const wrap=document.createElement('div');wrap.className='date-with-picker';inp.parentNode.insertBefore(wrap,inp);wrap.appendChild(inp);const b=document.createElement('button');b.type='button';b.className='ghost calendar-btn';b.textContent='📅';b.setAttribute('aria-label','انتخاب تاریخ شمسی');b.onclick=()=>{calTarget=inp;const p=parseJ(inp.value)||todayJ();viewY=p.jy;viewM=p.jm;renderCal();document.getElementById('jalaliCalendarDialog').showModal()};wrap.appendChild(b);});}
   function initCustomerCombos(){document.querySelectorAll('[data-customer-combo]').forEach(inp=>{if(inp.dataset.comboBound)return;inp.dataset.comboBound='1';const hidden=document.getElementById(inp.dataset.customerCombo);const list=document.getElementById(inp.getAttribute('list'));if(!hidden||!list)return;const opts=[...list.options],base=o=>String(o.value||'').split('• #')[0].trim();const sync=()=>{const needle=norm(inp.value);let hit=opts.find(o=>norm(o.value)===needle)||opts.find(o=>norm(base(o))===needle);if(!hit&&needle){const matches=opts.filter(o=>norm(base(o)).includes(needle)||norm(o.value).includes(needle));if(matches.length===1)hit=matches[0];}hidden.value=hit?hit.dataset.id:'0';inp.dataset.customerResolved=hit?'1':'0';};inp.addEventListener('input',sync);inp.addEventListener('change',sync);sync();});}
-  document.addEventListener('DOMContentLoaded',()=>{window.initPickerSearch();initCalendars();initCustomerCombos();});
+  window.p20InitControls=()=>{window.initPickerSearch();initCalendars();initCustomerCombos();};document.addEventListener('DOMContentLoaded',window.p20InitControls);
 })();
 
 /* v0.4.12: mobile-first app dialogs for confirms/alerts */
@@ -57,11 +57,11 @@
 /* v0.5.0 mobile keyboard flow */
 (()=>{
  const visible=el=>!!(el.offsetWidth||el.offsetHeight||el.getClientRects().length)&&!el.disabled&&el.type!=='hidden';
- document.querySelectorAll('form.keyboard-flow').forEach(form=>{
+ window.p20InitKeyboard=()=>document.querySelectorAll('form.keyboard-flow').forEach(form=>{if(form.dataset.p20Keyboard)return;form.dataset.p20Keyboard='1';
    const fields=[...form.querySelectorAll('input:not([type=file]):not([type=hidden]),select,textarea,button[type=submit]')].filter(visible);
    fields.forEach((el,i)=>{if(el.tagName==='INPUT'&&el.type!=='password')el.setAttribute('enterkeyhint',i<fields.length-1?'next':'go');});
    form.addEventListener('keydown',e=>{if(e.key!=='Enter'||e.shiftKey||e.ctrlKey||e.metaKey)return;const el=e.target;if(el.tagName==='TEXTAREA'||el.type==='submit'||el.tagName==='BUTTON')return;const now=fields.indexOf(el);if(now>=0&&now<fields.length-1){e.preventDefault();fields[now+1].focus();} });
- });
+ });window.p20InitKeyboard();
 })();
 
 
@@ -78,4 +78,92 @@
     if(el.parentElement!==host)host.appendChild(el);
     el.textContent=message;el.style.opacity='1';clearTimeout(el._hide);el._hide=setTimeout(()=>{el.style.opacity='0'},2200);
   };
+})();
+
+
+/* P20: progressively enhanced same-origin GET navigation; financial POSTs remain native. */
+(()=>{
+ 'use strict';
+ const shell=document.querySelector('.app-shell'),dock=shell?.querySelector('.p16-dock');
+ if(!shell||!dock||!window.fetch||!window.DOMParser||!window.history?.pushState||!window.AbortController)return;
+ const allowed=new Set(['dashboard','entry','customers','analytics','transfers','companies']);
+ const localScripts=new Set(['svo-customer-live612.js','svo-patch059.js','svo-mother617.js','transfer619.js','transfer-history620.js','transfer-receipt619.js']);
+ let flight=null,dirty=false,activeUrl=location.href,scope=new AbortController(),seq=0;
+ window.p20PageSignal=scope.signal;
+ const content=()=>shell.querySelector('main.content[data-p20-view]');
+ function route(url){if(url.origin!==location.origin||url.pathname!==new URL('index.php',location.href).pathname||url.hash)return null;const keys=[...url.searchParams.keys()];return keys.length===1&&keys[0]==='page'&&allowed.has(url.searchParams.get('page'))?url.searchParams.get('page'):null}
+ function unsafe(main){
+   if(!main)return true;
+   return [...main.querySelectorAll('script')].some(sc=>{
+    if(sc.src){const u=new URL(sc.getAttribute('src'),location.href),n=u.pathname.split('/').pop();return u.origin!==location.origin||(!localScripts.has(n)&&n!=='transfer-calendar620.js')}
+    // Legacy report result templates have top-level lexical declarations and are intentionally native.
+    return /^\s*(?:const|let|var|async\s+function|function)\s+/m.test(sc.textContent)&&!sc.textContent.trim().startsWith('(()=>')&&!sc.textContent.trim().startsWith('(function')&&!sc.textContent.trim().startsWith('window.');
+   });
+ }
+ function eligible(){return !!content()&&allowed.has(content().dataset.p20View)&&!dirty&&!document.querySelector('dialog[open]')&&!unsafe(content())}
+ function busy(on,page){
+  let el=shell.querySelector('#p20Skeleton');
+  if(on){if(!el){el=document.createElement('div');el.id='p20Skeleton';el.className='p20-skeleton';el.setAttribute('role','status');el.setAttribute('aria-label','در حال دریافت صفحه');content()?.before(el)}
+   el.innerHTML='<div class="p20-sk-heading"></div><div class="p20-sk-grid"><i></i><i></i><i></i></div><div class="p20-sk-panel">'+Array.from({length:page==='dashboard'?4:7},()=>'<i></i>').join('')+'</div>';shell.classList.add('p20-loading');const m=content();if(m){m.setAttribute('aria-busy','true');m.inert=true;}
+  }else{el?.remove();shell.classList.remove('p20-loading');const m=content();if(m){m.removeAttribute('aria-busy');m.inert=false;}}
+ }
+ function native(url){location.assign(url.href)}
+ function executeScript(old){
+   return new Promise((resolve,reject)=>{
+    const sc=document.createElement('script');
+    if(old.hasAttribute('src')){
+     const u=new URL(old.getAttribute('src'),location.href),n=u.pathname.split('/').pop();
+     if(n==='transfer-calendar620.js'){resolve();return}
+     if(u.origin!==location.origin||!localScripts.has(n)){reject(Error('unsupported page script'));return}
+     sc.src=u.href;sc.async=false;sc.onload=()=>{sc.remove();resolve()};sc.onerror=()=>{sc.remove();reject(Error('page script failed'))};
+    }else{sc.textContent=old.textContent;}
+    document.body.appendChild(sc);if(!old.hasAttribute('src')){sc.remove();resolve()}
+   })
+ }
+ function pageStyleLinks(main){return [...main.querySelectorAll('link[rel=stylesheet]')].map(l=>new URL(l.getAttribute('href'),location.href).href).sort().join('|')}
+ async function navigate(url,push){
+   const page=route(url);if(!page||!eligible()){native(url);return}
+   if(flight)flight.abort();const ctl=new AbortController();flight=ctl;const token=++seq;busy(true,page);
+   let timer=setTimeout(()=>ctl.abort(),15000);
+   try{
+    const response=await fetch(url.href,{credentials:'same-origin',cache:'no-store',headers:{'X-Soltan-PJAX':'1','Accept':'text/html'},signal:ctl.signal});
+    if(!response.ok||response.redirected||!String(response.headers.get('content-type')||'').includes('text/html'))throw Error('native response required');
+    const html=await response.text();if(token!==seq)return;
+    const doc=new DOMParser().parseFromString(html,'text/html'),next=doc.querySelector('.app-shell main.content[data-p20-view]'),nextDock=doc.querySelector('.app-shell .p16-dock');
+    if(!next||next.dataset.p20View!==page||!nextDock||doc.querySelector('.p20-required')||unsafe(next)||!eligible())throw Error('native route required');
+    const old=content();
+    // Head/inline styles and settings are not patched across incompatible page structures.
+    const headStyles=d=>[...d.head.querySelectorAll('link[rel=stylesheet],style')].map(x=>x.outerHTML).join('|');
+    if(headStyles(doc)!==headStyles(document))throw Error('style context changed');
+    const scripts=[...next.querySelectorAll('script')];scripts.forEach(sc=>sc.remove());
+    scope.abort();scope=new AbortController();window.p20PageSignal=scope.signal;
+    document.getElementById('transferCalendar620')?.close();window.TransferCalendar620?.resetCache();
+    for(const cls of [...document.body.classList])if(cls.startsWith('page-'))document.body.classList.remove(cls);
+    document.body.classList.add('page-'+page);
+    old.replaceWith(document.importNode(next,true));
+    dock.querySelectorAll('a').forEach(a=>{const selected=[...nextDock.querySelectorAll('a')].find(n=>n.getAttribute('href')===a.getAttribute('href'))?.classList.contains('active');a.classList.toggle('active',!!selected);if(selected)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+    if(push)history.pushState({p20:true},'',url.href);
+    activeUrl=url.href;document.title=doc.title;dirty=false;
+    // Inline scripts run in document order, followed by the original deferred local libraries.
+    for(const sc of scripts.filter(sc=>!sc.hasAttribute('src')))await executeScript(sc);
+    for(const sc of scripts.filter(sc=>sc.hasAttribute('src')))await executeScript(sc);
+    window.p20InitControls?.();window.p20InitKeyboard?.();window.TransferCalendar620?.init();window.p20InitPageEnd?.();
+    if(token!==seq)return;busy(false,page);window.scrollTo(0,0);
+    content()?.dispatchEvent(new CustomEvent('soltan:page-ready',{bubbles:true,detail:{page}}));
+   }catch(e){if(token===seq)native(url);}
+   finally{clearTimeout(timer);if(token===seq){flight=null;busy(false,page)}}
+ }
+ // Do not intercept POST, downloads, external links, deep links or editing flows.
+ dock.addEventListener('click',e=>{
+  const a=e.target.closest('a');if(!a||e.defaultPrevented||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||a.hasAttribute('download')||a.target)return;
+  const url=new URL(a.href);if(!route(url)||!eligible())return;
+  if(flight){e.preventDefault();return}
+  if(url.href===location.href){e.preventDefault();return}
+  e.preventDefault();navigate(url,true);
+ });
+ document.addEventListener('input',e=>{if(e.target.closest?.('main.content form[method=post],main.content form:not([method])')&&!e.target.matches('[type=search]'))dirty=true});
+ document.addEventListener('change',e=>{if(e.target.closest?.('main.content form[method=post],main.content form:not([method])'))dirty=true});
+ document.addEventListener('submit',()=>{if(flight){++seq;flight.abort();flight=null;busy(false,'')}},true);
+ history.replaceState({...history.state,p20:true},'',location.href);
+ window.addEventListener('popstate',()=>{const url=new URL(location.href);if(url.href!==activeUrl){if(flight){++seq;flight.abort();flight=null;busy(false,'')}navigate(url,false)}});
 })();

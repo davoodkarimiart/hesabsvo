@@ -444,6 +444,51 @@ final class MaintenanceP13 {
         echo self::pageHtml($state['until']);exit;
     }
 }
+
+/** Independent developer announcements; never change maintenance state or financial records. */
+final class AnnouncementP20 {
+    private const KEY='announcement_general_p20';
+    private static function put(PDO $pdo,string $key,string $value):void{
+        $sql=$pdo->getAttribute(PDO::ATTR_DRIVER_NAME)==='sqlite'?'INSERT INTO settings(setting_key,setting_value) VALUES(?,?) ON CONFLICT(setting_key) DO UPDATE SET setting_value=excluded.setting_value':'INSERT INTO settings(setting_key,setting_value) VALUES(?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)';
+        $pdo->prepare($sql)->execute([$key,$value]);
+    }
+    public static function status():array{
+        $s=Database::connection()->prepare('SELECT setting_value FROM settings WHERE setting_key=?');$s->execute([self::KEY]);$a=json_decode((string)$s->fetchColumn(),true);return is_array($a)?$a:[];
+    }
+    public static function publish(string $title,string $raw,string $kind,int $count,int $days,int $target,int $uid):array{
+        $title=trim($title);
+        if($uid<1||$title===''||mb_strlen($title)>100||!in_array($kind,['notice','suggestion','update'],true)||$count<1||$count>5||$days<1||$days>30||$target<0)throw new RuntimeException('تنظیمات اطلاعیه نامعتبر است.');
+        $items=MaintenanceP13::parseNotes($raw);$pdo=Database::connection();
+        if($target>0){$s=$pdo->prepare('SELECT COUNT(*) FROM users WHERE id=? AND active=1');$s->execute([$target]);if((int)$s->fetchColumn()!==1)throw new RuntimeException('کاربر فعال پیدا نشد.');}
+        $now=time();$a=['id'=>bin2hex(random_bytes(12)),'title'=>$title,'items'=>$items,'kind'=>$kind,'show_count'=>$count,'target_user_id'=>$target,'created_at'=>$now,'expires_at'=>$now+$days*86400,'enabled'=>true];
+        self::put($pdo,self::KEY,json_encode($a,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));
+        if(class_exists('Logger'))Logger::audit('developer.announcement_published',['user_id'=>$uid,'announcement_id'=>$a['id'],'target_user_id'=>$target]);
+        return $a;
+    }
+    public static function cancel(string $id,int $uid):array{
+        if($uid<1||!preg_match('/^[a-f0-9]{24}$/D',$id))throw new RuntimeException('شناسه اطلاعیه نامعتبر است.');
+        $pdo=Database::connection();$pdo->beginTransaction();
+        try{$s=$pdo->prepare('SELECT setting_value FROM settings WHERE setting_key=?'.($pdo->getAttribute(PDO::ATTR_DRIVER_NAME)==='mysql'?' FOR UPDATE':''));$s->execute([self::KEY]);$a=json_decode((string)$s->fetchColumn(),true);
+        if(!is_array($a)||!hash_equals((string)($a['id']??''),$id))throw new RuntimeException('اطلاعیه تغییر کرده است.');
+        $a['enabled']=false;self::put($pdo,self::KEY,json_encode($a,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));$pdo->commit();}
+        catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
+        if(class_exists('Logger'))Logger::audit('developer.announcement_cancelled',['user_id'=>$uid,'announcement_id'=>$id]);return $a;
+    }
+    private static function seenKey(int $uid):string{return 'announcement_seen_p20_'.$uid;}
+    private static function countSeen($raw,string $id):int{$s=json_decode((string)$raw,true);return is_array($s)&&($s['id']??'')===$id?(int)($s['count']??0):0;}
+    public static function pending(int $uid):?array{
+        if($uid<1)return null;$a=self::status();if(empty($a['enabled'])||empty($a['id'])||empty($a['items'])||(int)($a['expires_at']??0)<=time()||!in_array((int)($a['target_user_id']??0),[0,$uid],true))return null;
+        $s=Database::connection()->prepare('SELECT setting_value FROM settings WHERE setting_key=?');$s->execute([self::seenKey($uid)]);return self::countSeen($s->fetchColumn(),$a['id'])<(int)$a['show_count']?$a:null;
+    }
+    public static function acknowledge(int $uid,string $id):void{
+        $a=self::pending($uid);if(!$a||!hash_equals($a['id'],$id))return;$pdo=Database::connection();$key=self::seenKey($uid);$pdo->beginTransaction();
+        try{$sql=$pdo->getAttribute(PDO::ATTR_DRIVER_NAME)==='sqlite'?'INSERT OR IGNORE INTO settings(setting_key,setting_value) VALUES(?,?)':'INSERT IGNORE INTO settings(setting_key,setting_value) VALUES(?,?)';$pdo->prepare($sql)->execute([$key,'']);
+        $s=$pdo->prepare('SELECT setting_value FROM settings WHERE setting_key=?'.($pdo->getAttribute(PDO::ATTR_DRIVER_NAME)==='mysql'?' FOR UPDATE':''));$s->execute([$key]);$n=self::countSeen($s->fetchColumn(),$id);
+        if($n<(int)$a['show_count'])self::put($pdo,$key,json_encode(['id'=>$id,'count'=>$n+1],JSON_THROW_ON_ERROR));$pdo->commit();}
+        catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
+    }
+}
+
 // Every application HTTP entry point includes app/bootstrap.php, which loads this file.
 // Direct service includes in CLI tests must remain side-effect free.
 if(in_array(dirname(__DIR__).'/bootstrap.php',get_included_files(),true))MaintenanceP13::gate();

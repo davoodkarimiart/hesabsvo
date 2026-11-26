@@ -94,3 +94,12 @@ mc(MaintenanceP13::stop($state['announcement']['id'],1)['stopped']&&!Maintenance
 mc(!MaintenanceP13::stop($state['announcement']['id'],1)['stopped'],'P19 stop is idempotent');
 foreach([['show_count'=>0],['items'=>["line\nbreak"]],['mode'=>'exact'],['date'=>'2026-01-01']] as $bad){$rejected=false;try{MaintenanceP13::prepareMcp(array_replace($args,$bad),$now);}catch(RuntimeException){$rejected=true;}mc($rejected,'P19 reject invalid maintenance');}
 $mcp=file_get_contents($root.'/mcp.php');mc(str_contains($mcp,"'admin:maintenance'")&&str_contains($mcp,"'admin:update'")&&str_contains($mcp,"Maintenance: operational tools are disabled"),'P19 scope and operational gate');
+
+
+$before=MaintenanceP13::read();
+$a20=AnnouncementP20::publish('اطلاعیه','مورد اول'."\n".'مورد دوم','suggestion',2,7,0,1);
+mc(MaintenanceP13::read()===$before,'P20 standalone notice does not lock site');
+mc(AnnouncementP20::pending(1)['id']===$a20['id'],'P20 notice pending');
+AnnouncementP20::acknowledge(1,$a20['id']);mc(AnnouncementP20::pending(1)!==null,'P20 first acknowledgement');
+AnnouncementP20::acknowledge(1,$a20['id']);mc(AnnouncementP20::pending(1)===null&&AnnouncementP20::pending(2)!==null,'P20 independent per-user counts');
+AnnouncementP20::cancel($a20['id'],1);mc(AnnouncementP20::pending(2)===null,'P20 cancellation');
