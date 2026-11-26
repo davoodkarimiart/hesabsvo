@@ -106,8 +106,8 @@ HTML;
 }else{echo "[SKIP] Chromium not available".PHP_EOL;}
 
 $manifest=json_decode(file_get_contents($root.'/updates/channel.json'),true,512,JSON_THROW_ON_ERROR);
-if(in_array($manifest['release'],['0.6.53-p4','0.6.53-p5','0.6.53-p6','0.6.53-p7'],true)){
- p4check(count($manifest['files'])===($manifest['release']==='0.6.53-p7'?11:10),'release manifest has ten deployment files');
+if(in_array($manifest['release'],['0.6.53-p4','0.6.53-p5','0.6.53-p6','0.6.53-p7','0.6.53-p8'],true)){
+ p4check(count($manifest['files'])===(in_array($manifest['release'],['0.6.53-p7','0.6.53-p8'],true)?11:10),'release manifest has ten deployment files');
  foreach($manifest['files'] as $f)p4check(hash_file('sha256',$root.'/'.$f['path'])===$f['sha256'],'release SHA256 '.$f['path']);
 }
 
@@ -133,7 +133,8 @@ foreach([$d,$history] as $data){
   p4check($status===0&&$opened===true,'p5 generated workbook opens '.$data['type']);
   $sheet=$zip->getFromName('xl/worksheets/sheet1.xml');$strings=$zip->getFromName('xl/sharedStrings.xml');
   p4check(is_string($sheet)&&is_string($strings)&&str_contains($sheet,'<v>'.($data['type']==='period_transfer'?'180':'0').'</v>'),'p5 actual workbook contains integer values '.$data['type']);
-  p4check(str_contains($sheet,'rightToLeft="1"')&&strpos($sheet,'<autoFilter')<strpos($sheet,'<mergeCells'),'p7 RTL and Excel 2010 worksheet ordering');
+  p4check(str_contains($sheet,'rightToLeft="0"')&&strpos($sheet,'<autoFilter')<strpos($sheet,'<mergeCells'),'p8 LTR sheet and Excel 2010 worksheet ordering');
+  $sx=simplexml_load_string($sheet);$ss=simplexml_load_string($strings);$ns='http://schemas.openxmlformats.org/spreadsheetml/2006/main';$sx->registerXPathNamespace('m',$ns);$ss->registerXPathNamespace('m',$ns);$str=$ss->xpath('//m:si/m:t');$cellText=static function($ref)use($sx,$str){$node=$sx->xpath('//m:c[@r="'.$ref.'"]/m:v');return $node?(string)$str[(int)$node[0]]:'';};$endCol=chr(64+$n);p4check($cellText($endCol.'3')===$headers[0]&&$cellText('A3')===$headers[$n-1],'p8 physical header order');p4check($cellText(chr(63+$n).'2')===$xlsxOptions['dates']['from']&&$cellText(chr(61+$n).'2')===$xlsxOptions['dates']['to'],'p8 separate literal date cells');
   p4check(str_contains($sheet,'<mergeCells count="')&&str_contains($strings,'جمع‌بندی'),'p7 horizontal merged summary');
   foreach(['xl/worksheets/sheet1.xml','xl/styles.xml','xl/sharedStrings.xml','xl/workbook.xml','[Content_Types].xml'] as $part)p4check(simplexml_load_string($zip->getFromName($part))!==false,'p7 valid XML '.$part);
   p4check(!str_contains($strings,'180.125')&&!str_contains($strings,'60.125000'),'p5 no fractional toman strings');

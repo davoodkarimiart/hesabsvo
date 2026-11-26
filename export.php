@@ -64,8 +64,8 @@ if(isset($data)&&in_array($data['type'],['period_transfer','transfer_history'],t
         $headers=['تاریخ تسویه','شرکت','شماره سند','نوع تسویه','وضعیت','مبلغ (تومان)'];
         $widths=[18,24,32,27,18,25];$types=['ltr','text','ltr','text','text','integer'];
         foreach(ReportingService::transferTable($data)['rows'] as $r){
-            $v=$r['values'];$v[5]=$number($v[5]);$st=$r['status']==='final'?$tone($r['direction']):22;
-            $items[]=['values'=>$v,'styles'=>[3=>$st,5=>$st]];
+            $v=$r['values'];$v[5]=$number($v[5]);$kindStyle=$r['direction']==='positive'?40:($r['direction']==='negative'?39:22);$amountStyle=$r['direction']==='positive'?42:($r['direction']==='negative'?41:26);
+            $items[]=['values'=>$v,'styles'=>[0=>37,2=>38,3=>$kindStyle,5=>$amountStyle]];
         }
         $sum=ReportingService::settlementSummary($data);
         $items[]=['kind'=>'section','values'=>['جمع‌بندی ترانسفرها (تومان)','','','','',''],'merge'=>[0=>5],'styles'=>[0=>31]];
@@ -81,14 +81,15 @@ if(isset($data)&&in_array($data['type'],['period_transfer','transfer_history'],t
         foreach($data['panel_totals'] as $r)$items[]=['kind'=>'section','values'=>[$r['panel_name'],'','',$scaled($r['received']),$scaled($r['paid']),$scaled($r['commission']),$scaled($r['net'])],'merge'=>[0=>2],'styles'=>[0=>22,3=>25,4=>26,5=>27,6=>$netStyle($r['net'])]];
         $items[]=['kind'=>'section','values'=>['ترانسفرهای دوره (تومان کامل)','','','','','',''],'merge'=>[0=>6],'styles'=>[0=>31]];
         $items[]=['kind'=>'section','values'=>['تاریخ تسویه','شماره سند','','نوع تسویه','','مبلغ (تومان)',''],'merge'=>[1=>2,3=>4,5=>6],'styles'=>[0=>22,1=>22,3=>22,5=>22]];
-        foreach(ReportingService::transferTable($data)['rows'] as $r){$v=$r['values'];$st=$tone($r['direction']);$items[]=['kind'=>'section','values'=>[$v[0],$v[1],'',$v[2],'',$number($v[3]),''],'merge'=>[1=>2,3=>4,5=>6],'styles'=>[0=>21,1=>21,3=>$st,5=>$st]];}
+        foreach(ReportingService::transferTable($data)['rows'] as $r){$v=$r['values'];$kindStyle=$r['direction']==='positive'?40:($r['direction']==='negative'?39:22);$amountStyle=$r['direction']==='positive'?42:($r['direction']==='negative'?41:26);$items[]=['kind'=>'section','values'=>[$v[0],$v[1],'',$v[2],'',$number($v[3]),''],'merge'=>[1=>2,3=>4,5=>6],'styles'=>[0=>37,1=>38,3=>$kindStyle,5=>$amountStyle]];}
         $sum=ReportingService::settlementSummary($data);
         $items[]=['kind'=>'section','values'=>['جمع‌بندی نهایی (تومان کامل)','','','','','',''],'merge'=>[0=>6],'styles'=>[0=>31]];
-        $items[]=['kind'=>'section','values'=>[str_replace(' (تومان)','',$sum[0]['label']),'',str_replace(' (تومان)','',$sum[1]['label']),'',$sum[2]['label'],'',''],'merge'=>[0=>1,2=>3,4=>6],'styles'=>[0=>32,2=>33,4=>($sum[2]['net']>0?28:($sum[2]['net']<0?24:36))]];
-        $items[]=['kind'=>'total','values'=>[$number($sum[0]['value']),'',$number($sum[1]['value']),'',$number($sum[2]['value']),'',''],'merge'=>[0=>1,2=>3,4=>6],'styles'=>[0=>29,2=>30,4=>$netStyle($sum[2]['net'])]];
+        $items[]=['kind'=>'section','values'=>[str_replace(' (تومان)','',$sum[0]['label']),'',str_replace(' (تومان)','',$sum[1]['label']),'',$sum[2]['label'],'',''],'merge'=>[0=>1,2=>3,4=>6],'styles'=>[0=>32,2=>44,4=>($sum[2]['net']>0?46:($sum[2]['net']<0?47:28))]];
+        $items[]=['kind'=>'total','values'=>[$number($sum[0]['value']),'',$number($sum[1]['value']),'',$number($sum[2]['value']),'',''],'merge'=>[0=>1,2=>3,4=>6],'styles'=>[0=>29,2=>43,4=>($sum[2]['net']>0?46:($sum[2]['net']<0?45:23))]];
     }
     $reportPeriod=ReportingService::periodLabel($data);
-    $xlsxOptions=['settlement'=>true,'palette'=>['received'=>SettingsService::themeFill($settings['theme_recv'],$settings),'paid'=>SettingsService::themeFill($settings['theme_pay'],$settings),'commission'=>SettingsService::themeFill($settings['theme_comm'],$settings),'win'=>SettingsService::themeFill($settings['theme_site_win']??$settings['theme_pay'],$settings),'loss'=>SettingsService::themeFill($settings['theme_site_loss']??$settings['theme_recv'],$settings)]];
+    $xlsxDates=['from'=>'','to'=>''];foreach(['from','to'] as $key){$raw=(string)($data['filters'][$key]??'');if($raw==='')$raw=(string)($data['context'][$key]??'');if($raw!=='')$xlsxDates[$key]=AccountingService::displayBusinessDate(AccountingService::normalizeBusinessDate($raw));}if($data['type']==='transfer_history'&&!empty($data['rows'])){$dates=array_column($data['rows'],'period_end');sort($dates,SORT_STRING);if($xlsxDates['from']==='')$xlsxDates['from']=AccountingService::displayBusinessDate($dates[0]);if($xlsxDates['to']==='')$xlsxDates['to']=AccountingService::displayBusinessDate(end($dates));}
+    $xlsxOptions=['settlement'=>true,'dates'=>$xlsxDates,'unit'=>$data['type']==='transfer_history'?'تومان':SettingsService::moneyUnit($settings),'palette'=>['received'=>SettingsService::themeFill($settings['theme_recv'],$settings),'paid'=>SettingsService::themeFill($settings['theme_pay'],$settings),'commission'=>SettingsService::themeFill($settings['theme_comm'],$settings),'win'=>SettingsService::themeFill($settings['theme_site_win']??$settings['theme_pay'],$settings),'loss'=>SettingsService::themeFill($settings['theme_site_loss']??$settings['theme_recv'],$settings)]];
 }
 $fname='report-'.date('Ymd-His').'.xlsx';
 ReportXlsx68::download($title,implode(' | ',array_filter([$reportPeriod,'مبالغ به '.(($type==='transfer_history')?'تومان':SettingsService::moneyUnit($settings))])),$headers,$widths,$types,$items,$fname,'گزارش',false,$xlsxOptions??[]);
