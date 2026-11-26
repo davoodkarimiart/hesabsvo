@@ -1,7 +1,7 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p9",
-  "notes": "اصلاح رنگ ستون‌های ترانسفر در سایت، تصویر و PDF، فونت بولد، کادر واضح و استایل یکپارچه اکسل و جمع‌بندی. بدون تغییر محاسبات و دیتابیس.",
+  "release": "0.6.53-p10",
+  "notes": "ارتقای آپدیتر به ۱.۳: نصب فایل‌های مجاز جدید، بکاپ دیتابیس، دکمه اجرای Migration هزینه‌ها و نصب خودکار Migration قبل از فایل‌ها. این انتشار هنوز جدول هزینه نمی‌سازد.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
@@ -46,6 +46,10 @@
     {
       "path": "app/Support/ReportXlsx68.php",
       "sha256": "38667be371873beb6c4e5ec5b281e10375f8dd09c60b86a54d4ffdf4d144ee79"
+    },
+    {
+      "path": "update_center.php",
+      "sha256": "ebe6811291c029142593e1778d4f11557290e23206b196e1ff47da7d77e8e346"
     }
   ]
 }
