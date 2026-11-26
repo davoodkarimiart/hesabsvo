@@ -1,7 +1,7 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p8",
-  "notes": "اصلاح ترتیب فیزیکی ستون‌ها و سربرگ تاریخ اکسل، رنگ‌بندی دقیق ترانسفرها و جمع‌بندی، خلاصه افقی PDF. بدون تغییر UI موبایل و دیتابیس.",
+  "release": "0.6.53-p9",
+  "notes": "اصلاح رنگ ستون‌های ترانسفر در سایت، تصویر و PDF، فونت بولد، کادر واضح و استایل یکپارچه اکسل و جمع‌بندی. بدون تغییر محاسبات و دیتابیس.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
@@ -13,7 +13,7 @@
     },
     {
       "path": "index.php",
-      "sha256": "dd1cad48104fc78048dce3df9b97dbcb68b82334b4d8976d67a744092e6d987d"
+      "sha256": "23ffb817c3e55a66b2dd939dc117bdd90a2c2d6a20ebc050d11a47f66c55f784"
     },
     {
       "path": "assets/transfer-calendar620.js",
@@ -33,19 +33,19 @@
     },
     {
       "path": "assets/transfer619.css",
-      "sha256": "9c3ef8dcbb9416b42065adb5f58ce956b4140ed23d1b7e3fe2928d4d2a5a0230"
+      "sha256": "addf9a27d946ec1d12404120684bb24c515e7cba1c571010f61552b105cf3c29"
     },
     {
       "path": "export.php",
-      "sha256": "1dd0401034022b05c5b2a40397d25363e842c1a5316a1c279847194dec2dc40a"
+      "sha256": "825375d010484126a7012b32bd26336f68c72172f04f633ba544cb175957cdba"
     },
     {
       "path": "print.php",
-      "sha256": "2b8bcfa7680694a4490388dcca9f23c6ed3f1ad153c80f90f9bfe85a0de5bfb1"
+      "sha256": "b23b7b1abf75bb7e6a2bf6bbab2d69d7b9f2de427b4e2f19b07db6971caab6cf"
     },
     {
       "path": "app/Support/ReportXlsx68.php",
-      "sha256": "a424ca309d2bd81e996d66b2ee98d55fae0851d6e841aa196c0591e10ce0d871"
+      "sha256": "38667be371873beb6c4e5ec5b281e10375f8dd09c60b86a54d4ffdf4d144ee79"
     }
   ]
 }

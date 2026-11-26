@@ -427,8 +427,8 @@ dialog.transfer-actions-modal::backdrop,dialog.transfer-saved-dialog::backdrop{b
 
 /* p7: preserve approved desktop form; compact mobile and unify report tables. */
 .p5-report-extra #p4PanelTable :is(th,td),.p5-report-extra #p4TransferTable :is(th,td),.p6-settlement-summary #p4FinalTable :is(th,td){border:1px solid #111827!important;color:#111!important}
-.p5-report-extra #p4TransferTable .p6-transfer-tone.positive,.p6-settlement-summary #p4FinalTable .p6-transfer-tone.positive{background:#d8f3dc!important;color:#111!important}
-.p5-report-extra #p4TransferTable .p6-transfer-tone.negative,.p6-settlement-summary #p4FinalTable .p6-transfer-tone.negative{background:#ffd9d9!important;color:#111!important}
+.p6-settlement-summary #p4FinalTable .p6-transfer-tone.positive{background:#d8f3dc!important;color:#111!important}
+.p6-settlement-summary #p4FinalTable .p6-transfer-tone.negative{background:#ffd9d9!important;color:#111!important}
 .p6-settlement-summary #p4FinalTable :is(th,td).site-win{background:var(--site-win,#d8f3dc)!important;color:#111!important}
 .p6-settlement-summary #p4FinalTable :is(th,td).site-loss{background:var(--site-loss,#ffd9d9)!important;color:#111!important}
 .p6-settlement-summary #p4FinalTable :is(th,td).comm-cell{background:var(--comm,#e1edb9)!important;color:#111!important}
@@ -454,16 +454,19 @@ dialog.transfer-actions-modal::backdrop,dialog.transfer-saved-dialog::backdrop{b
  #reportFilterForm .report-customer-hint{font-size:11px!important;line-height:1.5!important;margin:0!important;padding:6px 8px!important}
 }
 
-/* p8: exact requested transfer column palette; form and image layout unchanged. */
-.p5-report-extra #p4TransferTable :is(th,td):nth-child(1){background:#f2e1d0!important}
-.p5-report-extra #p4TransferTable :is(th,td):nth-child(2){background:#e0f1de!important}
-.p5-report-extra #p4TransferTable :is(th,td):nth-child(3){background:#ede9fe!important}
-.p5-report-extra #p4TransferTable :is(th,td):nth-child(4){background:#e3f2fd!important}
-.p5-report-extra #p4TransferTable td.p6-transfer-tone.positive{color:#15803d!important}
-.p5-report-extra #p4TransferTable td.p6-transfer-tone.negative{color:#b91c1c!important}
-.p6-settlement-summary #p4FinalTable :is(th,td).p6-transfer-tone.positive,.p6-settlement-summary #p4FinalTable td.p6-transfer-tone.positive b{color:#1456ad!important}
-.p6-settlement-summary #p4FinalTable :is(th,td).p6-transfer-tone.negative,.p6-settlement-summary #p4FinalTable td.p6-transfer-tone.negative b{color:#111!important}
-.p6-settlement-summary #p4FinalTable :is(th,td).site-win{background:#eaff9c!important;color:#1456ad!important}
-.p6-settlement-summary #p4FinalTable :is(th,td).site-loss{background:#eaff9c!important;color:#b91c1c!important}
-.p6-settlement-summary #p4FinalTable td.site-win b{color:#1456ad!important}
-.p6-settlement-summary #p4FinalTable td.site-loss b{color:#b91c1c!important}
+/* p9: column fills and direction ink are independent; preserve mobile sizing. */
+.p5-report-extra #p4PanelTable :is(th,td),.p5-report-extra #p4TransferTable :is(th,td),.p6-settlement-summary #p4FinalTable :is(th,td){font-weight:700!important;text-align:center!important;vertical-align:middle!important}
+.p5-report-extra #p4PanelTable .p6-panel-name{background:#d7c0ed!important}
+.p5-report-extra #p4TransferTable tr > :is(th,td):nth-child(1){background:#e5c6a8!important}
+.p5-report-extra #p4TransferTable tr > :is(th,td):nth-child(2){background:#bce3c3!important}
+.p5-report-extra #p4TransferTable tr > :is(th,td):nth-child(3){background:#d7c0ed!important}
+.p5-report-extra #p4TransferTable tr > :is(th,td):nth-child(4){background:#b8ddf2!important}
+.p5-report-extra #p4TransferTable td.p6-transfer-tone.positive{color:#08752d!important}
+.p5-report-extra #p4TransferTable td.p6-transfer-tone.negative{color:#b00000!important}
+.p6-settlement-summary #p4FinalTable :is(th,td).p6-transfer-tone.positive{background:#afe7c1!important;color:#144ba6!important}
+.p6-settlement-summary #p4FinalTable :is(th,td).p6-transfer-tone.negative{background:#f3a7ad!important;color:#111111!important}
+.p6-settlement-summary #p4FinalTable :is(th,td).site-win,.p6-settlement-summary #p4FinalTable :is(th,td).site-loss,.p6-settlement-summary #p4FinalTable :is(th,td).comm-cell{background:#e4f77c!important}
+.p6-settlement-summary #p4FinalTable :is(th,td).site-win,.p6-settlement-summary #p4FinalTable td.site-win b{color:#144ba6!important}
+.p6-settlement-summary #p4FinalTable :is(th,td).site-loss,.p6-settlement-summary #p4FinalTable td.site-loss b{color:#b00000!important}
+.p6-settlement-summary #p4FinalTable :is(th,td).comm-cell,.p6-settlement-summary #p4FinalTable td.comm-cell b,.p6-settlement-summary #p4FinalTable td.p6-transfer-tone.negative b{color:#111111!important}
+.p6-settlement-summary #p4FinalTable td.p6-transfer-tone.positive b{color:#144ba6!important}
