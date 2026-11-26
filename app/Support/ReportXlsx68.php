@@ -31,27 +31,28 @@ final class ReportXlsx68 {
         return $s;
     }
     /** row item: ['values'=>[...],'kind'=>'data|total']; type strings: text, integer, dollar, received, paid, commission, member */
-    public static function download(string $title,string $subtitle,array $headers,array $widths,array $types,array $rows,string $filename,string $sheetName='گزارش',bool $emphasizeNumbers=false):never {
+    public static function download(string $title,string $subtitle,array $headers,array $widths,array $types,array $rows,string $filename,string $sheetName='گزارش',bool $emphasizeNumbers=false,array $options=[]):never {
         if(!class_exists('ZipArchive'))throw new RuntimeException('افزونه ZIP روی هاست فعال نیست.');
         self::$sharedStrings=[];self::$sharedIndex=[];self::$sharedReferences=0;
         $n=count($headers);
         if($n<2||$n>20||count($widths)!==$n||count($types)!==$n||count($rows)>50000)throw new RuntimeException('ساختار اکسل نامعتبر است.');
-        $end=self::col($n-1);
+        $end=self::col($n-1);$modern=($options['settlement']??false)===true;$merges=['A1:'.$end.'1','A2:'.$end.'2'];$filterEnd=3;$filterOpen=true;
+        $palette=['received'=>'FEDFE3','paid'=>'D6EDF6','commission'=>'D8EEE4','win'=>'DDECC8','loss'=>'FECACA'];foreach($palette as $key=>$fallback){$v=ltrim((string)($options['palette'][$key]??$fallback),'#');if(preg_match('/^[a-fA-F0-9]{6}$/D',$v))$palette[$key]=strtoupper($v);}
         $body='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
-            .'<sheetViews><sheetView workbookViewId="0" rightToLeft="0" showGridLines="0"><pane ySplit="3" topLeftCell="A4" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'
+            .'<sheetViews><sheetView workbookViewId="0" rightToLeft="'.($modern?'1':'0').'" showGridLines="0"><pane ySplit="3" topLeftCell="A4" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'
             .'<sheetFormatPr defaultRowHeight="21"/><cols>';
         foreach($widths as $j=>$width){$w=max(8,min(38,(float)$width));$body.='<col min="'.($j+1).'" max="'.($j+1).'" width="'.$w.'" customWidth="1"/>';}
         $body.='</cols><sheetData>';
         $body.='<row r="1" ht="36" customHeight="1">'.self::cell($title,'A',1,1).'</row>';
         $body.='<row r="2" ht="32" customHeight="1">'.self::cell($subtitle,'A',2,2).'</row>';
         $body.='<row r="3" ht="27" customHeight="1">';
-        foreach($headers as $j=>$h)$body.=self::cell($h,self::col($j),3,3);
+        foreach($headers as $j=>$h)$body.=self::cell($h,self::col($j),3,$modern?match($types[$j]){'received'=>34,'paid'=>35,'commission'=>36,'net'=>28,default=>3}:3);
         $body.='</row>';
         $r=4;
         foreach($rows as $item){
             $values=$item['values']??[];if(count($values)!==$n)throw new RuntimeException('تعداد ستون‌های یکی از ردیف‌های اکسل نامعتبر است.');
-            $isTotal=($item['kind']??'data')==='total';
-            $body.='<row r="'.$r.'" ht="'.($emphasizeNumbers?29:24).'" customHeight="1">';
+            $kind=$item['kind']??'data';$isTotal=$kind==='total';$covered=[];if($modern){if($kind!=='data')$filterOpen=false;if($filterOpen)$filterEnd=$r;foreach(($item['merge']??[]) as $start=>$finish){if(!is_int($start)||!is_int($finish)||$start<0||$finish>=$n||$finish<=$start)throw new RuntimeException('Invalid merge');for($k=$start;$k<=$finish;$k++){if(isset($covered[$k]))throw new RuntimeException('Overlapping merge');$covered[$k]=$start;}$merges[]=self::col($start).$r.':'.self::col($finish).$r;}}
+            $body.='<row r="'.$r.'" ht="'.($modern?($kind==='section'?32:($isTotal?30:26)):($emphasizeNumbers?29:24)).'" customHeight="1">';
             foreach($values as $j=>$value){
                 $type=$types[$j];$style=$isTotal?4:0;
                 if(is_int($value)||is_float($value)){
@@ -70,6 +71,15 @@ final class ReportXlsx68 {
                            : ($type==='member' ? ((float)$value<0?16:((float)$value>0?17:15)) : 15);
                     }
                 }
+                if($modern){
+                    if(isset($item['styles'][$j]))$style=(int)$item['styles'][$j];
+                    elseif(isset($covered[$j])&&isset($item['styles'][$covered[$j]]))$style=(int)$item['styles'][$covered[$j]];
+                    elseif($type==='net'&&is_numeric($value))$style=(float)$value>0?23:((float)$value<0?24:6);
+                    elseif($type==='ltr')$style=21;
+                    elseif(is_numeric($value)&&in_array($type,['received','paid','commission'],true))$style=match($type){'received'=>25,'paid'=>26,default=>27};
+                    if($style<0||$style>36)throw new RuntimeException('Invalid style');
+                    if(isset($covered[$j])&&$covered[$j]!==$j)$value='';
+                }
                 $body.=self::cell($value,self::col($j),$r,$style);
             }
             $body.='</row>';$r++;
@@ -77,8 +87,8 @@ final class ReportXlsx68 {
         // ECMA-376 CT_Worksheet requires autoFilter BEFORE mergeCells.
         // Reversing these elements caused Excel 2010 to report unreadable worksheet content.
         $body.='</sheetData>';
-        $body.='<autoFilter ref="A3:'.$end.max(3,$r-1).'"/>';
-        $body.='<mergeCells count="2"><mergeCell ref="A1:'.$end.'1"/><mergeCell ref="A2:'.$end.'2"/></mergeCells>';
+        $body.='<autoFilter ref="A3:'.$end.($modern?$filterEnd:max(3,$r-1)).'"/>';
+        $body.='<mergeCells count="'.count($merges).'">';foreach($merges as $merge)$body.='<mergeCell ref="'.$merge.'"/>';$body.='</mergeCells>';
         $body.='</worksheet>';
         $shared='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="'.self::$sharedReferences.'" uniqueCount="'.count(self::$sharedStrings).'">';
         foreach(self::$sharedStrings as $value){$shared.='<si><t xml:space="preserve">'.self::xml($value).'</t></si>';}
@@ -95,12 +105,13 @@ final class ReportXlsx68 {
           .'<font><b/><sz val="13"/><name val="Tahoma"/></font>'
           .'<font><b/><sz val="13"/><color rgb="FFB91C1C"/><name val="Tahoma"/></font>'
           .'<font><b/><sz val="13"/><color rgb="FF1456AD"/><name val="Tahoma"/></font>'
-          .'</fonts><fills count="7"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>'
+          .'</fonts><fills count="'.($modern?10:7).'"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>'
           .'<fill><patternFill patternType="solid"><fgColor rgb="FF35456A"/></patternFill></fill>'
           .'<fill><patternFill patternType="solid"><fgColor rgb="FFF1F5F9"/></patternFill></fill>'
-          .'<fill><patternFill patternType="solid"><fgColor rgb="FFD8EEE4"/></patternFill></fill>'
-          .'<fill><patternFill patternType="solid"><fgColor rgb="FFFEDFE3"/></patternFill></fill>'
-          .'<fill><patternFill patternType="solid"><fgColor rgb="FFD6EDF6"/></patternFill></fill>'
+          .'<fill><patternFill patternType="solid"><fgColor rgb="FF'.($modern?$palette['commission']:'D8EEE4').'"/></patternFill></fill>'
+          .'<fill><patternFill patternType="solid"><fgColor rgb="FF'.($modern?$palette['received']:'FEDFE3').'"/></patternFill></fill>'
+          .'<fill><patternFill patternType="solid"><fgColor rgb="FF'.($modern?$palette['paid']:'D6EDF6').'"/></patternFill></fill>'
+           .($modern?'<fill><patternFill patternType="solid"><fgColor rgb="FF'.$palette['win'].'"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF'.$palette['loss'].'"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFEDE9FE"/></patternFill></fill>':'')
           .'</fills><borders count="2"><border/><border><left style="thin"><color rgb="FFCBD5E1"/></left><right style="thin"><color rgb="FFCBD5E1"/></right><top style="thin"><color rgb="FFCBD5E1"/></top><bottom style="thin"><color rgb="FFCBD5E1"/></bottom></border></borders>'
           .'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>';
         $sty=[ // font,fill,border,numberFormat
@@ -109,9 +120,10 @@ final class ReportXlsx68 {
           [4,4,1,4],[5,4,1,4],[0,4,1,3],
           [6,0,1,4],[7,0,1,4],[8,0,1,4],[6,4,1,4],[7,4,1,4],[8,4,1,4]
         ];
+        if($modern)$sty=array_merge($sty,[[0,0,1,0],[0,9,1,0],[6,7,1,3],[6,8,1,3],[6,5,1,3],[6,6,1,3],[6,4,1,3],[6,7,1,0],[6,5,1,3],[6,6,1,3],[2,9,1,0],[6,5,1,0],[6,6,1,0],[6,5,1,0],[6,6,1,0],[6,4,1,0]]);
         $styles.='<cellXfs count="'.count($sty).'">';
-        foreach($sty as [$font,$fill,$border,$num]){
-            $styles.='<xf fontId="'.$font.'" fillId="'.$fill.'" borderId="'.$border.'" numFmtId="'.$num.'" xfId="0" applyAlignment="1" applyNumberFormat="1"><alignment horizontal="center" vertical="center" readingOrder="2"/></xf>';
+        foreach($sty as $id=>[$font,$fill,$border,$num]){
+            $styles.='<xf fontId="'.$font.'" fillId="'.$fill.'" borderId="'.$border.'" numFmtId="'.$num.'" xfId="0" applyAlignment="1" applyNumberFormat="1"><alignment horizontal="center" vertical="center" readingOrder="'.($modern&&$id===21?1:2).'"'.($modern?' wrapText="1"':'').'/></xf>';
         }
         $styles.='</cellXfs></styleSheet>';
         $tmp=tempnam(sys_get_temp_dir(),'soltan68_');if(!$tmp)throw new RuntimeException('فایل موقت اکسل ساخته نشد.');

@@ -55,37 +55,40 @@ if($tot&&count($headers)>=2){
  }
 }
 if(isset($data)&&in_array($data['type'],['period_transfer','transfer_history'],true)){
-    // Reuse the existing styled XLSX writer. Dedicated column layout avoids
-    // merged or clipped captions and keeps all amounts as actual numbers.
     $items=[];
-    $number=static function($v):int{return (int)TransferService::wholeToman($v);};
-    $scaled=static function($v)use($factor):int{return (int)round((float)$v/$factor,0,PHP_ROUND_HALF_UP);};
+    $number=static fn($v):int=>(int)TransferService::wholeToman($v);
+    $scaled=static fn($v):int=>(int)round((float)$v/$factor,0,PHP_ROUND_HALF_UP);
+    $tone=static fn($dir):int=>$dir==='positive'?30:($dir==='negative'?29:6);
+    $netStyle=static fn($v):int=>$v>0?23:($v<0?24:6);
     if($data['type']==='transfer_history'){
         $headers=['تاریخ تسویه','شرکت','شماره سند','نوع تسویه','وضعیت','مبلغ (تومان)'];
-        $widths=[18,24,32,26,18,27];$types=['text','text','text','text','text','integer'];
+        $widths=[18,24,32,27,18,25];$types=['ltr','text','ltr','text','text','integer'];
         foreach(ReportingService::transferTable($data)['rows'] as $r){
-            $v=$r['values'];$v[5]=$number($v[5]);$items[]=['values'=>$v];
+            $v=$r['values'];$v[5]=$number($v[5]);$st=$r['status']==='final'?$tone($r['direction']):22;
+            $items[]=['values'=>$v,'styles'=>[3=>$st,5=>$st]];
         }
-        $items[]=['values'=>array_fill(0,6,'')];
-        foreach(ReportingService::transferSummary($data) as $r)$items[]=['kind'=>'total','values'=>['جمع','','',$r['label'],'',$number($r['value'])]];
+        $sum=ReportingService::settlementSummary($data);
+        $items[]=['kind'=>'section','values'=>['جمع‌بندی ترانسفرها (تومان)','','','','',''],'merge'=>[0=>5],'styles'=>[0=>31]];
+        $items[]=['kind'=>'section','values'=>[$sum[0]['label'],'','',$sum[1]['label'],'',''],'merge'=>[0=>2,3=>5],'styles'=>[0=>33,3=>32]];
+        $items[]=['kind'=>'total','values'=>[$number($sum[0]['value']),'','',$number($sum[1]['value']),'',''],'merge'=>[0=>2,3=>5],'styles'=>[0=>30,3=>29]];
     }else{
-        // Every section shares the same widths. Long codes occupy the wide
-        // company column; labels and monetary values are always separate cells.
         $headers=['تاریخ','شرکت','پنل','دریافتی','پرداختی','کمیسیون','برد / باخت سایت'];
-        $widths=[22,33,25,23,23,23,27];$types=['text','text','text','received','paid','commission','integer'];
-        foreach($data['rows'] as $r)$items[]=['values'=>[AccountingService::displayBusinessDate((string)$r['report_date']),$r['company_name'],$r['panel_name'],$scaled($r['received']),$scaled($r['paid']),$scaled($r['commission']),$scaled($r['net'])]];
-        $t=$data['totals'];$items[]=['kind'=>'total','values'=>['جمع دوره','','',$scaled($t['received']),$scaled($t['paid']),$scaled($t['commission']),$scaled($t['net'])]];
-        $items[]=['values'=>array_fill(0,7,'')];
-        $items[]=['kind'=>'total','values'=>['جمع هر پنل','','پنل','دریافتی','پرداختی','کمیسیون','برد / باخت سایت']];
-        foreach($data['panel_totals'] as $r)$items[]=['values'=>['','',$r['panel_name'],$scaled($r['received']),$scaled($r['paid']),$scaled($r['commission']),$scaled($r['net'])]];
-        $items[]=['values'=>array_fill(0,7,'')];
-        $items[]=['kind'=>'total','values'=>['ترانسفرهای دوره','شماره سند','نوع تسویه','','','','مبلغ (تومان کامل)']];
-        foreach(ReportingService::transferTable($data)['rows'] as $r){$v=$r['values'];$items[]=['values'=>[$v[0],$v[1],$v[2],'','','',$number($v[3])]];}
-        foreach(ReportingService::transferSummary($data) as $r)$items[]=['kind'=>'total','values'=>['','',$r['label'],'','','',$number($r['value'])]];
-        $v=$data['transfer_totals']['adjusted_net'];$items[]=['kind'=>'total','values'=>['نتیجه نهایی','تومان کامل',ReportingService::netLabel((float)$v),'','','',$number(TransferService::decimalAbs($v))]];
+        $widths=[18,24,20,22,22,22,25];$types=['ltr','text','text','received','paid','commission','net'];
+        foreach($data['rows'] as $r)$items[]=['values'=>[AccountingService::displayBusinessDate((string)$r['report_date']),$r['company_name'],$r['panel_name'],$scaled($r['received']),$scaled($r['paid']),$scaled($r['commission']),$scaled($r['net'])],'styles'=>[6=>$netStyle($r['net'])]];
+        $t=$data['totals'];$items[]=['kind'=>'total','values'=>['جمع دوره','','',$scaled($t['received']),$scaled($t['paid']),$scaled($t['commission']),$scaled($t['net'])],'merge'=>[0=>2],'styles'=>[0=>31,3=>25,4=>26,5=>27,6=>$netStyle($t['net'])]];
+        $items[]=['kind'=>'section','values'=>['جمع هر پنل','','','','','',''],'merge'=>[0=>6],'styles'=>[0=>31]];
+        $items[]=['kind'=>'section','values'=>['پنل','','','دریافتی','پرداختی','کمیسیون','برد / باخت سایت'],'merge'=>[0=>2],'styles'=>[0=>22,3=>34,4=>35,5=>36,6=>28]];
+        foreach($data['panel_totals'] as $r)$items[]=['kind'=>'section','values'=>[$r['panel_name'],'','',$scaled($r['received']),$scaled($r['paid']),$scaled($r['commission']),$scaled($r['net'])],'merge'=>[0=>2],'styles'=>[0=>22,3=>25,4=>26,5=>27,6=>$netStyle($r['net'])]];
+        $items[]=['kind'=>'section','values'=>['ترانسفرهای دوره (تومان کامل)','','','','','',''],'merge'=>[0=>6],'styles'=>[0=>31]];
+        $items[]=['kind'=>'section','values'=>['تاریخ تسویه','شماره سند','','نوع تسویه','','مبلغ (تومان)',''],'merge'=>[1=>2,3=>4,5=>6],'styles'=>[0=>22,1=>22,3=>22,5=>22]];
+        foreach(ReportingService::transferTable($data)['rows'] as $r){$v=$r['values'];$st=$tone($r['direction']);$items[]=['kind'=>'section','values'=>[$v[0],$v[1],'',$v[2],'',$number($v[3]),''],'merge'=>[1=>2,3=>4,5=>6],'styles'=>[0=>21,1=>21,3=>$st,5=>$st]];}
+        $sum=ReportingService::settlementSummary($data);
+        $items[]=['kind'=>'section','values'=>['جمع‌بندی نهایی (تومان کامل)','','','','','',''],'merge'=>[0=>6],'styles'=>[0=>31]];
+        $items[]=['kind'=>'section','values'=>[str_replace(' (تومان)','',$sum[0]['label']),'',str_replace(' (تومان)','',$sum[1]['label']),'',$sum[2]['label'],'',''],'merge'=>[0=>1,2=>3,4=>6],'styles'=>[0=>32,2=>33,4=>($sum[2]['net']>0?28:($sum[2]['net']<0?24:36))]];
+        $items[]=['kind'=>'total','values'=>[$number($sum[0]['value']),'',$number($sum[1]['value']),'',$number($sum[2]['value']),'',''],'merge'=>[0=>1,2=>3,4=>6],'styles'=>[0=>29,2=>30,4=>$netStyle($sum[2]['net'])]];
     }
-    // LTR isolates keep Jalali date order intact in mixed Persian subtitles.
-    $reportPeriod=preg_replace('~\d{4}/\d{2}/\d{2}~u',"\u{2066}$0\u{2069}",$reportPeriod);
+    $reportPeriod=ReportingService::periodLabel($data);
+    $xlsxOptions=['settlement'=>true,'palette'=>['received'=>SettingsService::themeFill($settings['theme_recv'],$settings),'paid'=>SettingsService::themeFill($settings['theme_pay'],$settings),'commission'=>SettingsService::themeFill($settings['theme_comm'],$settings),'win'=>SettingsService::themeFill($settings['theme_site_win']??$settings['theme_pay'],$settings),'loss'=>SettingsService::themeFill($settings['theme_site_loss']??$settings['theme_recv'],$settings)]];
 }
 $fname='report-'.date('Ymd-His').'.xlsx';
-ReportXlsx68::download($title,implode(' | ',array_filter([$reportPeriod,'مبالغ به '.(($type==='transfer_history')?'تومان':SettingsService::moneyUnit($settings))])),$headers,$widths,$types,$items,$fname,'گزارش');
+ReportXlsx68::download($title,implode(' | ',array_filter([$reportPeriod,'مبالغ به '.(($type==='transfer_history')?'تومان':SettingsService::moneyUnit($settings))])),$headers,$widths,$types,$items,$fname,'گزارش',false,$xlsxOptions??[]);

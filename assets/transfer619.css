@@ -424,3 +424,32 @@ dialog.transfer-actions-modal::backdrop,dialog.transfer-saved-dialog::backdrop{b
  #reportFilterForm.p6-forced-range .p6-date-grid>.p5-report-month{grid-column:span 4!important}
 }
 @media(max-width:700px){#reportFilterForm .p6-date-grid>.p6-build-report{justify-self:stretch}}
+
+/* p7: preserve approved desktop form; compact mobile and unify report tables. */
+.p5-report-extra #p4PanelTable :is(th,td),.p5-report-extra #p4TransferTable :is(th,td),.p6-settlement-summary #p4FinalTable :is(th,td){border:1px solid #111827!important;color:#111!important}
+.p5-report-extra #p4TransferTable .p6-transfer-tone.positive,.p6-settlement-summary #p4FinalTable .p6-transfer-tone.positive{background:#d8f3dc!important;color:#111!important}
+.p5-report-extra #p4TransferTable .p6-transfer-tone.negative,.p6-settlement-summary #p4FinalTable .p6-transfer-tone.negative{background:#ffd9d9!important;color:#111!important}
+.p6-settlement-summary #p4FinalTable :is(th,td).site-win{background:var(--site-win,#d8f3dc)!important;color:#111!important}
+.p6-settlement-summary #p4FinalTable :is(th,td).site-loss{background:var(--site-loss,#ffd9d9)!important;color:#111!important}
+.p6-settlement-summary #p4FinalTable :is(th,td).comm-cell{background:var(--comm,#e1edb9)!important;color:#111!important}
+.p6-settlement-summary #p4FinalTable{border:1px solid #111827!important}
+#reportFilterForm .tc-clear-date[hidden]{display:none!important}
+#reportFilterForm .tc-date-icon svg{display:block;width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#reportFilterForm .p6-date-grid>.p5-report-month>div{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:700px){
+ #reportFilterForm{padding:12px!important;gap:9px!important}
+ #reportFilterForm .p6-primary-grid,#reportFilterForm .p6-date-grid{gap:8px 9px!important}
+ #reportFilterForm .p6-primary-grid>label,#reportFilterForm .p5-transfer-filters>label,#reportFilterForm .p6-date-grid>label,#reportFilterForm .p6-date-grid>.p5-report-month,#reportFilterForm .date-mode-field>span{font-size:12px!important;line-height:1.4!important;font-weight:650!important;gap:4px!important}
+ #reportFilterForm .p6-primary-grid select,#reportFilterForm .p6-primary-grid input:not([type=hidden]){height:44px!important;min-height:44px!important;font-size:14px!important}
+ #reportFilterForm .p6-primary-grid>.report-panel-filter:not(.hidden){grid-column:1/-1!important}
+ #reportFilterForm[data-report-type="customer_detail"] .p6-primary-grid>#reportCustomerField{grid-row:2;grid-column:1/-1!important}
+ #reportFilterForm .p6-date-grid{padding-top:8px}
+ #reportFilterForm .p6-date-grid>.p5-report-month{width:100%;align-items:stretch;justify-self:stretch}
+ #reportFilterForm .p6-date-grid .p5-report-month button,#reportFilterForm .p6-date-grid .svo-date-switch label{height:44px!important;min-height:44px!important}
+ #reportFilterForm .p6-date-grid .tc-date-open{height:46px!important;min-height:46px!important;padding-block:4px!important}
+ #reportFilterForm .tc-date-main{font-size:13px!important;font-weight:700!important}
+ #reportFilterForm .tc-date-secondary{font-size:10px!important;font-weight:500!important}
+ #reportFilterForm .p6-build-report{min-height:44px!important;height:44px!important;font-size:14px!important}
+ #reportFilterForm .p6-pending-note{font-size:11px;line-height:1.5;padding:6px 8px}
+ #reportFilterForm .report-customer-hint{font-size:11px!important;line-height:1.5!important;margin:0!important;padding:6px 8px!important}
+}

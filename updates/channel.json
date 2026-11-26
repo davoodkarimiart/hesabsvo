@@ -1,7 +1,7 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p6",
-  "notes": "اصلاح فرم هر هفت گزارش، نمایش بازه تاریخ، رنگ‌بندی پنل و ترانسفر، جمع‌بندی افقی سه‌ستونه و هماهنگی تصویر و چاپ. موتور اکسل و ساختار دیتابیس بدون تغییر.",
+  "release": "0.6.53-p7",
+  "notes": "اصلاح نهایی فرم موبایل، خطوط و رنگ‌بندی جدول‌ها، دو خروجی Excel راست‌به‌چپ با موتور اصلی و جمع‌بندی افقی. نیازمند آپدیتر جدید؛ بدون تغییر دیتابیس.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
@@ -13,11 +13,11 @@
     },
     {
       "path": "index.php",
-      "sha256": "31625580aa238bc4adb0b5525a455735598259abe9a8c58602a5d04930990014"
+      "sha256": "b4eb5e6708eec7ef6651016ff6c2f0ee8de5dfaff5715dcf3df14cc75363406b"
     },
     {
       "path": "assets/transfer-calendar620.js",
-      "sha256": "8fb8f073a1baba1beeb9d621a3ee5024beac401d4ff85f29a34318eecfbcdc7e"
+      "sha256": "efcc2c40fdfe4f92fef456faf554d7acb06519f90e0853e66925455281e40f60"
     },
     {
       "path": "assets/transfer619.js",
@@ -33,15 +33,19 @@
     },
     {
       "path": "assets/transfer619.css",
-      "sha256": "af4622b675ec50136890e2d899b44bf84a4a2e0089426369f4aa28ee71dee20c"
+      "sha256": "e5f5c0188207a7610cd6846bd35dd1e45e6d0382512f051ee4bb1e2a78a3872a"
     },
     {
       "path": "export.php",
-      "sha256": "d769e98eafd25864cb8cfcb64db40c46f18857b98b3f6da87af6771da2552e00"
+      "sha256": "e4a593b29eaadb93ccb13e4baf35affb1b9547d767637f29eec7de6ea783f4e2"
     },
     {
       "path": "print.php",
-      "sha256": "3476294dde35b0f1c82291b21952b5a2f5098fd57433973dda9540162bf9ef45"
+      "sha256": "caad0d02e416d4fd909568518a035df1cc665efd72489c94b68849ee6e35fbcb"
+    },
+    {
+      "path": "app/Support/ReportXlsx68.php",
+      "sha256": "4776a9eda12427ce3e29698b9b3e8be123a6abf89c01d4e96778fd85173811d9"
     }
   ]
 }

@@ -88,6 +88,7 @@ window.addEventListener('load',async()=>{
     if(form.scrollWidth>form.clientWidth+2)throw Error('horizontal overflow '+value);
   }
   type.value='period_transfer';type.dispatchEvent(new Event('change',{bubbles:true}));
+  const clear=input.parentElement.querySelector('.tc-clear-date');if(!clear||clear.hidden)throw Error('selected date clear missing');const oldValue=input.value;clear.click();if(!clear.hidden||input.value)throw Error('empty date clear');input.value=oldValue;input.dispatchEvent(new Event('change',{bubbles:true}));
   const result=await makeReportImage();
   if(!result||result.size<1000)throw Error('PNG missing');
   document.body.setAttribute('data-p4-browser','PASS');
@@ -105,8 +106,8 @@ HTML;
 }else{echo "[SKIP] Chromium not available".PHP_EOL;}
 
 $manifest=json_decode(file_get_contents($root.'/updates/channel.json'),true,512,JSON_THROW_ON_ERROR);
-if(in_array($manifest['release'],['0.6.53-p4','0.6.53-p5','0.6.53-p6'],true)){
- p4check(count($manifest['files'])===10,'release manifest has ten deployment files');
+if(in_array($manifest['release'],['0.6.53-p4','0.6.53-p5','0.6.53-p6','0.6.53-p7'],true)){
+ p4check(count($manifest['files'])===($manifest['release']==='0.6.53-p7'?11:10),'release manifest has ten deployment files');
  foreach($manifest['files'] as $f)p4check(hash_file('sha256',$root.'/'.$f['path'])===$f['sha256'],'release SHA256 '.$f['path']);
 }
 
@@ -121,17 +122,20 @@ foreach([$d,$history] as $data){
  $settings=SettingsService::defaults();$factor=SettingsService::scaleFactor($settings);$reportPeriod='1405/08/01 تا 1405/08/30';
  eval($xlsxCode);
  $n=count($headers);foreach($items as $item)p4check(count($item['values'])===$n,'p5 XLSX row width '.$data['type']);
- $last=end($items);p4check(is_int($last['values'][$n-1]),'p5 numeric final amount '.$data['type']);
- if($data['type']==='period_transfer')p4check($last['values'][$n-1]===180,'p5 rounded adjusted net in workbook');
+ $last=end($items);$lastIndex=$data['type']==='period_transfer'?4:3;p4check(is_int($last['values'][$lastIndex]),'p7 numeric final amount '.$data['type']);
+ if($data['type']==='period_transfer')p4check($last['values'][$lastIndex]===180,'p7 rounded adjusted net in workbook');
  if(class_exists('ZipArchive')){
   $script=tempnam(sys_get_temp_dir(),'p5xlsx');$file=tempnam(sys_get_temp_dir(),'p5zip');
-  $args=['Fixture',$reportPeriod,$headers,$widths,$types,$items,'test.xlsx','گزارش'];
+  $args=['Fixture',$reportPeriod,$headers,$widths,$types,$items,'test.xlsx','گزارش',false,$xlsxOptions];
   file_put_contents($script,'<?php require '.var_export($root.'/app/Support/ReportXlsx68.php',true).'; ReportXlsx68::download(...'.var_export($args,true).');');
   exec(escapeshellarg(PHP_BINARY).' '.escapeshellarg($script).' > '.escapeshellarg($file),$out,$status);
   $zip=new ZipArchive();$opened=$zip->open($file);
   p4check($status===0&&$opened===true,'p5 generated workbook opens '.$data['type']);
   $sheet=$zip->getFromName('xl/worksheets/sheet1.xml');$strings=$zip->getFromName('xl/sharedStrings.xml');
   p4check(is_string($sheet)&&is_string($strings)&&str_contains($sheet,'<v>'.($data['type']==='period_transfer'?'180':'0').'</v>'),'p5 actual workbook contains integer values '.$data['type']);
+  p4check(str_contains($sheet,'rightToLeft="1"')&&strpos($sheet,'<autoFilter')<strpos($sheet,'<mergeCells'),'p7 RTL and Excel 2010 worksheet ordering');
+  p4check(str_contains($sheet,'<mergeCells count="')&&str_contains($strings,'جمع‌بندی'),'p7 horizontal merged summary');
+  foreach(['xl/worksheets/sheet1.xml','xl/styles.xml','xl/sharedStrings.xml','xl/workbook.xml','[Content_Types].xml'] as $part)p4check(simplexml_load_string($zip->getFromName($part))!==false,'p7 valid XML '.$part);
   p4check(!str_contains($strings,'180.125')&&!str_contains($strings,'60.125000'),'p5 no fractional toman strings');
   $zip->close();unlink($script);unlink($file);
  }else{echo "[SKIP] ZipArchive not available".PHP_EOL;}
