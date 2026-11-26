@@ -10,15 +10,15 @@ final class ReportingService {
     }
 
     public static function normalizeFilters(array $f): array {
-        $f['type']=$f['type']??'cumulative';$f['type']=in_array($f['type'],['cumulative','daily','monthly','multi','detail','customer_detail','period_transfer','transfer_history'],true)?$f['type']:'daily';
+        $f['type']=$f['type']??'cumulative';$f['type']=in_array($f['type'],['cumulative','daily','monthly','multi','detail','customer_detail','period_transfer','transfer_history','expense_history'],true)?$f['type']:'daily';
         $f['company_id']=(int)($f['company_id']??0);$f['panel_id']=(int)($f['panel_id']??0);$f['customer_id']=(int)($f['customer_id']??0);if($f['type']!=='customer_detail')$f['customer_id']=0;if($f['type']==='customer_detail'&&$f['customer_id']>0){$f['company_id']=0;$f['panel_id']=0;}
         $f['from']=trim((string)($f['from']??''));$f['to']=trim((string)($f['to']??''));
         $f['date_mode']=($f['date_mode']??'single')==='range'?'range':'single';
-        if(in_array($f['type'],['period_transfer','transfer_history'],true))$f['date_mode']='range';
+        if(in_array($f['type'],['period_transfer','transfer_history','expense_history'],true))$f['date_mode']='range';
         $f['date']=trim((string)($f['date']??''));
         if($f['date_mode']==='single'){$f['from']=$f['date'];$f['to']=$f['date'];}
         else $f['date']='';
-        if(in_array($f['type'],['period_transfer','transfer_history'],true)){
+        if(in_array($f['type'],['period_transfer','transfer_history','expense_history'],true)){
             $f['panel_id']=0;$f['customer_id']=0;
             $f['q']=trim((string)($f['q']??''));$f['status']=(string)($f['status']??'');$f['direction']=(string)($f['direction']??'');
         }
@@ -37,6 +37,7 @@ final class ReportingService {
         $f=self::normalizeFilters($input);$type=$f['type'];
         if($type==='period_transfer')return self::periodTransfer($f);
         if($type==='transfer_history')return self::transferHistory($f);
+        if($type==='expense_history')return self::expenseHistory($f);
         if($type==='customer_detail'&&$f['customer_id']<=0)throw new RuntimeException('برای ریز پرداخت مشتری، یک مشتری را انتخاب کن.');$pdo=Database::connection();$where=["r.status='final'"];$p=[];
         if($f['company_id']>0){$where[]='r.company_id=?';$p[]=$f['company_id'];}
         if($f['panel_id']>0){
@@ -150,10 +151,32 @@ final class ReportingService {
         foreach($exact as $k=>$v)$tot[$k]=(float)$v;$tot['net']=(float)$exactNet;
         $tr=TransferService::settlementReport('',$f['company_id'],'final',$from,$to);
         $tr['totals']['adjusted_net']=TransferService::decimalSubtract(TransferService::decimalAdd($exactNet,$tr['totals']['paid']),$tr['totals']['received']);
+        $expenses=ExpenseService::listing($f['company_id'],$from,$to,'final');
+        $netAfterExpenses=TransferService::decimalSubtract($tr['totals']['adjusted_net'],$expenses['total']);
         $name=$pdo->prepare('SELECT name FROM companies WHERE id=?');$name->execute([$f['company_id']]);$company=(string)$name->fetchColumn();
         if($company==='')throw new RuntimeException('شرکت انتخاب‌شده پیدا نشد.');
         return ['type'=>'period_transfer','rows'=>$rows,'totals'=>$tot,'panel_totals'=>array_values($panelTotals),
-            'transfers'=>$tr['rows'],'transfer_totals'=>$tr['totals'],'filters'=>$f,'context'=>['companies'=>[$company],'from'=>$from,'to'=>$to]];
+            'transfers'=>$tr['rows'],'transfer_totals'=>$tr['totals'],'expenses'=>$expenses['rows'],'expense_total'=>$expenses['total'],'net_after_expenses'=>$netAfterExpenses,'filters'=>$f,'context'=>['companies'=>[$company],'from'=>$from,'to'=>$to]];
+    }
+    private static function expenseHistory(array $f): array {
+        $list=ExpenseService::listing($f['company_id'],$f['from'],$f['to'],'final',$f['q']);
+        $names=array_values(array_unique(array_column($list['rows'],'company_name_snapshot')));
+        $from=$f['from']!==''?self::date($f['from']):($list['rows'][0]['expense_date']??'');
+        $to=$f['to']!==''?self::date($f['to']):($list['rows'][count($list['rows'])-1]['expense_date']??'');
+        return ['type'=>'expense_history','rows'=>$list['rows'],'expense_total'=>$list['total'],'expense_count'=>$list['count'],'totals'=>['received'=>0,'paid'=>0,'commission'=>0,'net'=>0],'filters'=>$f,'context'=>['companies'=>$names,'from'=>$from,'to'=>$to]];
+    }
+    public static function expenseTable(array $data): array {
+        $history=$data['type']==='expense_history';$rows=[];
+        foreach($history?$data['rows']:$data['expenses'] as $r){
+            $v=[AccountingService::displayBusinessDate($r['expense_date'])];
+            if($history)$v[]=$r['company_name_snapshot'];
+            $v[]=$r['subject'];$v[]=$r['amount_toman'];$rows[]=$v;
+        }
+        return ['headers'=>$history?['تاریخ هزینه','شرکت','موضوع هزینه','مبلغ (تومان)']:['تاریخ هزینه','موضوع هزینه','مبلغ (تومان)'],'rows'=>$rows];
+    }
+    public static function expenseNetSummary(array $data): array {
+        $v=$data['net_after_expenses'];$net=(float)$v;
+        return ['label'=>'نتیجه خالص پس از ترانسفر و هزینه: '.self::netLabel($net),'value'=>TransferService::decimalAbs($v),'net'=>$net];
     }
     private static function transferHistory(array $f): array {
         $from=$f['from']!==''?self::date($f['from']):'';$to=$f['to']!==''?self::date($f['to']):'';
@@ -215,9 +238,121 @@ final class ReportingService {
     public static function netLabel(float $net): string {return $net>0?'برد سایت':($net<0?'باخت سایت':'تسویه صفر');}
     public static function title(array $data): string {
         $type=$data['type']??'';
-        if(!in_array($type,['period_transfer','transfer_history'],true))return ReportHeading626::title($data);
-        return ($type==='period_transfer'?'گزارش دوره‌ای با ترانسفر':'گزارش ترانسفرها').(!empty($data['context']['companies'])?' '.implode('، ',$data['context']['companies']):'');
+        if(!in_array($type,['period_transfer','transfer_history','expense_history'],true))return ReportHeading626::title($data);
+        return (match($type){'period_transfer'=>'گزارش دوره‌ای با ترانسفر و هزینه','expense_history'=>'گزارش هزینه‌ها',default=>'گزارش ترانسفرها'}).(!empty($data['context']['companies'])?' '.implode('، ',$data['context']['companies']):'');
     }
     private static function date(string $v): string {return AccountingService::normalizeBusinessDate($v);}
     private static function columnExists(PDO $pdo,string $table,string $column): bool {$st=$pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name=? AND column_name=?');$st->execute([$table,$column]);return (bool)$st->fetchColumn();}
+}
+
+
+/** Expense ledger: separate from transfer and daily-report amounts. No writes during reports. */
+final class ExpenseService {
+    public static function ready(): bool {
+        $pdo=Database::connection();
+        if($pdo->getAttribute(PDO::ATTR_DRIVER_NAME)==='sqlite'){
+            return (int)$pdo->query("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name IN ('operating_expenses','operating_expense_revisions')")->fetchColumn()===2;
+        }
+        return (int)$pdo->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name IN ('operating_expenses','operating_expense_revisions')")->fetchColumn()===2;
+    }
+    private static function requireReady(): void {
+        if(!self::ready())throw new RuntimeException('سیستم هزینه‌ها هنوز فعال نشده است؛ توسعه‌دهنده باید از مرکز به‌روزرسانی آن را فعال کند.');
+    }
+    public static function installSchema(): void {
+        $pdo=Database::connection();
+        if($pdo->getAttribute(PDO::ATTR_DRIVER_NAME)!=='mysql')throw new RuntimeException('Migration requires MySQL/MariaDB.');
+        $sql=<<<'SQL'
+CREATE TABLE IF NOT EXISTS operating_expenses (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ company_id BIGINT UNSIGNED NOT NULL,
+ company_name_snapshot VARCHAR(255) NOT NULL,
+ expense_date DATE NOT NULL,
+ amount_toman DECIMAL(18,0) NOT NULL,
+ subject VARCHAR(250) NOT NULL,
+ status ENUM('final','void') NOT NULL DEFAULT 'final',
+ revision_no INT UNSIGNED NOT NULL DEFAULT 1,
+ created_by BIGINT UNSIGNED NOT NULL,
+ updated_by BIGINT UNSIGNED NOT NULL,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ KEY idx_expense_company_date (company_id,expense_date,status),
+ CONSTRAINT fk_expense_company FOREIGN KEY(company_id) REFERENCES companies(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS operating_expense_revisions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ expense_id BIGINT UNSIGNED NOT NULL,
+ action_type VARCHAR(12) NOT NULL,
+ before_json LONGTEXT NULL,
+ after_json LONGTEXT NOT NULL,
+ changed_by BIGINT UNSIGNED NOT NULL,
+ changed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ CONSTRAINT fk_expense_revision FOREIGN KEY(expense_id) REFERENCES operating_expenses(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+SQL;
+        foreach(explode(';',$sql) as $statement)if(trim($statement)!=='')$pdo->exec($statement);
+        if(!self::ready())throw new RuntimeException('ساخت جدول‌های هزینه کامل نشد.');
+    }
+    public static function amount(mixed $raw): string {
+        $v=trim(strtr((string)$raw,array_combine(preg_split('//u','۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩',-1,PREG_SPLIT_NO_EMPTY),str_split('01234567890123456789'))));
+        $v=str_replace('٬',',',$v);
+        if(!preg_match('/^(?:[0-9]+|[0-9]{1,3}(?:,[0-9]{3})+)$/D',$v))throw new RuntimeException('مبلغ هزینه باید عدد صحیح مثبت به تومان باشد.');
+        $v=ltrim(str_replace(',','',$v),'0');
+        if($v===''||strlen($v)>15)throw new RuntimeException('مبلغ هزینه خارج از محدوده مجاز است.');
+        return $v;
+    }
+    public static function date(string $raw): string {
+        if(trim($raw)==='')throw new RuntimeException('تاریخ هزینه را انتخاب کن.');
+        return AccountingService::normalizeBusinessDate($raw);
+    }
+    public static function get(int $id): ?array {
+        self::requireReady();
+        $st=Database::connection()->prepare('SELECT * FROM operating_expenses WHERE id=?');$st->execute([$id]);return $st->fetch(PDO::FETCH_ASSOC)?:null;
+    }
+    public static function listing(int $company=0,string $from='',string $to='',string $status='final',string $q=''): array {
+        self::requireReady();$pdo=Database::connection();$where=['1=1'];$args=[];
+        if($company>0){$where[]='company_id=?';$args[]=$company;}
+        if($from!==''){$from=self::date($from);$where[]='expense_date>=?';$args[]=$from;}
+        if($to!==''){$to=self::date($to);$where[]='expense_date<=?';$args[]=$to;}
+        if($from!==''&&$to!==''&&$from>$to)throw new RuntimeException('تاریخ شروع بعد از پایان است.');
+        if(!in_array($status,['','final','void'],true))throw new RuntimeException('وضعیت هزینه نامعتبر است.');
+        if($status!==''){$where[]='status=?';$args[]=$status;}
+        if(trim($q)!==''){$where[]='subject LIKE ?';$args[]='%'.trim($q).'%';}
+        $st=$pdo->prepare('SELECT * FROM operating_expenses WHERE '.implode(' AND ',$where).' ORDER BY expense_date ASC,id ASC');$st->execute($args);
+        $rows=$st->fetchAll(PDO::FETCH_ASSOC);$total='0.000000';$count=0;
+        foreach($rows as $r)if($r['status']==='final'){$total=TransferService::decimalAdd($total,$r['amount_toman']);$count++;}
+        return ['rows'=>$rows,'total'=>$total,'count'=>$count];
+    }
+    public static function save(array $input,int $uid): int {
+        self::requireReady();if($uid<=0)throw new RuntimeException('کاربر نامعتبر است.');
+        $id=max(0,(int)($input['expense_id']??0));$company=(int)($input['company_id']??0);
+        $date=self::date((string)($input['expense_date']??''));$amount=self::amount($input['amount_toman']??'');
+        $subject=trim((string)($input['subject']??''));if($subject===''||mb_strlen($subject)>250)throw new RuntimeException('موضوع هزینه باید بین ۱ و ۲۵۰ نویسه باشد.');
+        $pdo=Database::connection();$lock=$pdo->getAttribute(PDO::ATTR_DRIVER_NAME)==='mysql'?' FOR UPDATE':'';$pdo->beginTransaction();
+        try{
+            $before=null;
+            if($id){$st=$pdo->prepare('SELECT * FROM operating_expenses WHERE id=?'.$lock);$st->execute([$id]);$before=$st->fetch(PDO::FETCH_ASSOC);
+                if(!$before||$before['status']!=='final'||(int)$before['revision_no']!==(int)($input['revision_no']??0))throw new RuntimeException('سند تغییر کرده یا ابطال شده است؛ دوباره آن را باز کن.');
+                if((int)$before['company_id']!==$company)throw new RuntimeException('شرکت سند قابل تغییر نیست.');
+            }
+            $st=$pdo->prepare('SELECT name,active,archived_at FROM companies WHERE id=?'.$lock);$st->execute([$company]);$c=$st->fetch(PDO::FETCH_ASSOC);
+            if(!$c||(!$before&&(!(int)$c['active']||$c['archived_at']!==null)))throw new RuntimeException('شرکت فعال انتخاب کن.');
+            if($before){$pdo->prepare('UPDATE operating_expenses SET expense_date=?,amount_toman=?,subject=?,updated_by=?,revision_no=revision_no+1,updated_at=CURRENT_TIMESTAMP WHERE id=?')->execute([$date,$amount,$subject,$uid,$id]);}
+            else{$pdo->prepare('INSERT INTO operating_expenses(company_id,company_name_snapshot,expense_date,amount_toman,subject,created_by,updated_by) VALUES(?,?,?,?,?,?,?)')->execute([$company,$c['name'],$date,$amount,$subject,$uid,$uid]);$id=(int)$pdo->lastInsertId();}
+            self::revision($pdo,$id,$before?'updated':'created',$before,$uid);$pdo->commit();return $id;
+        }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
+    }
+    public static function void(int $id,int $revision,int $uid): void {
+        self::requireReady();if($uid<=0)throw new RuntimeException('کاربر نامعتبر است.');
+        $pdo=Database::connection();$lock=$pdo->getAttribute(PDO::ATTR_DRIVER_NAME)==='mysql'?' FOR UPDATE':'';$pdo->beginTransaction();
+        try{$st=$pdo->prepare('SELECT * FROM operating_expenses WHERE id=?'.$lock);$st->execute([$id]);$before=$st->fetch(PDO::FETCH_ASSOC);
+            if(!$before||$before['status']!=='final'||(int)$before['revision_no']!==$revision)throw new RuntimeException('سند تغییر کرده یا ابطال شده است.');
+            $pdo->prepare("UPDATE operating_expenses SET status='void',revision_no=revision_no+1,updated_by=?,updated_at=CURRENT_TIMESTAMP WHERE id=?")->execute([$uid,$id]);
+            self::revision($pdo,$id,'voided',$before,$uid);$pdo->commit();
+        }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
+    }
+    private static function revision(PDO $pdo,int $id,string $action,?array $before,int $uid): void {
+        $st=$pdo->prepare('SELECT * FROM operating_expenses WHERE id=?');$st->execute([$id]);$after=$st->fetch(PDO::FETCH_ASSOC);
+        $encode=static fn($v)=>json_encode($v,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
+        $pdo->prepare('INSERT INTO operating_expense_revisions(expense_id,action_type,before_json,after_json,changed_by) VALUES(?,?,?,?,?)')->execute([$id,$action,$before===null?null:$encode($before),$encode($after),$uid]);
+    }
 }

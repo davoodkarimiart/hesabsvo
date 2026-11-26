@@ -1,0 +1,26 @@
+CREATE TABLE IF NOT EXISTS operating_expenses (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ company_id BIGINT UNSIGNED NOT NULL,
+ company_name_snapshot VARCHAR(255) NOT NULL,
+ expense_date DATE NOT NULL,
+ amount_toman DECIMAL(18,0) NOT NULL,
+ subject VARCHAR(250) NOT NULL,
+ status ENUM('final','void') NOT NULL DEFAULT 'final',
+ revision_no INT UNSIGNED NOT NULL DEFAULT 1,
+ created_by BIGINT UNSIGNED NOT NULL,
+ updated_by BIGINT UNSIGNED NOT NULL,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ KEY idx_expense_company_date (company_id,expense_date,status),
+ CONSTRAINT fk_expense_company FOREIGN KEY(company_id) REFERENCES companies(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS operating_expense_revisions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ expense_id BIGINT UNSIGNED NOT NULL,
+ action_type VARCHAR(12) NOT NULL,
+ before_json LONGTEXT NULL,
+ after_json LONGTEXT NOT NULL,
+ changed_by BIGINT UNSIGNED NOT NULL,
+ changed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ CONSTRAINT fk_expense_revision FOREIGN KEY(expense_id) REFERENCES operating_expenses(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
