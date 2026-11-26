@@ -1,11 +1,11 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p13",
-  "notes": "اصلاح تقویم و فرم ورود، برجسته‌سازی نتیجه نهایی و حالت زمان‌بندی‌شده به‌روزرسانی با اعلان امکانات و توقف اضطراری SQL.",
+  "release": "0.6.53-p14",
+  "notes": "بازطراحی پنل Developer، زمان پایان دقیق تهران، پیش‌نمایش صفحه کاربران و اعلان، ثبت رویدادهای هزینه و به‌روزرسانی، بدون تغییر محاسبات مالی.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
-      "sha256": "f5f940615f1db7a5dc7582012a553de2aa53c416c9570b590f431a9b2f48bc3b"
+      "sha256": "9dd94f67b84bc88a03453ac9c60e050718a886255f55e1e7dbaf95401b73cbc3"
     },
     {
       "path": "app/Services/TransferService.php",
@@ -13,7 +13,7 @@
     },
     {
       "path": "index.php",
-      "sha256": "c2222dc36b5a140e8f84ce1ff478a9e2d0e6e981d007624679cb7c2945a4292b"
+      "sha256": "699d2491826e044c029c94b6cceeb6f9c83d8f43e085a0a6f3e6f91faeff516f"
     },
     {
       "path": "assets/transfer-calendar620.js",
@@ -33,7 +33,7 @@
     },
     {
       "path": "assets/transfer619.css",
-      "sha256": "3039a428fc91684be49ae7bbd043b2440c14212b936b1123fa7c23376e578187"
+      "sha256": "03dd04df49631236674b0a4899df743950a67fe7c5bd260ed278c6564b92229a"
     },
     {
       "path": "export.php",
