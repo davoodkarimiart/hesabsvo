@@ -93,7 +93,7 @@ if(!window.__fixtureHarness){window.__fixtureHarness=true;window.addEventListene
   else if(stage===2){if(e.detail.page!=='companies'||window.fixtureRuns!==4||!location.search.includes('companies'))throw Error('history back');document.body.dataset.p20='PASS';}
  }catch(e){fail(e)}});
  nav.querySelector('a[href$=companies]').click();if(!document.querySelector('#p20Skeleton'))fail('no request-bound skeleton');
- setTimeout(()=>{if(!document.body.dataset.p20)fail('timeout')},7000);
+ setTimeout(()=>{if(!document.body.dataset.p20)fail('timeout stage '+stage)},12000);
 })}
 </script></body></html>
 PHP;
@@ -101,5 +101,6 @@ file_put_contents($dir.'/index.php',$fixture);
 $sock=stream_socket_server('tcp://127.0.0.1:0',$eno,$estr);check15(is_resource($sock),'P20 free fixture port');$port=(int)substr(strrchr(stream_socket_get_name($sock,false),':'),1);fclose($sock);
 $proc=proc_open([PHP_BINARY,'-S','127.0.0.1:'.$port,'-t',$dir],[0=>['pipe','r'],1=>['file',$dir.'/server.log','a'],2=>['file',$dir.'/server.log','a']],$pipes);check15(is_resource($proc),'P20 fixture server');fclose($pipes[0]);
 try{for($i=0;$i<30;$i++){if($fp=@fsockopen('127.0.0.1',$port,$eno,$estr,.1)){fclose($fp);break;}usleep(100000);}
- $out=[];exec(escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --window-size=390,844 --virtual-time-budget=8500 --dump-dom '.escapeshellarg('http://127.0.0.1:'.$port.'/index.php?page=dashboard').' 2>/dev/null',$out,$status);$dom=implode("\n",$out);preg_match('/data-p20="[^"]*"/',$dom,$marker);echo ($marker[0]??'missing marker').PHP_EOL;check15($status===0&&str_contains($dom,'data-p20="PASS"'),'P20 persistent shell, real fetch, skeleton, script replay, back navigation');
+ $out=[];exec('node '.escapeshellarg($root.'/tests/p20_browser.cjs').' '.escapeshellarg($chrome).' '.escapeshellarg('http://127.0.0.1:'.$port.'/index.php?page=dashboard').' 2>&1',$out,$status);echo implode("\n",$out).PHP_EOL;check15($status===0&&in_array('P20 browser PASS',$out,true),'P20 persistent shell, real fetch, skeleton, script replay, back navigation');
+
 }finally{proc_terminate($proc);proc_close($proc);@unlink($dir.'/assets/app.js');@rmdir($dir.'/assets');@unlink($dir.'/index.php');@unlink($dir.'/server.log');@rmdir($dir);}

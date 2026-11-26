@@ -152,7 +152,7 @@
      window.p20InitControls?.();window.p20InitKeyboard?.();window.TransferCalendar620?.init();window.p20InitPageEnd?.();
      if(initFailed)throw Error('page initialization failed');
     }finally{window.removeEventListener('error',onError)}
-    if(token!==seq)return;busy(false,page);window.scrollTo(0,0);
+    if(token!==seq)return;flight=null;clearTimeout(timer);busy(false,page);window.scrollTo(0,0);
     content()?.dispatchEvent(new CustomEvent('soltan:page-ready',{bubbles:true,detail:{page}}));
    }catch(e){if(token===seq)native(url);}
    finally{clearTimeout(timer);if(token===seq){flight=null;busy(false,page)}}
