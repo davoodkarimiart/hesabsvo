@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 $root=dirname(__DIR__);$src=file_get_contents($root.'/update_center.php');
-$start=strpos($src,'const UPDATE_CLIENT=');$end=strpos($src,'$err=', $start);
+$start=strpos($src,'const UPDATE_CLIENT=');$end=strpos($src,"if(defined('SOLTAN_UPDATE_LIBRARY_ONLY')", $start);
 if($start===false||$end===false)throw new RuntimeException('update functions not found');
 eval(substr($src,$start,$end-$start));
 function bridgeCheck($value,string $label):void{if(!$value)throw new RuntimeException('FAIL '.$label);echo '[OK] '.$label.PHP_EOL;}
@@ -16,3 +16,11 @@ $m=json_decode(file_get_contents($root.'/updates/channel.json'),true,512,JSON_TH
 foreach($m['files'] as $f)bridgeCheck(hash_file('sha256',$root.'/'.$f['path'])===$f['sha256'],'manifest '.$f['path']);
 bridgeCheck(strpos($src,'DeveloperBackup633::backup()')<strpos($src,'foreach($parts as $statement)$pdo->exec'),'backup before DDL');
 bridgeCheck(str_contains($src,"Auth::requireDeveloper()")&&str_contains($src,'csrf_verify()'),'developer and CSRF gates');
+
+bridgeCheck(str_contains($src,'function updateApply(')&&str_contains($src,'updateApply($m')&&str_contains($src,'function updateInstallRemote('),'P19 shared update engine');
+bridgeCheck(str_contains($src,"Live GitHub release verification failed")&&str_contains($src,'Checksum mismatch')&&str_contains($src,'Database backup failed'),'P19 pinned update with database backup');
+function config_get($key,$default=null){return 'https://example.invalid';}
+require $root.'/mcp_oauth_lib.php';
+bridgeCheck(mo_scopes('admin:maintenance admin:update','developer')===['admin:maintenance','admin:update'],'P19 developer explicit scopes');
+foreach(['admin','user'] as $role){$rejected=false;try{mo_scopes('admin:maintenance admin:update',$role);}catch(RuntimeException){$rejected=true;}bridgeCheck($rejected,'P19 scope denied '.$role);}
+bridgeCheck(!str_contains(mo_default_scopes('developer'),'admin:update'),'P19 no implicit write elevation');

@@ -1,11 +1,11 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p18",
-  "notes": "هماهنگی هدر و عرض پنل Developer؛ حذف کادرهای ناوبری پایین لاگ؛ وسط‌چین کارت‌های دسترسی سریع؛ فرم ورود تیره و نمایش رمز با آیکون؛ آماده‌سازی آپدیتر ۱.۵ برای انتشار مجوزهای OAuth؛ بدون تغییر محاسبات.",
+  "release": "0.6.53-p19",
+  "notes": "تمام اصلاحات P18؛ شش ابزار Developer برای وضعیت، پیش‌نمایش، شروع و توقف نگهداری و بررسی و نصب به‌روزرسانی؛ دو مجوز مستقل OAuth؛ بکاپ دیتابیس و فایل، کنترل هش، نصب مشترک با وب؛ بدون تغییر فرمول مالی.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
-      "sha256": "9dd94f67b84bc88a03453ac9c60e050718a886255f55e1e7dbaf95401b73cbc3"
+      "sha256": "a6f76af71d61a3d3e7b04611787d07f128e205596f89c7937ec5d2dc747b5502"
     },
     {
       "path": "app/Services/TransferService.php",
@@ -13,7 +13,7 @@
     },
     {
       "path": "index.php",
-      "sha256": "2f8c33b79fcf15b1cb47ed3b512e8e35a3faaedf611d395450b8cb71a392c81f"
+      "sha256": "12526c94a33125c30656a7c8071ecda8000ec2db366751aab7f9844c4cef5384"
     },
     {
       "path": "assets/transfer-calendar620.js",
@@ -49,7 +49,7 @@
     },
     {
       "path": "update_center.php",
-      "sha256": "74ee9266ed11deac6642e1dfb18787976170f3b0a16a5072d5454433f5f30209"
+      "sha256": "2531e6b254d27f3b832a6271d0599b7f4ba317166571a7eff82bd36a793d8baf"
     },
     {
       "path": "app/Services/CompanyService.php",
@@ -73,16 +73,24 @@
     },
     {
       "path": "mcp_connections.php",
-      "sha256": "9b5ceead08844d33922c71891a5b6cdfc0528692e67724faf9776f060f6e7f0a"
+      "sha256": "55f6446a586bcef4387465ebba7788b419d9922c0b363a9828524e3044a76b91"
     },
     {
       "path": "mcp_permissions.php",
-      "sha256": "199ab2638bc48f13379cb7f0c9f039f6439b9d97405778bae63d4ea2fc4190ba"
+      "sha256": "1c25ffab0c2a686911687b52ee2341654a1dd2363822dfd643f748fe5b417017"
     },
     {
       "path": "mcp.php",
-      "sha256": "6afc96211fd8dea12632d2cf1de2215c9e2b3d8aecc0333350d901a3a422d435"
+      "sha256": "b4214c6bfb36626c9a1bb2104dc9779e5c0a55cacdedb6c6ce2e9598c09b9824"
+    },
+    {
+      "path": "oauth.php",
+      "sha256": "5b0e8791eaeb3061d52b30aa48f418d5b2d89c6939bc0b9e540b7d68624d81ba"
+    },
+    {
+      "path": "mcp_oauth_lib.php",
+      "sha256": "bb59b1b3c0c42612c6bf39effcaf1b20766fadaec2fa36a22ecee4606baadfe5"
     }
   ],
-  "min_client": "1.4"
+  "min_client": "1.5"
 }

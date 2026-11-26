@@ -41,7 +41,11 @@ $canDiag=$user['role']==='developer' && in_array('admin:diagnostics',$capabiliti
 $canWriteTransfers=in_array($user['role'],['developer','admin'],true) && in_array('write:transfers',$capabilities,true);
 $canBackup=false;
 $canBackup=$user['role']==='developer' && in_array('admin:backup',$capabilities,true);
-if(!$canCompany && !$canPanels && !$canCustomers && !$canReports && !$canDiag && !$canWriteCompany && !$canWriteCustomers && !$canWriteTransfers && !$canBackup)$err(403,'Insufficient scope');
+$canMaintenance=$user['role']==='developer'&&in_array('admin:maintenance',$capabilities,true);
+$canUpdate=$user['role']==='developer'&&in_array('admin:update',$capabilities,true);
+$maintenanceState=MaintenanceP13::read();$maintenanceActive=MaintenanceP13::active($maintenanceState);
+if($maintenanceActive&&!$canMaintenance&&!$canUpdate)$err(503,'Maintenance');
+if(!$canCompany&&!$canPanels&&!$canCustomers&&!$canReports&&!$canDiag&&!$canWriteCompany&&!$canWriteCustomers&&!$canWriteTransfers&&!$canBackup&&!$canMaintenance&&!$canUpdate)$err(403,'Insufficient scope');
 $raw=file_get_contents('php://input',false,null,0,65537);
 if($raw===false||strlen($raw)>65536)$err(413,'Request too large');
 $req=json_decode($raw,true);
@@ -116,11 +120,48 @@ if($canDiag){
  $toolDefs[]=['name'=>'diagnostics_health','title'=>'Site health','description'=>'Developer-only operational status of PHP, DB, log directory, latest errors; no credentials or user financial records.','inputSchema'=>['type'=>'object','properties'=>new stdClass(),'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>true,'destructiveHint'=>false]];
  $toolDefs[]=['name'=>'diagnostics_logs','title'=>'Search site diagnostics','description'=>'Developer-only bounded search of error/system/audit logs; returns timestamp, event, request ID and redacted context. Use request_id to trace a reported failure.','inputSchema'=>['type'=>'object','properties'=>['channel'=>['type'=>'string','enum'=>['error','system','audit']],'query'=>['type'=>'string','maxLength'=>120],'limit'=>['type'=>'integer','minimum'=>1,'maximum'=>30]],'required'=>['channel'],'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>true,'destructiveHint'=>false]];
 }
+
+if($canMaintenance){
+ $props=['mode'=>['type'=>'string','enum'=>['test','exact']],'date'=>['type'=>'string','pattern'=>'^[0-9]{4}-[0-9]{2}-[0-9]{2}$','description'=>'Gregorian Tehran date, required for exact mode'],'clock'=>['type'=>'string','pattern'=>'^[0-9]{2}:[0-9]{2}$','description'=>'24-hour Tehran time, required for exact mode'],'title'=>['type'=>'string','minLength'=>1,'maxLength'=>100],'items'=>['type'=>'array','minItems'=>1,'maxItems'=>12,'items'=>['type'=>'string','minLength'=>1,'maxLength'=>200]],'show_count'=>['type'=>'integer','minimum'=>1,'maximum'=>5]];
+ $required=['mode','title','items','show_count'];
+ $toolDefs[]=['name'=>'maintenance_status','title'=>'Maintenance status','description'=>'Developer only. Read current lock, Tehran end time and announcement. Available during maintenance.','inputSchema'=>['type'=>'object','properties'=>new stdClass(),'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>true,'destructiveHint'=>false]];
+ $toolDefs[]=['name'=>'maintenance_preview','title'=>'Preview maintenance','description'=>'Validate exact Tehran deadline or one-minute test and announcement without any change.','inputSchema'=>['type'=>'object','properties'=>$props,'required'=>$required,'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>true,'destructiveHint'=>false]];
+ $toolDefs[]=['name'=>'maintenance_start','title'=>'Start maintenance','description'=>'Locks all website users immediately; only restricted developer MCP control remains. Call only with explicit user approval of deadline and announcement.','inputSchema'=>['type'=>'object','properties'=>$props+['confirmation'=>['type'=>'string','enum'=>['فعال‌سازی به‌روزرسانی سلطان حساب']]],'required'=>array_merge($required,['confirmation']),'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>false,'destructiveHint'=>true,'idempotentHint'=>false]];
+ $toolDefs[]=['name'=>'maintenance_stop','title'=>'Stop maintenance','description'=>'Emergency reopen. Use exact announcement ID from maintenance_status and explicit user approval. Announcement remains available after reopening.','inputSchema'=>['type'=>'object','properties'=>['announcement_id'=>['type'=>'string','pattern'=>'^[a-f0-9]{24}$'],'confirmation'=>['type'=>'string','enum'=>['بازگشایی سلطان حساب']]],'required'=>['announcement_id','confirmation'],'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>false,'destructiveHint'=>true,'idempotentHint'=>true]];
+}
+if($canUpdate){
+ $toolDefs[]=['name'=>'update_check','title'=>'Check GitHub update','description'=>'Read installed and latest verified GitHub release, pinned commit, notes and file count.','inputSchema'=>['type'=>'object','properties'=>new StdClass(),'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>true,'destructiveHint'=>false]];
+ $toolDefs[]=['name'=>'update_install','title'=>'Install verified GitHub update','description'=>'Developer only. Install exactly the release and commit confirmed after update_check; backup database and files, verify hashes, use shared web updater and rollback on failure. Never call without explicit user approval of release.','inputSchema'=>['type'=>'object','properties'=>['release'=>['type'=>'string','maxLength'=>30],'commit'=>['type'=>'string','pattern'=>'^[a-f0-9]{40}$'],'confirmation'=>['type'=>'string','enum'=>['نصب به‌روزرسانی سلطان حساب']]],'required'=>['release','commit','confirmation'],'additionalProperties'=>false],'annotations'=>['readOnlyHint'=>false,'destructiveHint'=>true,'idempotentHint'=>false]];
+}
 if($method==='tools/list')$reply($id,['tools'=>$toolDefs]);
 if($method==='tools/call'){
  $name=$params['name']??'';$args=$params['arguments']??[];
  if(!is_string($name)||!is_array($args)||array_is_list($args)&&count($args)>0)$reply($id,null,['code'=>-32602,'message'=>'Invalid parameters']);
- if($name==='list_archived_companies' && $canCompany){
+ // Re-read just before dispatch; an old token never gains the new scopes.
+ $maintenanceActive=MaintenanceP13::active(MaintenanceP13::read());
+ if($maintenanceActive&&!(($canMaintenance&&in_array($name,['maintenance_status','maintenance_stop'],true))||($canUpdate&&in_array($name,['update_check','update_install'],true))))$reply($id,['content'=>[['type'=>'text','text'=>'Maintenance: operational tools are disabled']],'isError'=>true]);
+ if(($canMaintenance&&in_array($name,['maintenance_status','maintenance_preview','maintenance_start','maintenance_stop'],true))||($canUpdate&&in_array($name,['update_check','update_install'],true))){
+  try{
+   if($name==='maintenance_status')$data=MaintenanceP13::describe(MaintenanceP13::read());
+   elseif($name==='maintenance_preview'||$name==='maintenance_start'){
+    $now=time();$preview=MaintenanceP13::prepareMcp($args,$now);
+    if($name==='maintenance_preview')$data=['preview'=>true,'active'=>MaintenanceP13::active(MaintenanceP13::read()),'end_tehran'=>(new DateTimeImmutable('@'.$preview['until']))->setTimezone(new DateTimeZone('Asia/Tehran'))->format(DATE_ATOM),'remaining_seconds'=>$preview['until']-$now,'title'=>$preview['title'],'items'=>$preview['items'],'show_count'=>$preview['show_count']];
+    else{
+     if(($args['confirmation']??null)!=='فعال‌سازی به‌روزرسانی سلطان حساب')throw new RuntimeException('Explicit maintenance confirmation required');
+     $state=MaintenanceP13::start(1,$preview['title'],implode("\n",$preview['items']),(int)$user['id'],$now,$preview['until'],$preview['show_count']);
+     Logger::audit('developer.maintenance_started',['user_id'=>(int)$user['id'],'until'=>$state['until'],'mode'=>$preview['mode'],'announcement_count'=>$preview['show_count'],'source'=>'mcp']);
+     $data=MaintenanceP13::describe($state,$now);
+    }
+   }elseif($name==='maintenance_stop'){
+    if(($args['confirmation']??null)!=='بازگشایی سلطان حساب'||!is_string($args['announcement_id']??null))throw new RuntimeException('Explicit stop confirmation required');
+    $data=MaintenanceP13::stop($args['announcement_id'],(int)$user['id']);
+   }else{
+    if($name==='update_install'&&(($args['confirmation']??null)!=='نصب به‌روزرسانی سلطان حساب'||!is_string($args['release']??null)||!is_string($args['commit']??null)))throw new RuntimeException('Explicit release confirmation required');
+    define('SOLTAN_UPDATE_LIBRARY_ONLY',true);require_once __DIR__.'/update_center.php';
+    $data=$name==='update_check'?updateCheckRemote():updateInstallRemote($args['release'],$args['commit']);
+   }
+  }catch(Throwable $e){Logger::error('developer.mcp_control_failed',['user_id'=>(int)$user['id'],'tool'=>$name,'type'=>get_class($e)]);$reply($id,['content'=>[['type'=>'text','text'=>'Control request rejected; check input, state and developer logs']],'isError'=>true]);}
+ } elseif($name==='list_archived_companies' && $canCompany){
   $data=['companies'=>array_slice(CompanyService::archived(),0,100)];
  } elseif($name==='restore_company' && $canWriteCompany){
   $cid=$args['company_id']??null;$yes=$args['confirm_company_id']??null;$nm=$args['confirm_name']??null;

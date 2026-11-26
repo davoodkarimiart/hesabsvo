@@ -80,3 +80,17 @@ foreach(['390,844','1440,900'] as $view){
  $file=tempnam(sys_get_temp_dir(),'dev14').'.html';file_put_contents($file,'<!doctype html><html dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'.$app.$css.'</style></head><body>'.$body.$tail.'</body></html>');
  $out=[];exec(escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --window-size='.$view.' --virtual-time-budget=4000 --dump-dom '.escapeshellarg('file://'.$file).' 2>/dev/null',$out,$status);$dom=implode("\n",$out);preg_match('/data-dev14="[^"]*"/',$dom,$marker);echo ($marker[0]??'no marker').PHP_EOL;unlink($file);mc($status===0&&str_contains($dom,'data-dev14="PASS"'),'P14 developer browser '.$view);
 }
+
+
+// P19 controls use the actual shared service with an isolated database.
+$now=time();$before=MaintenanceP13::read();$args=['mode'=>'test','title'=>'Test','items'=>['One','Two'],'show_count'=>2];
+$preview=MaintenanceP13::prepareMcp($args,$now);
+mc($preview['until']===$now+60&&MaintenanceP13::read()===$before,'P19 preview no mutation');
+$state=MaintenanceP13::start(1,$preview['title'],implode("\n",$preview['items']),1,$now,$preview['until'],2);
+mc(MaintenanceP13::describe($state,$now)['remaining_seconds']===60,'P19 status');
+$rejected=false;try{MaintenanceP13::start(1,'Duplicate','Item',1,$now);}catch(RuntimeException){$rejected=true;}mc($rejected,'P19 no overwrite of active maintenance');
+$rejected=false;try{MaintenanceP13::stop(str_repeat('a',24),1);}catch(RuntimeException){$rejected=true;}mc($rejected&&MaintenanceP13::active(MaintenanceP13::read()),'P19 stale stop rejected');
+mc(MaintenanceP13::stop($state['announcement']['id'],1)['stopped']&&!MaintenanceP13::active(MaintenanceP13::read()),'P19 confirmed stop');
+mc(!MaintenanceP13::stop($state['announcement']['id'],1)['stopped'],'P19 stop is idempotent');
+foreach([['show_count'=>0],['items'=>["line\nbreak"]],['mode'=>'exact'],['date'=>'2026-01-01']] as $bad){$rejected=false;try{MaintenanceP13::prepareMcp(array_replace($args,$bad),$now);}catch(RuntimeException){$rejected=true;}mc($rejected,'P19 reject invalid maintenance');}
+$mcp=file_get_contents($root.'/mcp.php');mc(str_contains($mcp,"'admin:maintenance'")&&str_contains($mcp,"'admin:update'")&&str_contains($mcp,"Maintenance: operational tools are disabled"),'P19 scope and operational gate');

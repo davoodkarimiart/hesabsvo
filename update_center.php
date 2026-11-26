@@ -1,15 +1,6 @@
 <?php
 /** Developer-only update center. Release files are strictly allowlisted and hash verified. */
 declare(strict_types=1);
-require __DIR__.'/app/bootstrap.php';
-Auth::requireDeveloper();
-header('Cache-Control: no-store, no-cache, must-revalidate, private, max-age=0');
-header('Pragma: no-cache');header('Expires: 0');
-header('X-Robots-Tag: noindex, nofollow');
-$stateDir=__DIR__.'/storage/updates';
-$stateFile=$stateDir.'/current.json';
-$state=['release'=>'0.6.53-p2'];
-if(is_file($stateFile)){$stored=json_decode((string)file_get_contents($stateFile),true);if(is_array($stored)&&isset($stored['release']))$state=$stored;}
 const UPDATE_CLIENT='1.5';
 const UPDATE_MAX_FILES=40;
 const UPDATE_EXPENSE_MIGRATION='database/migrations/017_operating_expenses.sql';
@@ -92,13 +83,21 @@ function updateManifest():array {
  if($live!==null&&updatePriority($live['release'])>=updatePriority('0.6.53-p7')){$live['_source']='GitHub API';return $live;}
  $m=updateManifestAt(UPDATE_RECOVERY_COMMIT);$m['_source']='نسخه ثابت تأییدشده';$m['_warning']='دریافت کانال زنده تأیید نشد؛ فقط نسخه ثابت قابل نصب است. '.($reason!==''?$reason:'پاسخ قدیمی GitHub');return $m;
 }
-$err='';$msg='';$m=null;
-try{
- $m=updateManifest();
- if(($_SERVER['REQUEST_METHOD']??'')==='POST'){
-  csrf_verify();
-  $action=(string)($_POST['action']??'');
-  if(!in_array($action,['install','migration'],true)||!hash_equals((string)$m['release'],(string)($_POST['release']??''))||!hash_equals((string)$m['_commit'],(string)($_POST['commit']??''))||updatePriority($m['release'])<=updatePriority((string)$state['release']))throw new RuntimeException('Invalid install request');
+
+function updateCurrentState():array {
+ $file=__DIR__.'/storage/updates/current.json';
+ if(!is_file($file))return ['release'=>'0.6.53-p2'];
+ $s=json_decode((string)file_get_contents($file),true,16,JSON_THROW_ON_ERROR);
+ if(!is_array($s)||updatePriority((string)($s['release']??''))===0)throw new RuntimeException('Invalid installed release state');
+ return $s;
+}
+function updateCheckRemote():array {
+ $state=updateCurrentState();$m=updateManifest();
+ return ['installed_release'=>$state['release'],'latest_release'=>$m['release'],'commit'=>$m['_commit'],'source'=>$m['_source'],'live_verified'=>$m['_source']==='GitHub API','available'=>updatePriority($m['release'])>updatePriority($state['release']),'notes'=>$m['notes']??'','file_count'=>count($m['files']),'warning'=>$m['_warning']??null];
+}
+function updateApply(array $m,string $action,string $expectedRelease,string $expectedCommit,bool $backupDatabase=false):array {
+ $stateDir=__DIR__.'/storage/updates';$stateFile=$stateDir.'/current.json';$state=updateCurrentState();$msg='';$dbBackup=null;
+ if(!in_array($action,['install','migration'],true)||!hash_equals((string)$m['release'],$expectedRelease)||!hash_equals((string)$m['_commit'],$expectedCommit)||updatePriority($m['release'])<=updatePriority((string)$state['release']))throw new RuntimeException('Invalid install request or release already installed');
   if(!is_dir($stateDir)&&!mkdir($stateDir,0700,true))throw new RuntimeException('Update storage is not writable');
   $lock=fopen($stateDir.'/update.lock','c');if(!$lock||!flock($lock,LOCK_EX|LOCK_NB))throw new RuntimeException('Another update is running');
   try{
@@ -119,6 +118,7 @@ try{
     if(!hash_equals($f['sha256'],hash('sha256',$bytes)))throw new RuntimeException('Checksum mismatch: '.$p);
     $staged[$p]=$bytes;
    }
+   if($backupDatabase){require_once __DIR__.'/app/Services/DeveloperBackup633.php';$dbBackup=DeveloperBackup633::backup();if(empty($dbBackup['name'])||empty($dbBackup['size']))throw new RuntimeException('Database backup failed');}
    $dir=$stateDir.'/rollback_'.gmdate('Ymd_His').'_'.bin2hex(random_bytes(3));
    if(!mkdir($dir,0700,true))throw new RuntimeException('Rollback directory cannot be created');
    foreach($staged as $p=>$b){if(isset($newFiles[$p]))continue;$to=$dir.'/'.$p;if(!is_dir(dirname($to)))mkdir(dirname($to),0700,true);if(!copy(__DIR__.'/'.$p,$to))throw new RuntimeException('Backup failed');}
@@ -134,6 +134,35 @@ try{
    }catch(Throwable $e){if($stateTmp!==null)@unlink($stateTmp);foreach($changed as $p){if(isset($newFiles[$p]))@unlink(__DIR__.'/'.$p);else @copy($dir.'/'.$p,__DIR__.'/'.$p);if(function_exists('opcache_invalidate'))@opcache_invalidate(__DIR__.'/'.$p,true);}if(is_string($oldState))@file_put_contents($stateFile,$oldState,LOCK_EX);elseif($oldState===null)@unlink($stateFile);throw $e;}
    }
   }finally{flock($lock,LOCK_UN);fclose($lock);}
+ return ['state'=>$state,'message'=>$msg,'database_backup'=>$dbBackup['name']??null];
+}
+function updateInstallRemote(string $release,string $commit):array {
+ if(!preg_match('/^0\.6\.\d+-p\d+$/D',$release)||!preg_match('/^[a-f0-9]{40}$/D',$commit))throw new RuntimeException('Invalid confirmed release');
+ $m=updateManifest();
+ if($m['_source']!=='GitHub API')throw new RuntimeException('Live GitHub release verification failed');
+ @set_time_limit(180);
+ $result=updateApply($m,'install',$release,$commit,true);
+ return ['installed_release'=>$result['state']['release'],'rollback_dir'=>$result['state']['rollback_dir']??null,'database_backup'=>$result['database_backup'],'commit'=>$commit,'message'=>$result['message']];
+}
+
+if(defined('SOLTAN_UPDATE_LIBRARY_ONLY')&&SOLTAN_UPDATE_LIBRARY_ONLY===true)return;
+require __DIR__.'/app/bootstrap.php';
+Auth::requireDeveloper();
+header('Cache-Control: no-store, no-cache, must-revalidate, private, max-age=0');
+header('Pragma: no-cache');header('Expires: 0');
+header('X-Robots-Tag: noindex, nofollow');
+$stateDir=__DIR__.'/storage/updates';
+$stateFile=$stateDir.'/current.json';
+$state=['release'=>'0.6.53-p2'];
+if(is_file($stateFile)){$stored=json_decode((string)file_get_contents($stateFile),true);if(is_array($stored)&&isset($stored['release']))$state=$stored;}
+
+$err='';$msg='';$m=null;
+try{
+ $m=updateManifest();
+ if(($_SERVER['REQUEST_METHOD']??'')==='POST'){
+  csrf_verify();
+  $result=updateApply($m,(string)($_POST['action']??''),(string)($_POST['release']??''),(string)($_POST['commit']??''));
+  $state=$result['state'];$msg=$result['message'];
  }
 }catch(Throwable $e){$err=$e->getMessage();Logger::error('developer.update_failed',['release'=>$m['release']??null,'error'=>$err]);}
 $current=(string)$state['release'];$latest=(string)($m['release']??'');$available=$m&&updatePriority($latest)>updatePriority($current);$migrationEntry=updateMigrationEntry($m);$migrationDone=false;$migrationError='';if($migrationEntry){try{$migrationDone=updateMigrationApplied();}catch(Throwable $e){$migrationError=$e->getMessage();}}

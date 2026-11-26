@@ -361,10 +361,37 @@ final class MaintenanceP13 {
         $a=['id'=>bin2hex(random_bytes(12)),'title'=>$title,'items'=>$items,'created_at'=>$now,'show_count'=>$showCount];
         $pdo=Database::connection();$pdo->beginTransaction();
         try{
+            self::lockUntil($pdo);if(self::active(self::read(),$now))throw new RuntimeException('به‌روزرسانی دیگری فعال است.');
             self::write($pdo,self::ANNOUNCEMENT,json_encode($a,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));
             self::write($pdo,self::UNTIL,(string)$until);$pdo->commit();
         }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
         return ['until'=>$until,'announcement'=>$a];
+    }
+    private static function lockUntil(PDO $pdo):void {
+        $sql=$pdo->getAttribute(PDO::ATTR_DRIVER_NAME)==='sqlite'?'INSERT OR IGNORE INTO settings(setting_key,setting_value) VALUES(?,?)':'INSERT IGNORE INTO settings(setting_key,setting_value) VALUES(?,?)';
+        $pdo->prepare($sql)->execute([self::UNTIL,'0']);
+        $st=$pdo->prepare('SELECT setting_value FROM settings WHERE setting_key=?'.($pdo->getAttribute(PDO::ATTR_DRIVER_NAME)==='mysql'?' FOR UPDATE':''));$st->execute([self::UNTIL]);$st->fetchColumn();
+    }
+    public static function stop(string $expectedId,int $uid):array {
+        if($uid<=0||!preg_match('/^[a-f0-9]{24}$/D',$expectedId))throw new RuntimeException('Invalid maintenance confirmation');
+        $pdo=Database::connection();$pdo->beginTransaction();
+        try{self::lockUntil($pdo);$state=self::read();if(!hash_equals((string)($state['announcement']['id']??''),$expectedId))throw new RuntimeException('Maintenance ID changed');if(self::active($state)){self::write($pdo,self::UNTIL,'0');$stopped=true;}else{$stopped=false;}$pdo->commit();}
+        catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
+        if($stopped&&class_exists('Logger'))Logger::audit('developer.maintenance_stopped',['user_id'=>$uid,'announcement_id'=>$expectedId,'until'=>$state['until']]);
+        return ['stopped'=>$stopped,'active'=>false,'announcement_id'=>$expectedId];
+    }
+    public static function describe(array $state,?int $now=null):array {
+        $now=$now??time();$until=(int)$state['until'];$tz=new DateTimeZone('Asia/Tehran');
+        return ['active'=>self::active($state,$now),'until'=>$until,'end_tehran'=>$until>0?(new DateTimeImmutable('@'.$until))->setTimezone($tz)->format(DATE_ATOM):null,'remaining_seconds'=>max(0,$until-$now),'announcement'=>$state['announcement']];
+    }
+    public static function prepareMcp(array $args,?int $now=null):array {
+        $now=$now??time();$mode=$args['mode']??null;$title=$args['title']??null;$items=$args['items']??null;$count=$args['show_count']??null;
+        if(!in_array($mode,['test','exact'],true)||!is_string($title)||trim($title)===''||mb_strlen(trim($title))>100||!is_array($items)||!array_is_list($items)||count($items)<1||count($items)>12||!is_int($count)||$count<1||$count>5)throw new RuntimeException('Invalid maintenance details');
+        foreach($items as $item)if(!is_string($item)||trim($item)===''||mb_strlen(trim($item))>200||preg_match('/\R/u',$item))throw new RuntimeException('Invalid announcement item');
+        $items=self::parseNotes(implode("\n",$items));
+        if($mode==='exact'){if(!is_string($args['date']??null)||!is_string($args['clock']??null))throw new RuntimeException('Exact Tehran date and time required');$until=self::exactDeadline($args['date'],$args['clock'],$now);}
+        else{if(isset($args['date'])||isset($args['clock']))throw new RuntimeException('Test mode does not accept a date or clock');$until=$now+60;}
+        return ['mode'=>$mode,'until'=>$until,'title'=>trim($title),'items'=>$items,'show_count'=>$count];
     }
     private static function seenKey(int $uid): string {return 'maintenance_seen_p13_'.$uid;}
     public static function pending(int $uid): ?array {
@@ -400,6 +427,10 @@ final class MaintenanceP13 {
         // Installer/CLI are not public application sessions. Cron is paused with the other HTTP endpoints.
         if(PHP_SAPI==='cli'||PHP_SAPI==='phpdbg'||str_contains((string)($_SERVER['SCRIPT_NAME']??''),'/install/'))return;
         $state=self::read();if(!self::active($state)){if($state['until']>0){$st=Database::connection()->prepare('UPDATE settings SET setting_value=? WHERE setting_key=? AND setting_value=?');$st->execute(['0',self::UNTIL,(string)$state['until']]);if($st->rowCount()&&class_exists('Logger'))Logger::system('developer.maintenance_finished',['until'=>$state['until']]);}return;}
+        // Maintenance exception is only transport-level: MCP enforces bearer, role, scope and an operation allowlist below.
+        if($script==='mcp.php')return;
+        // Existing OAuth refresh tokens must be renewable during longer maintenance; interactive authorization remains blocked.
+        if($script==='oauth.php'&&($_SERVER['REQUEST_METHOD']??'')==='POST'&&($_GET['endpoint']??'')==='token'&&($_POST['grant_type']??'')==='refresh_token')return;
         $now=time();$remaining=max(1,$state['until']-$now);
         // Clear application authentication on the next request, not the stored user record.
         unset($_SESSION['user'],$_SESSION['_security_version'],$_SESSION['_csrf']);
