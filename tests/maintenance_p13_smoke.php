@@ -101,6 +101,30 @@ $rejected=false;try{MaintenanceP13::start(1,'Duplicate','Item',1,$now);}catch(Ru
 $rejected=false;try{MaintenanceP13::stop(str_repeat('a',24),1);}catch(RuntimeException){$rejected=true;}mc($rejected&&MaintenanceP13::active(MaintenanceP13::read()),'P19 stale stop rejected');
 mc(MaintenanceP13::stop($state['announcement']['id'],1)['stopped']&&!MaintenanceP13::active(MaintenanceP13::read()),'P19 confirmed stop');
 mc(!MaintenanceP13::stop($state['announcement']['id'],1)['stopped'],'P19 stop is idempotent');
+$session=['_security_version'=>7];$sid='test-browser-a-p24';$other='test-browser-b-p24';
+MaintenanceP13::rememberBrowser($owner,$session,$sid);
+MaintenanceP13::rememberBrowser($owner,$session,$other);
+MaintenanceP13::rememberBrowser(['id'=>2,'role'=>'developer'],$session,'different-user-browser');
+MaintenanceP13::rememberBrowser(['id'=>1,'role'=>'admin'],$session,'ordinary-admin-browser');
+$p24=MaintenanceP13::start(1,'P24','one',1,$now,null,3,[],7);
+$binding=json_decode((string)Database::$pdo->query("SELECT setting_value FROM settings WHERE setting_key='maintenance_mcp_owner_p24'")->fetchColumn(),true);
+mc(MaintenanceP13::mcpOwnerMatches($p24,$binding,$session,$owner,$other,$now),'P24 last browser of MCP account allowed');
+mc(!MaintenanceP13::mcpOwnerMatches($p24,$binding,$session,$owner,$sid,$now),'P24 older same-account browser blocked');
+mc(!MaintenanceP13::mcpOwnerMatches($p24,$binding,$session,['id'=>2,'role'=>'developer'],$other,$now),'P24 different developer blocked');
+mc(!MaintenanceP13::mcpOwnerMatches($p24,$binding,$session,['id'=>1,'role'=>'admin'],$other,$now),'P24 admin blocked');
+mc(!MaintenanceP13::mcpOwnerMatches($p24,$binding,$session,null,$other,$now),'P24 unauthenticated browser blocked');
+mc(!MaintenanceP13::mcpOwnerMatches($p24,$binding,['_security_version'=>8],$owner,$other,$now),'P24 changed security version blocked');
+mc(!MaintenanceP13::mcpOwnerMatches($p24,$binding,$session,$owner,$other,$now+60),'P24 expired lock blocked');
+mc(!str_contains(json_encode(MaintenanceP13::describe($p24,$now)),(string)$binding['fingerprint']),'P24 binding absent from MCP response');
+mc(MaintenanceP13::publicOAuthDiscovery('oauth.php','GET','resource')&&MaintenanceP13::publicOAuthDiscovery('oauth.php','GET','metadata'),'P24 read-only OAuth discovery available');
+foreach([['oauth.php','POST','resource'],['oauth.php','GET','authorize'],['oauth.php','POST','register'],['oauth.php','POST','consent'],['index.php','GET','metadata']] as $bad)mc(!MaintenanceP13::publicOAuthDiscovery(...$bad),'P24 no discovery bypass '.$bad[2]);
+MaintenanceP13::stop($p24['announcement']['id'],1);
+$web=MaintenanceP13::start(1,'web','one',1,$now);
+$cleared=json_decode((string)Database::$pdo->query("SELECT setting_value FROM settings WHERE setting_key='maintenance_mcp_owner_p24'")->fetchColumn(),true);
+mc($cleared===[]&&!MaintenanceP13::mcpOwnerMatches($web,$binding,$session,$owner,$other,$now),'P24 web start clears MCP binding');
+MaintenanceP13::stop($web['announcement']['id'],1);
+
+
 foreach([['show_count'=>0],['items'=>["line\nbreak"]],['mode'=>'exact'],['date'=>'2026-01-01']] as $bad){$rejected=false;try{MaintenanceP13::prepareMcp(array_replace($args,$bad),$now);}catch(RuntimeException){$rejected=true;}mc($rejected,'P19 reject invalid maintenance');}
 $mcp=file_get_contents($root.'/mcp.php');mc(str_contains($mcp,"'admin:maintenance'")&&str_contains($mcp,"'admin:update'")&&str_contains($mcp,"Maintenance: operational tools are disabled"),'P19 scope and operational gate');
 
