@@ -97,8 +97,11 @@ mc(!MaintenanceP13::ownerSessionMatches($state,$marker,['id'=>1,'role'=>'admin']
 mc(!MaintenanceP13::ownerSessionMatches($state,$marker,null,$now),'P23 invalid or revoked login blocked');
 mc(!MaintenanceP13::ownerSessionMatches($state,['maintenance_owner_p23'=>['id'=>str_repeat('a',24),'uid'=>1]],$owner,$now),'P23 stale marker blocked');
 mc(!MaintenanceP13::ownerSessionMatches($state,$marker,$owner,$now+60),'P23 marker expires with lock');
+$rejected=false;try{MaintenanceP13::start(1,'Duplicate','Item',1,$now);}catch(RuntimeException){$rejected=true;}mc($rejected,'P19 no overwrite of active maintenance');
+$rejected=false;try{MaintenanceP13::stop(str_repeat('a',24),1);}catch(RuntimeException){$rejected=true;}mc($rejected&&MaintenanceP13::active(MaintenanceP13::read()),'P19 stale stop rejected');
+mc(MaintenanceP13::stop($state['announcement']['id'],1)['stopped']&&!MaintenanceP13::active(MaintenanceP13::read()),'P19 confirmed stop');
+mc(!MaintenanceP13::stop($state['announcement']['id'],1)['stopped'],'P19 stop is idempotent');
 $session=['_security_version'=>7];$sid='test-browser-a-p24';$other='test-browser-b-p24';
-MaintenanceP13::stop($state['announcement']['id'],1);
 MaintenanceP13::rememberBrowser($owner,$session,$sid);
 MaintenanceP13::rememberBrowser($owner,$session,$other);
 MaintenanceP13::rememberBrowser(['id'=>2,'role'=>'developer'],$session,'different-user-browser');
@@ -121,10 +124,7 @@ $cleared=json_decode((string)Database::$pdo->query("SELECT setting_value FROM se
 mc($cleared===[]&&!MaintenanceP13::mcpOwnerMatches($web,$binding,$session,$owner,$other,$now),'P24 web start clears MCP binding');
 MaintenanceP13::stop($web['announcement']['id'],1);
 
-$rejected=false;try{MaintenanceP13::start(1,'Duplicate','Item',1,$now);}catch(RuntimeException){$rejected=true;}mc($rejected,'P19 no overwrite of active maintenance');
-$rejected=false;try{MaintenanceP13::stop(str_repeat('a',24),1);}catch(RuntimeException){$rejected=true;}mc($rejected&&MaintenanceP13::active(MaintenanceP13::read()),'P19 stale stop rejected');
-mc(MaintenanceP13::stop($state['announcement']['id'],1)['stopped']&&!MaintenanceP13::active(MaintenanceP13::read()),'P19 confirmed stop');
-mc(!MaintenanceP13::stop($state['announcement']['id'],1)['stopped'],'P19 stop is idempotent');
+
 foreach([['show_count'=>0],['items'=>["line\nbreak"]],['mode'=>'exact'],['date'=>'2026-01-01']] as $bad){$rejected=false;try{MaintenanceP13::prepareMcp(array_replace($args,$bad),$now);}catch(RuntimeException){$rejected=true;}mc($rejected,'P19 reject invalid maintenance');}
 $mcp=file_get_contents($root.'/mcp.php');mc(str_contains($mcp,"'admin:maintenance'")&&str_contains($mcp,"'admin:update'")&&str_contains($mcp,"Maintenance: operational tools are disabled"),'P19 scope and operational gate');
 
