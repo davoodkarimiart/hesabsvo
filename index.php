@@ -567,7 +567,7 @@ function reportImageShareFallback(){const a=document.getElementById('reportImage
 
 <section class="dev14" dir="rtl">
  <header class="dev14-head"><div><span class="dev14-kicker">DEVELOPER / سلطان حساب</span><h1>مرکز مدیریت سیستم</h1><p>کنترل نسخه‌ها، سلامت و نگهداری</p></div><a class="dev14-back" href="index.php?page=dashboard">بازگشت</a></header>
- <nav class="dev14-nav" aria-label="ابزارهای توسعه‌دهنده"><a href="update_center.php"><b>مرکز به‌روزرسانی</b><small>نسخه و نصب</small></a><a href="developer_diagnostics.php"><b>لاگ و عیب‌یابی</b><small>خطاها و رویدادها</small></a><a href="developer_backups.php"><b>بکاپ و تلگرام</b><small>نسخه پشتیبان</small></a><a href="mcp_connections.php"><b>اتصالات MCP</b><small>مجوزها و دسترسی</small></a></nav>
+ <nav class="dev15-nav" aria-label="ناوبری مدیریت"><a href="index.php?page=health" aria-current="page">مدیریت سیستم</a><a href="update_center.php">به‌روزرسانی</a><a href="developer_diagnostics.php">لاگ‌ها</a><a href="developer_backups.php">بکاپ</a><a href="mcp_connections.php">MCP</a></nav>
  <section class="dev14-card"><div class="dev14-heading"><div><h2>مدیریت به‌روزرسانی</h2><p>زمان بازگشایی و اعلان امکانات را تنظیم کن.</p></div><span class="dev14-status">● سایت فعال است</span></div>
  <form id="dev14Form" method="post" action="index.php?page=health">
  <?=csrf_field()?><input type="hidden" name="action" value="maintenance_start"><input type="hidden" name="maintenance_notes" id="dev14Notes">
@@ -643,7 +643,7 @@ document.addEventListener('click',e=>{const d=e.target;if(d instanceof HTMLDialo
    const overallFinal=overallVals.at(-1)||0;legend.innerHTML=`<span class="overall"><i></i>مجموع کل: ${statusText(overallFinal)} ${money(Math.abs(overallFinal))}</span>`+series.map(sr=>`<span><i style="background:${sr.color}"></i>${esc(sr.name)}: ${statusText(sr.final)} ${money(Math.abs(sr.final))}</span>`).join('');
    svg.querySelectorAll('[data-value]').forEach(dot=>{const fn=e=>showTip(e,dot.dataset.label,dot.dataset.date,Number(dot.dataset.value));dot.addEventListener('mouseenter',fn);dot.addEventListener('focus',fn);dot.addEventListener('click',fn);dot.addEventListener('mouseleave',hideTip);dot.setAttribute('tabindex','0')});
  }
- buttons.forEach(b=>b.addEventListener('click',()=>render(Number(b.dataset.days)||30)));render(30);
+ buttons.forEach(b=>b.addEventListener('click',()=>render(Number(b.dataset.days)||30)));render(30);let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>render(Number(buttons.find(b=>b.classList.contains('active'))?.dataset.days)||30),100)});
 })();;
 (function(){
  const clean=v=>String(v??'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/,/g,'').trim();

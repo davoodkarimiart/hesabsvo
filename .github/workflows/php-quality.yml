@@ -35,10 +35,10 @@ jobs:
           php tests/auth630_security_smoke.php
       - name: Period transfer regression and generated XLSX
         run: |
-          php -m | grep -qi '^zip
-
-          php -m | grep -qi '^pdo_sqlite
+          php -m | grep -qi '^zip$'
+          php -m | grep -qi '^pdo_sqlite$'
 
           php tests/period_transfer_p4_smoke.php
           php tests/update_migration_bridge_smoke.php
           php tests/maintenance_p13_smoke.php
+          php tests/ui_p15_smoke.php
