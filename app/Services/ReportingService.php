@@ -324,3 +324,81 @@ final class ExpenseService {
         $pdo->prepare('INSERT INTO operating_expense_revisions(expense_id,action_type,before_json,after_json,changed_by) VALUES(?,?,?,?,?)')->execute([$id,$action,$before===null?null:$encode($before),$encode($after),$uid]);
     }
 }
+
+
+/**
+ * Maintenance gate loaded by the shared HTTP bootstrap via this service.
+ * Kept here for the existing 1.3 updater's cumulative path allowlist.
+ * Uses the existing settings table; no financial rows or new schema.
+ */
+final class MaintenanceP13 {
+    public const UNTIL='maintenance_until_p13';
+    public const ANNOUNCEMENT='maintenance_announcement_p13';
+    public static function read(): array {
+        $st=Database::connection()->prepare('SELECT setting_key,setting_value FROM settings WHERE setting_key IN (?,?)');
+        $st->execute([self::UNTIL,self::ANNOUNCEMENT]);$r=$st->fetchAll(PDO::FETCH_KEY_PAIR);
+        $until=(int)($r[self::UNTIL]??0);
+        $a=json_decode((string)($r[self::ANNOUNCEMENT]??''),true);
+        return ['until'=>max(0,$until),'announcement'=>is_array($a)?$a:[]];
+    }
+    public static function active(array $state,?int $now=null): bool {return (int)$state['until']>($now??time());}
+    public static function parseNotes(string $raw): array {
+        $lines=preg_split('/\R/u',trim($raw))?:[];$out=[];
+        foreach($lines as $line){$line=trim($line);if($line==='')continue;if(mb_strlen($line)>200)throw new RuntimeException('هر مورد حداکثر ۲۰۰ نویسه باشد.');$out[]=$line;}
+        if(count($out)<1||count($out)>12)throw new RuntimeException('بین ۱ تا ۱۲ مورد، هر مورد در یک خط وارد کن.');
+        return $out;
+    }
+    private static function write(PDO $pdo,string $key,string $value): void {
+        $sql=$pdo->getAttribute(PDO::ATTR_DRIVER_NAME)==='sqlite'
+          ?'INSERT INTO settings(setting_key,setting_value) VALUES(?,?) ON CONFLICT(setting_key) DO UPDATE SET setting_value=excluded.setting_value'
+          :'INSERT INTO settings(setting_key,setting_value) VALUES(?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)';
+        $pdo->prepare($sql)->execute([$key,$value]);
+    }
+    public static function start(int $minutes,string $title,string $raw,int $uid,?int $now=null): array {
+        if($uid<=0||$minutes<1||$minutes>10080)throw new RuntimeException('مدت تعمیرات باید بین ۱ دقیقه و ۷ روز باشد.');
+        $title=trim($title);if($title===''||mb_strlen($title)>100)throw new RuntimeException('عنوان اعلان حداکثر ۱۰۰ نویسه باشد.');
+        $items=self::parseNotes($raw);$now=$now??time();$until=$now+$minutes*60;
+        $a=['id'=>bin2hex(random_bytes(12)),'title'=>$title,'items'=>$items,'created_at'=>$now];
+        $pdo=Database::connection();$pdo->beginTransaction();
+        try{
+            self::write($pdo,self::ANNOUNCEMENT,json_encode($a,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));
+            self::write($pdo,self::UNTIL,(string)$until);$pdo->commit();
+        }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
+        return ['until'=>$until,'announcement'=>$a];
+    }
+    private static function seenKey(int $uid): string {return 'maintenance_seen_p13_'.$uid;}
+    public static function pending(int $uid): ?array {
+        if($uid<=0)return null;
+        $state=self::read();$a=$state['announcement'];
+        if(self::active($state)||empty($a['id'])||empty($a['items'])||!is_array($a['items']))return null;
+        $st=Database::connection()->prepare('SELECT setting_value FROM settings WHERE setting_key=?');$st->execute([self::seenKey($uid)]);
+        return $st->fetchColumn()===$a['id']?null:$a;
+    }
+    public static function acknowledge(int $uid,string $id): void {
+        $a=self::pending($uid);
+        if(!$a||!hash_equals((string)$a['id'],$id))return;
+        self::write(Database::connection(),self::seenKey($uid),$id);
+    }
+    public static function gate(): void {
+        $script=basename((string)($_SERVER['SCRIPT_FILENAME']??$_SERVER['SCRIPT_NAME']??''));
+        // Installer/CLI are not public application sessions. Cron is paused with the other HTTP endpoints.
+        if(PHP_SAPI==='cli'||PHP_SAPI==='phpdbg'||str_contains((string)($_SERVER['SCRIPT_NAME']??''),'/install/'))return;
+        $state=self::read();if(!self::active($state))return;
+        $now=time();$remaining=max(1,$state['until']-$now);
+        // Clear application authentication on the next request, not the stored user record.
+        unset($_SESSION['user'],$_SESSION['_security_version'],$_SESSION['_csrf']);
+        http_response_code(503);header('Cache-Control: no-store, no-cache, must-revalidate, private, max-age=0');
+        header('Pragma: no-cache');header('Retry-After: '.$remaining);header('X-Robots-Tag: noindex, nofollow');
+        if(in_array($script,['mcp.php','oauth.php'],true)||str_contains((string)($_SERVER['HTTP_ACCEPT']??''),'application/json')){
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode($script==='mcp.php'?['jsonrpc'=>'2.0','id'=>null,'error'=>['code'=>-32000,'message'=>'Maintenance','data'=>['retry_after'=>$remaining]]]:['error'=>'temporarily_unavailable','retry_after'=>$remaining]);exit;
+        }
+        header('Content-Type: text/html; charset=utf-8');
+        $end=e(date('Y-m-d H:i:s',$state['until']));
+        echo '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>سلطان حساب | در حال به‌روزرسانی</title><style>
+@font-face{font-family:Vazir;src:url("assets/fonts/vazirmatn-400.woff2") format("woff2");font-display:swap}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at top,#e9e2ff,#f5f7fc 55%,#eef2f9);font-family:Vazir,Tahoma,sans-serif;color:#172033}main{width:min(100%,490px);padding:34px 24px;background:#fff;border:1px solid #dce3ef;border-radius:25px;box-shadow:0 20px 65px #35236a18;text-align:center}img{width:68px;height:68px}h1{font-size:23px;margin:15px 0 8px}p{color:#52627a;line-height:1.9;font-size:14px}.tag{display:inline-block;color:#5b21b6;background:#f2edff;border-radius:20px;padding:5px 14px;font-weight:700;font-size:12px}.timer{direction:ltr;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:24px 0}.timer>div{background:#f4f1ff;border:1px solid #e5ddff;border-radius:14px;padding:14px 4px}.timer b{display:block;font:700 clamp(23px,7vw,36px) Tahoma;color:#4318b8;font-variant-numeric:tabular-nums}.timer small{font-size:12px;color:#566078}button{border:0;border-radius:12px;background:#4318b8;color:#fff;font:700 14px Vazir,Tahoma;padding:12px 20px;cursor:pointer}footer{margin-top:22px;font-size:11px;color:#64748b}</style></head><body><main><img src="assets/brand/pwa-192.png" alt="سلطان حساب"><br><span class="tag">به‌روزرسانی سیستم</span><h1>سلطان حساب در حال به‌روزرسانی است</h1><p>برای بهبود امکانات، ورود موقتاً متوقف شده است. پس از پایان زمان، دوباره می‌توانید وارد شوید.</p><div class="timer" aria-label="زمان باقی‌مانده"><div><b id="hh">00</b><small>ساعت</small></div><div><b id="mm">00</b><small>دقیقه</small></div><div><b id="ss">00</b><small>ثانیه</small></div></div><p>پایان برنامه‌ریزی‌شده: <b dir="ltr">'.$end.'</b></p><button type="button" id="retry">بررسی دوباره</button><footer>ممنون از شکیبایی شما · سلطان حساب</footer></main><script>const initial='.$remaining.',started=performance.now(),pad=n=>String(n).padStart(2,"0");function tick(){const n=Math.max(0,initial-Math.floor((performance.now()-started)/1000));document.getElementById("hh").textContent=pad(Math.floor(n/3600));document.getElementById("mm").textContent=pad(Math.floor(n/60)%60);document.getElementById("ss").textContent=pad(n%60);if(n===0)location.replace("index.php?page=login");}document.getElementById("retry").onclick=()=>location.replace("index.php?page=login");tick();setInterval(tick,250);</script></body></html>';exit;
+    }
+}
+// Every application HTTP entry point includes app/bootstrap.php, which loads this file.
+// Direct service includes in CLI tests must remain side-effect free.
+if(in_array(dirname(__DIR__).'/bootstrap.php',get_included_files(),true))MaintenanceP13::gate();
