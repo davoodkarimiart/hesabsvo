@@ -5,7 +5,7 @@
   "files": [
     {
       "path": "app/Services/ReportingService.php",
-      "sha256": "0068c47792d1c5d4f9ee370020f3f9cee30bbe05459af2a27d709fc60e366806"
+      "sha256": "af91921b4874fd522776d40d7b46f5b83e3a7b9b491e5014f4d6b2ad55898b3e"
     },
     {
       "path": "app/Services/TransferService.php",
