@@ -181,3 +181,56 @@ foreach([$d,$history,$expenseReport] as $data){
   $zip->close();unlink($script);unlink($file);
  }else{echo "[SKIP] ZipArchive not available".PHP_EOL;}
 }
+
+
+// P12: render actual expense pages and the independent report in browser fixtures.
+if(!class_exists('Auth',false)){class Auth{public static function check():bool{return true;}}}
+if(!function_exists('csrf_field')){function csrf_field():string{return '<input type="hidden" name="csrf" value="fixture">';}}
+if($chrome!==''){
+ $companies=[['id'=>1,'name'=>'Fixture'],['id'=>2,'name'=>'Other']];
+ $fixtures=[];
+ foreach(['expense_new','expense_list'] as $transferTab){
+   $_GET=['tab'=>$transferTab];ob_start();require $root.'/expense_page.php';$fixtures[$transferTab]=ob_get_clean();
+ }
+ $reportData=$expenseReport;$rf=$expenseReport['filters'];$_GET=$rf;$qs=http_build_query($rf);$selectedCustomerName='';$reportError='';
+ ob_start();eval('?>'.$template);$fixtures['expense_history']=ob_get_clean();
+ $head='<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="file://'.$root.'/"><link rel="stylesheet" href="assets/app.css"><link rel="stylesheet" href="assets/transfer619.css"><script defer src="assets/svo-image617.js"></script><script>window.appAlert=msg=>{throw Error(msg)};</script></head><body>';
+ $tail=<<<'HTML'
+<script>
+window.addEventListener('load',async()=>{
+ try {
+  const f=document.querySelector('.expense-form');
+  if(f){
+   const g=f.querySelector('.expense-form-grid'),labels=[...g.querySelectorAll(':scope>label')];
+   const controls=labels.map(l=>l.querySelector('select,input:not([type=hidden]),.tc-date-open')).filter(Boolean);
+   if(controls.length<4)throw Error('expense form controls');
+   const a=controls[0].getBoundingClientRect(),b=controls[1].getBoundingClientRect();
+   if(Math.abs(a.top-b.top)>2||Math.abs(a.height-b.height)>2)throw Error('expense form misaligned '+[a.top,b.top,a.height,b.height]);
+   for(const icon of f.querySelectorAll('.tc-date-icon svg'))if(icon.getBoundingClientRect().width!==19)throw Error('expense calendar icon');
+   for(const c of f.querySelectorAll('.tc-clear-date'))if(!c.hidden||getComputedStyle(c).display!=='none')throw Error('empty clear button');
+   if(f.scrollWidth>f.clientWidth+2)throw Error('expense form overflow');
+   if(document.querySelector('.expense-card a[href*="type=expense_history"]'))throw Error('redundant report link');
+   if(innerWidth<=700&&f.classList.contains('expense-entry-form')){
+    const ar=f.querySelector('.expense-amount-field').getBoundingClientRect(),sr=f.querySelector('.expense-subject-field').getBoundingClientRect();
+    if(Math.abs(ar.width-sr.width)>2||ar.width<g.clientWidth-2)throw Error('mobile amount not full width');
+   }
+  }else{
+   const t=document.getElementById('reportDataTable'),cells=[...t.tBodies[0].rows[0].cells],expected=['rgb(229, 198, 168)','rgb(188, 227, 195)','rgb(215, 192, 237)','rgb(184, 221, 242)'];
+   for(let i=0;i<cells.length;i++){const st=getComputedStyle(cells[i]);if(st.backgroundColor!==expected[i]||parseFloat(st.fontSize)<11)throw Error('expense report readability '+i+' '+st.backgroundColor+' '+st.fontSize);}
+   const result=await makeReportImage();if(!result||result.size<1000)throw Error('expense PNG missing');
+  }
+  document.body.setAttribute('data-expense-browser','PASS');
+ }catch(e){document.body.setAttribute('data-expense-browser','FAIL '+String(e));}
+});
+</script></body></html>
+HTML;
+ foreach($fixtures as $name=>$body){
+  $file=tempnam(sys_get_temp_dir(),'p12html').'.html';file_put_contents($file,$head.$body.$tail);
+  foreach(['390,844','1440,900'] as $viewport){
+   $out=[];$cmd=escapeshellarg($chrome).' --headless --no-sandbox --disable-dev-shm-usage --allow-file-access-from-files --window-size='.$viewport.' --virtual-time-budget=12000 --dump-dom '.escapeshellarg('file://'.$file).' 2>/dev/null';
+   exec($cmd,$out,$status);$dom=implode("\n",$out);preg_match('/data-expense-browser="[^"]*"/',$dom,$marker);echo ($marker[0]??'missing marker').PHP_EOL;
+   p4check($status===0&&str_contains($dom,'data-expense-browser="PASS"'),'P12 actual '.$name.' '.$viewport);
+  }
+  unlink($file);
+ }
+}
