@@ -69,5 +69,5 @@ $base=['page'=>'transfers','tab'=>'expense_list','company'=>$company,'from'=>$fr
 <?php if($pages>1):?><div class="expense-actions"><?php if($p>1):?><a class="btn ghost" href="<?=e('index.php?'.http_build_query($base+['p'=>$p-1]))?>">قبلی</a><?php endif;?><span><?=e($p)?> / <?=e($pages)?></span><?php if($p<$pages):?><a class="btn ghost" href="<?=e('index.php?'.http_build_query($base+['p'=>$p+1]))?>">بعدی</a><?php endif;?></div><?php endif;?>
 </section>
 <?php endif;?>
-<script defer src="assets/transfer-calendar620.js?v=654"></script>
+<script defer src="assets/transfer-calendar620.js?v=663"></script>
 <script>(()=>{const el=document.getElementById('expenseAmount');if(!el)return;const digits=s=>s.replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));const render=()=>{const v=digits(el.value).replace(/[,٬]/g,'');const valid=/^[0-9]{1,15}$/.test(v)&&!/^0+$/.test(v);el.setCustomValidity(valid||v===''?'':'مبلغ صحیح مثبت، حداکثر ۱۵ رقم');if(valid)el.value=v.replace(/\B(?=(\d{3})+(?!\d))/g,',');};el.addEventListener('input',render);if(el.value)render();})();</script>

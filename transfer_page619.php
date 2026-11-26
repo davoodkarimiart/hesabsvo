@@ -90,7 +90,7 @@ $companiesForJs=array_map(fn($c)=>['id'=>(int)$c['id'],'name'=>(string)$c['name'
 window.TRANSFER_SETUP619=<?=json_encode(['companies'=>$companiesForJs,'defaultStart'=>$defaultStart,'defaultEnd'=>$defaultEnd,'edit'=>$editTransfer?[
 'id'=>(int)$editTransfer['id'],'company_id'=>(int)$editTransfer['company_id'],'period_type'=>$editTransfer['period_type'],'period_start'=>$editTransfer['period_start'],'period_end'=>$editTransfer['period_end'],'site_usd_applied'=>$editTransfer['site_usd_applied'],'site_usd_calculated'=>$editTransfer['site_usd_calculated'],'override_reason'=>$editTransfer['override_reason'],'transfer_percent'=>$editTransfer['transfer_percent'],'usd_rate_toman'=>$editTransfer['usd_rate_toman'],'notes'=>$editTransfer['notes']
 ]:null],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG)?>;
-</script><script defer src="assets/transfer-calendar620.js?v=654"></script><script defer src="assets/transfer619.js?v=655"></script>
+</script><script defer src="assets/transfer-calendar620.js?v=663"></script><script defer src="assets/transfer619.js?v=655"></script>
 <?php else: ?>
 <section class="card transfer-history">
  <h2>سوابق و مدیریت ترانسفرها</h2>
@@ -124,7 +124,7 @@ window.TRANSFER_SETUP619=<?=json_encode(['companies'=>$companiesForJs,'defaultSt
  </tbody></table></div>
  <dialog id="transferOperationsDialog" class="app-dialog transfer-actions-modal" aria-label="عملیات ترانسفر"><div class="dialog-card transfer-actions-sheet"><div class="dialog-head"><div><b id="transferActionHeading">عملیات ترانسفر</b><small id="transferActionCompany">رسید و مدیریت سند</small></div><button class="ghost icon-btn" type="button" id="transferActionsClose">×</button></div><div class="transfer-actions-grid"><a id="transferActionView" class="btn primary" href="#">مشاهده رسید و جزئیات</a><a id="transferActionEdit" class="btn ghost" href="#">ویرایش ترانسفر</a></div><section id="transferActionVoidSection" class="transfer-action-void"><details><summary>ابطال سند با حفظ سابقه</summary><form method="post" action="index.php?page=transfers&tab=list" data-confirm="ترانسفر نهایی با ذکر دلیل باطل شود؟ سابقه حذف نمی‌شود."><?=csrf_field()?><input type="hidden" name="action" value="transfer_void"><input type="hidden" name="transfer_id" id="transferActionVoidId"><label>دلیل ابطال<input name="void_reason" minlength="3" required placeholder="دلیل ابطال"></label><button type="submit" class="danger">تأیید ابطال</button></form></details></section></div></dialog>
  <nav class="transfer-pagination" aria-label="صفحه‌بندی سوابق"><?php if($transferList['page']>1):?><a href="index.php?<?=e(http_build_query($transferBaseQuery+['p'=>$transferList['page']-1]))?>">صفحه قبل</a><?php endif;?><span>صفحه <?=e((string)$transferList['page'])?> از <?=e((string)$transferList['pages'])?></span><?php if($transferList['page']<$transferList['pages']):?><a href="index.php?<?=e(http_build_query($transferBaseQuery+['p'=>$transferList['page']+1]))?>">صفحه بعد</a><?php endif;?></nav>
- <script defer src="assets/transfer-calendar620.js?v=654"></script>
+ <script defer src="assets/transfer-calendar620.js?v=663"></script>
  <script defer src="assets/transfer-history620.js?v=621"></script>
 </section>
 <?php if($viewTransfer): ?>

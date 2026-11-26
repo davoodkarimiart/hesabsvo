@@ -535,3 +535,28 @@ body #reportDataTable.expense-history-table tr>:is(th,td):nth-child(4){backgroun
  .p5-report-extra #p11NetTable td b{font-size:clamp(11px,3.5vw,15px)!important}
  .p5-report-extra #p4TransferTable :is(th,td),.p5-report-extra #p4PanelTable :is(th,td){font-size:clamp(10px,2.8vw,12px)!important}
 }
+
+/* P13 calendar consistency: icon-only clear, never a floating text label. */
+.expense-card .tc-report-input .tc-clear-date{font-size:0!important;line-height:1!important;overflow:hidden!important;place-items:center;display:grid!important;white-space:nowrap!important}
+.expense-card .tc-report-input .tc-clear-date::before{content:"×";font-size:18px;font-weight:700;line-height:1}
+.expense-card .tc-report-input .tc-clear-date[hidden]{display:none!important}
+.expense-card .tc-report-input .tc-date-open{padding-inline-start:37px!important;padding-inline-end:32px!important}
+.expense-card .expense-entry-form .tc-report-input .tc-date-open{padding-inline-start:12px!important}
+.expense-card .tc-report-input:has(.tc-clear-date[hidden]) .tc-date-open{padding-inline-start:12px!important}
+#reportUploadForm .entry-params{align-items:start!important}
+#reportUploadForm .entry-params>label{display:flex!important;flex-direction:column;gap:5px!important;min-width:0}
+#reportUploadForm .entry-params>label>input:not([type=hidden]),#reportUploadForm .entry-params>label>select,#reportUploadForm .entry-date .tc-report-input,#reportUploadForm .entry-date .tc-date-open{height:44px!important;min-height:44px!important;max-height:44px!important;margin:0!important;box-sizing:border-box}
+#reportUploadForm .entry-date .tc-date-open{padding:3px 9px 3px 30px!important;gap:0!important;border-radius:10px!important}
+#reportUploadForm .entry-date .tc-date-main{font-size:12px!important;line-height:1.3!important}
+#reportUploadForm .entry-date .tc-date-secondary{font-size:10px!important;line-height:1.2!important}
+#reportUploadForm .entry-date .tc-date-icon{top:50%;left:8px;transform:translateY(-50%);font-size:0}
+#reportUploadForm .entry-date .tc-date-icon svg{display:block;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+/* Final result must read as a distinct conclusion, not another detail row. */
+.p5-report-extra #p11NetTable{margin-top:22px!important;border:3px solid #b91c1c!important;outline:none!important}
+.p5-report-extra #p11NetTable :is(th,td){background:#f8fafc!important;height:60px!important;padding:15px 5px!important;font-size:19px!important;font-weight:900!important;border:1px solid #111!important}
+.p5-report-extra #p11NetTable td b{font-size:23px!important;font-weight:900!important}
+.p13-net-divider{border:0;border-top:2px solid #b91c1c;margin:16px 0 0;width:100%}
+@media(max-width:700px){.p5-report-extra #p11NetTable :is(th,td){height:52px!important;font-size:clamp(13px,3.65vw,16px)!important;padding:9px 2px!important}.p5-report-extra #p11NetTable td b{font-size:clamp(12px,3.45vw,16px)!important}.p5-report-extra #p11NetTable{margin-top:12px!important}.p13-net-divider{margin-top:12px}}
+.maintenance-admin-card{margin:16px 0;padding:18px}.maintenance-admin-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}.maintenance-admin-head h2{margin:0 0 6px}.maintenance-admin-head p{font-size:13px;color:#64748b;line-height:1.7;margin:0 0 12px}.maintenance-ready{background:#dcfce7;color:#166534;padding:5px 10px;border-radius:12px;font-size:12px;font-weight:700}.maintenance-presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.maintenance-presets button{padding:8px 4px!important;min-height:42px}.maintenance-sql{white-space:pre-wrap;overflow-wrap:anywhere;background:#eef2f7;padding:12px;border-radius:10px;font-size:12px}.maintenance-start{width:100%;background:#b91c1c!important;color:white!important}
+.maintenance-announcement{border:1px solid #dce3ef;border-radius:22px;padding:0;width:min(440px,calc(100vw - 28px));max-height:85dvh;overflow:auto;background:white;color:#172033;box-shadow:0 20px 80px #0003}.maintenance-announcement::backdrop{background:#17203388;backdrop-filter:blur(3px)}.maintenance-popup-body{padding:24px;text-align:right}.maintenance-popup-icon{width:48px;height:48px;margin:0 auto 10px;display:grid;place-items:center;border-radius:50%;background:#dcfce7;color:#15803d;font-size:28px;font-weight:900}.maintenance-popup-kicker{display:block;text-align:center;font-size:12px;color:#15803d;font-weight:700}.maintenance-popup-body h2{text-align:center;font-size:20px;margin:8px 0}.maintenance-popup-body p{font-size:13px;color:#64748b}.maintenance-popup-body ul{list-style:none;margin:14px 0 20px;padding:0;display:grid;gap:8px}.maintenance-popup-body li{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #e7edf5;color:#144ba6;font-size:14px;line-height:1.7}.maintenance-popup-body li span{color:#15803d;font-size:17px;flex:none}.maintenance-popup-body button{width:100%}
+@media(max-width:480px){.maintenance-presets{grid-template-columns:repeat(2,minmax(0,1fr))}.maintenance-popup-body{padding:18px}}
