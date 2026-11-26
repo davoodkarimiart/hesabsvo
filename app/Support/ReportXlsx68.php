@@ -52,7 +52,7 @@ final class ReportXlsx68 {
             // Separate date strings from Persian labels: some Excel viewers reverse even bidi-marked mixed strings.
             $merges=['A1:'.$end.'1'];$dates=$options['dates']??[];$unit=(string)($options['unit']??'تومان');
             $body.='<row r="2" ht="32" customHeight="1">';$unitEnd=$n-5;
-            $body.=self::cell('مبالغ به '.$unit,'A',2,2);if($unitEnd>0){$merges[]='A2:'.self::col($unitEnd).'2';for($j=1;$j<=$unitEnd;$j++)$body.=self::cell('',self::col($j),2,2);}
+            if($n>=5)$body.=self::cell('مبالغ به '.$unit,'A',2,2);if($unitEnd>0){$merges[]='A2:'.self::col($unitEnd).'2';for($j=1;$j<=$unitEnd;$j++)$body.=self::cell('',self::col($j),2,2);}
             $body.=self::cell((string)($dates['to']??'—'),self::col($n-4),2,21).self::cell('تا تاریخ',self::col($n-3),2,2).self::cell((string)($dates['from']??'—'),self::col($n-2),2,21).self::cell('از تاریخ',self::col($n-1),2,2).'</row>';
         }else $body.='<row r="2" ht="32" customHeight="1">'.self::cell($subtitle,'A',2,2).'</row>';
         $body.='<row r="3" ht="27" customHeight="1">';
@@ -88,7 +88,7 @@ final class ReportXlsx68 {
                     elseif($type==='ltr')$style=21;
                     elseif(!is_numeric($value)&&$style===0)$style=54;
                     elseif(is_numeric($value)&&in_array($type,['received','paid','commission'],true))$style=match($type){'received'=>25,'paid'=>26,default=>27};
-                    if($style<0||$style>54)throw new RuntimeException('Invalid style');
+                    if($style<0||$style>61)throw new RuntimeException('Invalid style');
                     if(isset($covered[$j])&&$covered[$j]!==$j)$value='';
                 }
                 $body.=self::cell($value,self::col($j),$r,$style);
@@ -116,14 +116,14 @@ final class ReportXlsx68 {
           .'<font><b/><sz val="13"/><name val="Tahoma"/></font>'
           .'<font><b/><sz val="13"/><color rgb="FFB91C1C"/><name val="Tahoma"/></font>'
           .'<font><b/><sz val="13"/><color rgb="FF1456AD"/><name val="Tahoma"/></font>'
-          .''.($modern?'<font><b/><sz val="11"/><color rgb="FF08752D"/><name val="Tahoma"/></font><font><b/><sz val="11"/><color rgb="FF111111"/><name val="Tahoma"/></font>':'').'</fonts><fills count="'.($modern?16:7).'"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>'
+          .''.($modern?'<font><b/><sz val="11"/><color rgb="FF08752D"/><name val="Tahoma"/></font><font><b/><sz val="11"/><color rgb="FF111111"/><name val="Tahoma"/></font>':'').'</fonts><fills count="'.($modern?17:7).'"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>'
           .'<fill><patternFill patternType="solid"><fgColor rgb="FF35456A"/></patternFill></fill>'
           .'<fill><patternFill patternType="solid"><fgColor rgb="FFF1F5F9"/></patternFill></fill>'
           .'<fill><patternFill patternType="solid"><fgColor rgb="FF'.($modern?$palette['commission']:'D8EEE4').'"/></patternFill></fill>'
           .'<fill><patternFill patternType="solid"><fgColor rgb="FF'.($modern?$palette['received']:'FEDFE3').'"/></patternFill></fill>'
           .'<fill><patternFill patternType="solid"><fgColor rgb="FF'.($modern?$palette['paid']:'D6EDF6').'"/></patternFill></fill>'
-           .($modern?'<fill><patternFill patternType="solid"><fgColor rgb="FF'.$palette['win'].'"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF'.$palette['loss'].'"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD7C0ED"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE5C6A8"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFBCE3C3"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFB8DDF2"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFAFE7C1"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF3A7AD"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE4F77C"/></patternFill></fill>':'')
-          .'</fills><borders count="2"><border/><border><left style="thin"><color rgb="FF'.($modern?'475569':'CBD5E1').'"/></left><right style="thin"><color rgb="FF'.($modern?'475569':'CBD5E1').'"/></right><top style="thin"><color rgb="FF'.($modern?'475569':'CBD5E1').'"/></top><bottom style="thin"><color rgb="FF'.($modern?'475569':'CBD5E1').'"/></bottom></border></borders>'
+           .($modern?'<fill><patternFill patternType="solid"><fgColor rgb="FF'.$palette['win'].'"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF'.$palette['loss'].'"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD7C0ED"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE5C6A8"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFBCE3C3"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFB8DDF2"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFAFE7C1"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF3A7AD"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE4F77C"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE2E8F0"/></patternFill></fill>':'')
+          .'</fills><borders count="'.($modern?3:2).'"><border/><border><left style="thin"><color rgb="FF'.($modern?'475569':'CBD5E1').'"/></left><right style="thin"><color rgb="FF'.($modern?'475569':'CBD5E1').'"/></right><top style="thin"><color rgb="FF'.($modern?'475569':'CBD5E1').'"/></top><bottom style="thin"><color rgb="FF'.($modern?'475569':'CBD5E1').'"/></bottom></border>'.($modern?'<border><left style="thin"><color rgb="FF000000"/></left><right style="thin"><color rgb="FF000000"/></right><top style="thin"><color rgb="FF000000"/></top><bottom style="thin"><color rgb="FF000000"/></bottom></border>':'').'</borders>'
           .'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>';
         $sty=[ // font,fill,border,numberFormat
           [0,0,1,0],[1,2,1,0],[2,3,1,0],[3,2,1,0],[0,4,1,0],
@@ -135,7 +135,8 @@ final class ReportXlsx68 {
           [10,0,1,0],[10,9,1,0],[6,7,1,3],[6,8,1,3],[6,5,1,3],[6,6,1,3],[6,4,1,3],[10,7,1,0],
           [6,14,1,3],[8,13,1,3],[2,9,1,0],[10,14,1,0],[5,13,1,0],[10,5,1,0],[10,6,1,0],[10,4,1,0],
           [10,10,1,0],[10,11,1,0],[4,9,1,0],[9,9,1,0],[7,12,1,3],[9,12,1,3],[8,13,1,3],[5,13,1,0],[7,15,1,3],[8,15,1,3],[4,15,1,0],
-          [10,10,1,0],[10,11,1,0],[10,12,1,0],[6,12,1,3],[10,15,1,0],[6,15,1,3],[10,0,1,0]
+          [10,10,1,0],[10,11,1,0],[10,12,1,0],[6,12,1,3],[10,15,1,0],[6,15,1,3],[10,0,1,0],
+          [9,16,2,0],[5,16,2,0],[4,16,2,0],[10,16,2,0],[8,16,2,3],[7,16,2,3],[6,16,2,3]
         ]);
         $styles.='<cellXfs count="'.count($sty).'">';
         foreach($sty as $id=>[$font,$fill,$border,$num]){
