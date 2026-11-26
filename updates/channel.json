@@ -1,11 +1,11 @@
 {
   "product": "soltanhesab",
-  "release": "0.6.53-p12",
-  "notes": "بهبود UI هزینه‌ها در موبایل و دسکتاپ، تقویم و فیلدهای هم‌تراز، حذف لینک اضافی، خوانایی گزارش و ردیف نهایی قوی‌تر؛ بدون تغییر منطق مالی یا ساختار دیتابیس.",
+  "release": "0.6.53-p13",
+  "notes": "اصلاح تقویم و فرم ورود، برجسته‌سازی نتیجه نهایی و حالت زمان‌بندی‌شده به‌روزرسانی با اعلان امکانات و توقف اضطراری SQL.",
   "files": [
     {
       "path": "app/Services/ReportingService.php",
-      "sha256": "6492133afc4f23ffda498b40e6540051e5ccc5f5602ba8b61f12c5fb708bf6f2"
+      "sha256": "f5f940615f1db7a5dc7582012a553de2aa53c416c9570b590f431a9b2f48bc3b"
     },
     {
       "path": "app/Services/TransferService.php",
@@ -13,11 +13,11 @@
     },
     {
       "path": "index.php",
-      "sha256": "f9c7d6d377dde21703b6218630d34cd45ec6519375d0c7384aec6d83d3d6771c"
+      "sha256": "c2222dc36b5a140e8f84ce1ff478a9e2d0e6e981d007624679cb7c2945a4292b"
     },
     {
       "path": "assets/transfer-calendar620.js",
-      "sha256": "efcc2c40fdfe4f92fef456faf554d7acb06519f90e0853e66925455281e40f60"
+      "sha256": "85fa3788c6bc8b22d3f59602ede35246a14d4ee1e8783fd20fc58f80e7fcf2b8"
     },
     {
       "path": "assets/transfer619.js",
@@ -25,7 +25,7 @@
     },
     {
       "path": "transfer_page619.php",
-      "sha256": "cf4c19b8c1cafd69c11cbb9bda11a440003fea6da4899f5cb16c4d1e18e00d67"
+      "sha256": "1caf60c0b02a7f4c39853f22c33f6f0b4cf32243c28afda137c14c50ed887017"
     },
     {
       "path": "assets/transfer-receipt619.js",
@@ -33,7 +33,7 @@
     },
     {
       "path": "assets/transfer619.css",
-      "sha256": "3f42426c683671f156dc2ed43eb65ece9690e3b3445b382fe70becacb8d1ff1d"
+      "sha256": "3039a428fc91684be49ae7bbd043b2440c14212b936b1123fa7c23376e578187"
     },
     {
       "path": "export.php",
@@ -41,11 +41,11 @@
     },
     {
       "path": "print.php",
-      "sha256": "eec38651b763146f0d9ef0d04f0733efe7fe1bca3e834f75a3bf72cc3715c4a8"
+      "sha256": "f795e07a025d1f73f4592cf26b7f948dfd797c9164edaed1a39f925c5367359f"
     },
     {
       "path": "app/Support/ReportXlsx68.php",
-      "sha256": "9e836d2b13e5e73d9630fd0b05261fd923b35fea0347b55fdfa882ca45fcb468"
+      "sha256": "d3732eb930558aa31d2f32b40164fb43c94e1dfcd922988ec9b5088d73205382"
     },
     {
       "path": "update_center.php",
@@ -57,7 +57,7 @@
     },
     {
       "path": "expense_page.php",
-      "sha256": "66879817164f40c52666e99b190a8df7a5937306e347bd316a2f1334d9284048"
+      "sha256": "029d0346fde061a5bca257dc9f21d248a079828383eabbeaca8334efb6f28dff"
     },
     {
       "path": "database/migrations/017_operating_expenses.sql",
